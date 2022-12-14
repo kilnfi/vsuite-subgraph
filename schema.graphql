@@ -1,6 +1,21 @@
-type ExampleEntity @entity {
+type vFactory @entity {
   id: Bytes!
-  count: BigInt!
-  version: BigInt! # uint256
-  cdata: Bytes! # bytes
+  address: Bytes!
+  version: BigInt!
+}
+
+type WithdrawalChannel @entity {
+  id: String!
+  factory: vFactory!
+  withdrawalChannel: Bytes!
+  keyCount: BigInt!
+  keys: [ValidationKey!]! @derivedFrom(field: "withdrawalChannel")
+}
+
+type ValidationKey @entity {
+  id: String!
+  publicKey: Bytes!
+  signature: Bytes!
+  withdrawalChannel: WithdrawalChannel!
+  index: BigInt!
 }
