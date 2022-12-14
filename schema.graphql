@@ -18,4 +18,13 @@ type ValidationKey @entity {
   signature: Bytes!
   withdrawalChannel: WithdrawalChannel!
   index: BigInt!
+  funded: FundedValidationKey
+}
+
+type FundedValidationKey @entity {
+  id: String!
+  validatorId: BigInt!
+  validationKey: ValidationKey!
+  owner: Bytes
+  feeRecipient: Bytes
 }

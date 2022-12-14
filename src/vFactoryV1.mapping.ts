@@ -1,8 +1,11 @@
 import { BigInt } from "@graphprotocol/graph-ts"
-import { WithdrawalChannel, ValidationKey } from "../generated/schema"
+import { WithdrawalChannel, ValidationKey, FundedValidationKey } from "../generated/schema"
 import {
- AddedValidators,
-  RemovedValidator
+  AddedValidators,
+  RemovedValidator,
+  FundedValidator,
+  SetValidatorOwner,
+  SetValidatorFeeRecipient
 } from "../generated/templates/vFactory/vFactoryV1"
 import { Bytes } from '@graphprotocol/graph-ts'
 import { store } from '@graphprotocol/graph-ts'
@@ -61,5 +64,44 @@ export function handleRemovedValidator(event: RemovedValidator): void {
 
   channel!.keyCount = BigInt.fromI32(channel!.keyCount.toI32() - 1)
   channel!.save()
+}
+
+export function handleFundedValidator(event: FundedValidator): void {
+  let keyId = event.params.withdrawalChannel.toHex() + "@" + event.params.validatorIndex.toString()
+
+  let key = ValidationKey.load(keyId)
+
+  let fundedKeyId = event.params.id.toString() + "@" + event.address.toString();
+
+  let fundedKey = new FundedValidationKey(fundedKeyId)
+
+  key!.funded = fundedKeyId
+
+  fundedKey.validationKey = keyId
+  fundedKey.validatorId = event.params.id
+
+  key!.save()
+  fundedKey.save()
+
+}
+
+export function handleSetValidatorOwner(event: SetValidatorOwner): void {
+  
+  let fundedKeyId = event.params.id.toString() + "@" + event.address.toString();
+  let fundedKey = FundedValidationKey.load(fundedKeyId)
+
+  fundedKey!.owner = event.params.owner
+
+  fundedKey!.save()
+}
+
+export function handleSetValidatorFeeRecipient(event: SetValidatorFeeRecipient): void {
+  
+  let fundedKeyId = event.params.id.toString() + "@" + event.address.toString();
+  let fundedKey = FundedValidationKey.load(fundedKeyId)
+
+  fundedKey!.feeRecipient = event.params.feeRecipient
+
+  fundedKey!.save()
 }
 

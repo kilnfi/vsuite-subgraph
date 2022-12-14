@@ -46,4 +46,10 @@ templates:
           handler: handleAddedValidators
         - event: RemovedValidator(indexed bytes32,bytes,uint256)
           handler: handleAddedValidators
+        - event: FundedValidator(indexed bytes32,bytes,uint256,uint256)
+          handler: handleFundedValidator
+        - event: SetValidatorOwner(indexed uint256,address)
+          handler: handleSetValidatorOwner
+        - event: SetValidatorFeeRecipient(indexed uint256,address)
+          handler: handleSetValidatorFeeRecipient
 
