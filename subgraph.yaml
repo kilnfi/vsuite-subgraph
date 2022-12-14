@@ -1,0 +1,68 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: NexusV1
+    network: goerli
+    source:
+      address: "0xc97794e0c0a0bd6e4f9e08be3459eede87a38d72"
+      abi: NexusV1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Initialized
+        - SetAdmin
+        - SetCoreHatchers
+        - SetDepositContract
+        - SetGlobalConsensusLayerSpec
+        - SetGlobalOracle
+        - SetGlobalRecipient
+        - SetMinimalRecipientImplementation
+        - SetPendingAdmin
+        - SetPluggableHatcher
+        - Spawn
+        - SpawnedFactory
+        - SpawnedPool
+        - AdminChanged
+        - BeaconUpgraded
+        - Upgraded
+      abis:
+        - name: NexusV1
+          file: ./abis/NexusV1.json
+      eventHandlers:
+        - event: Initialized(uint256,bytes)
+          handler: handleInitialized
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetCoreHatchers(address,address,address,address,address,address,address)
+          handler: handleSetCoreHatchers
+        - event: SetDepositContract(address)
+          handler: handleSetDepositContract
+        - event: SetGlobalConsensusLayerSpec(uint64,uint64,uint64,uint64)
+          handler: handleSetGlobalConsensusLayerSpec
+        - event: SetGlobalOracle(address)
+          handler: handleSetGlobalOracle
+        - event: SetGlobalRecipient(address)
+          handler: handleSetGlobalRecipient
+        - event: SetMinimalRecipientImplementation(address)
+          handler: handleSetMinimalRecipientImplementation
+        - event: SetPendingAdmin(address)
+          handler: handleSetPendingAdmin
+        - event: SetPluggableHatcher(indexed address,bool)
+          handler: handleSetPluggableHatcher
+        - event: Spawn(address,address,address)
+          handler: handleSpawn
+        - event: SpawnedFactory(indexed address,address)
+          handler: handleSpawnedFactory
+        - event: SpawnedPool(indexed address,address,address,address,address,address)
+          handler: handleSpawnedPool
+        - event: AdminChanged(address,address)
+          handler: handleAdminChanged
+        - event: BeaconUpgraded(indexed address)
+          handler: handleBeaconUpgraded
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+      file: ./src/nexus-v-1.ts
