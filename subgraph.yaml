@@ -22,6 +22,8 @@ dataSources:
       eventHandlers:
         - event: SpawnedFactory(indexed address,address)
           handler: handleSpawnedFactory
+        - event: SpawnedPool(indexed address,address,address,address,address,address)
+          handler: handleSpawnedPool
         - event: Initialized(uint256,bytes)
           handler: handleInitialized
       file: ./src/NexusV1.mapping.ts
@@ -75,3 +77,27 @@ templates:
         - event: ApproveDepositor(address,bool)
           handler: handleApproveDepositor
 
+  - name: vPool
+    kind: ethereum/contract
+    network: goerli
+    source:
+      abi: vPoolV1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/vPoolV1.mapping.ts
+      entities:
+        - Exchange
+      abis:
+        - name: vPoolV1
+          file: ./abis/vPoolV1.json
+      eventHandlers:
+        - event: Deposit(indexed address,uint256)
+          handler: handleDeposit
+        - event: Mint(indexed address,uint256,uint256)
+          handler: handleMint
+        - event: Burn(address,uint256,uint256)
+          handler: handleBurn
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer

@@ -1,11 +1,13 @@
 import {
     Initialized,
   SpawnedFactory,
+  SpawnedPool
 } from "../generated/NexusV1/NexusV1"
 import {
   vFactory as vFactoryTemplate,
+  vPool as vPoolTemplate
 } from "../generated/templates"
-import { Nexus, vFactory, vTreasury } from "../generated/schema"
+import { Nexus, vFactory, vTreasury, vPool } from "../generated/schema"
 import { BigInt } from "@graphprotocol/graph-ts"
 
 export function handleInitialized(event: Initialized): void {
@@ -47,5 +49,22 @@ export function handleSpawnedFactory(event: SpawnedFactory): void {
   factory.save()
   
   vFactoryTemplate.create(event.params.factory);
+}
+
+export function handleSpawnedPool(event: SpawnedPool): void {
+  const pool = new vPool(event.params.pool)
+  
+  pool.address = event.params.pool
+  pool.factory = event.params.factory
+  pool.totalSupply = BigInt.fromI32(0)
+  pool.totalUnderlyingSupply = BigInt.fromI32(0)
+
+  pool.createdAt = event.block.timestamp
+  pool.editedAt = event.block.timestamp
+  pool.createdAtBlock = event.block.number
+  pool.editedAtBlock = event.block.number
+
+  pool.save()
+  vPoolTemplate.create(event.params.pool);
 }
 

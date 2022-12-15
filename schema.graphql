@@ -16,6 +16,7 @@ type vFactory @entity {
   version: BigInt!
   withdrawalChannels: [WithdrawalChannel!]! @derivedFrom(field: "factory")
   depositors: [FactoryDepositor!]! @derivedFrom(field: "factory")
+  pools: [vPool!]! @derivedFrom(field: "factory")
   
   operator: Bytes
   admin: Bytes
@@ -39,6 +40,35 @@ type vTreasury @entity {
   id: Bytes!
   address: Bytes!
   factory: vFactory!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type PoolBalance @entity {
+  id: String!
+  address: Bytes!
+  amount: BigInt!
+
+  pool: vPool!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vPool @entity {
+  id: Bytes!
+  address: Bytes!
+  factory: vFactory!
+  balances: [PoolBalance!]! @derivedFrom(field: "pool")
+  totalSupply: BigInt!
+  totalUnderlyingSupply: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!
