@@ -7,6 +7,7 @@
 - [docker](https://docs.docker.com/compose/install/)
 - [docker-compose](https://docs.docker.com/compose/install/linux/)
 - [graph cli](https://thegraph.com/docs/en/cookbook/quick-start/)
+- A goerli RPC endpoint (on-premise works better)
 
 ### 1. Clone the `graph-node` repo
 
