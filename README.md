@@ -2,27 +2,25 @@
 
 ## Run locally
 
-### Run a `graph-node`
+### Requirements
 
-#### Requirements
+- [docker](https://docs.docker.com/compose/install/)
+- [docker-compose](https://docs.docker.com/compose/install/linux/)
+- [graph cli](https://thegraph.com/docs/en/cookbook/quick-start/)
 
-- docker
-- docker-compose
-- graph cli
-
-#### 1. Clone the `graph-node` repo
+### 1. Clone the `graph-node` repo
 
 ```
 git clone https://github.com/graphprotocol/graph-node.git
 ```
 
-#### 2. Locate the `docker-compose.yml` file
+### 2. Locate the `docker-compose.yml` file
 
 ```
 cd graph-node/docker && ls
 ```
 
-#### 3. Edit the `ethereum` environment variable of the `graph-node` service (L.22)
+### 3. Edit the `ethereum` environment variable of the `graph-node` service (L.22)
 
 
 ```
@@ -31,27 +29,27 @@ cd graph-node/docker && ls
 ...
 ```
 
-#### 4. Start everything
+### 4. Start everything
 
 ```
 docker-compose up
 ```
 
 
-#### 5. Register this subgraph on the `graph-node`
+### 5. Register this subgraph on the `graph-node`
 
 ```
 graph codegen
 graph create --node http://localhost:8020 vsuite-goerli
 ```
 
-#### 6. Deploy this subgraph
+### 6. Deploy this subgraph
 
 ```
 graph deploy vsuite-goerli --node http://localhost:8020 --ipfs http://localhost:5001
 ```
 
-#### 7. Visit the [web UI](http://localhost:8000/subgraphs/name/vsuite-goerli/graphq)
+### 7. Visit the [web UI](http://localhost:8000/subgraphs/name/vsuite-goerli/graphq)
 
 Test the following GraphQL request to ensure everything works well
 
