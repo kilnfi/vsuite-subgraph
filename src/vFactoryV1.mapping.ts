@@ -1,18 +1,31 @@
 import { BigInt } from "@graphprotocol/graph-ts"
-import { WithdrawalChannel, ValidationKey, FundedValidationKey } from "../generated/schema"
+import { WithdrawalChannel, ValidationKey, FundedValidationKey, ExitRequest, ValidatorRequest as ValidatorRequestEntity, vFactory } from "../generated/schema"
 import {
   AddedValidators,
   RemovedValidator,
   FundedValidator,
   SetValidatorOwner,
-  SetValidatorFeeRecipient
+  SetValidatorFeeRecipient,
+  UpdatedLimit,
+  ExitValidator,
+  ValidatorRequest,
+  SetMetadata,
+  SetAdmin,
+  ChangedOperator,
+  SetHatcherRegistry,
+  ChangedTreasury
 } from "../generated/templates/vFactory/vFactoryV1"
 import { Bytes } from '@graphprotocol/graph-ts'
-import { store } from '@graphprotocol/graph-ts'
+import { store, log } from '@graphprotocol/graph-ts'
+import { SetMinimalRecipientImplementation } from "../generated/NexusV1/NexusV1"
+
+const PUBLIC_KEY_LENGTH = 48;
+const SIGNATURE_LENGTH = 96;
+const KEY_PACK_LENGTH = PUBLIC_KEY_LENGTH + SIGNATURE_LENGTH;
 
 export function handleAddedValidators(event: AddedValidators): void {
   
-  let channelId = event.params.withdrawalChannel.toHex() + "@" + event.address.toHex();
+  const channelId = event.params.withdrawalChannel.toHex() + "@" + event.address.toHex();
 
   let entity = WithdrawalChannel.load(channelId)
 
@@ -20,88 +33,259 @@ export function handleAddedValidators(event: AddedValidators): void {
     entity = new WithdrawalChannel(channelId)
     entity.withdrawalChannel = event.params.withdrawalChannel
     entity.factory = event.address
-    entity.keyCount = BigInt.fromI32(0)
+    entity.total = BigInt.fromI32(0)
+    entity.funded = BigInt.fromI32(0)
+    entity.limit = BigInt.fromI32(0)
+    entity.createdAt = event.block.timestamp
+    entity.createdAtBlock = event.block.number
   }
-  let keyCount = entity.keyCount.toI32()
+
+    entity.editedAt = event.block.timestamp
+    entity.editedAtBlock = event.block.number
+  const keyCount = entity.total.toI32()
   
-  for (let idx = 0; idx < (event.params.keys.length) / (48 + 96); ++idx ) {
-    let signature= Bytes.fromUint8Array(event.params.keys.slice(idx * (48 + 96), idx * (48 + 96) + 96))
-    let publicKey = Bytes.fromUint8Array(event.params.keys.slice(idx * (48 + 96) + 96, (idx + 1) * (48 + 96)))
-    let keyId = event.params.withdrawalChannel.toHex() + "@" + (keyCount + idx).toString();
-    let keyEntity = new ValidationKey(keyId)
+  for (let idx = 0; idx < (event.params.keys.length) / KEY_PACK_LENGTH; ++idx ) {
+    const signature= Bytes.fromUint8Array(event.params.keys.slice(idx * KEY_PACK_LENGTH, idx * KEY_PACK_LENGTH + SIGNATURE_LENGTH))
+    const publicKey = Bytes.fromUint8Array(event.params.keys.slice(idx * KEY_PACK_LENGTH + SIGNATURE_LENGTH, (idx + 1) * KEY_PACK_LENGTH))
+    const keyId = event.params.withdrawalChannel.toHex() + "@" + (keyCount + idx).toString();
+    const keyEntity = new ValidationKey(keyId)
     keyEntity.signature = signature
     keyEntity.publicKey = publicKey
     keyEntity.withdrawalChannel = channelId
     keyEntity.index = BigInt.fromI32(keyCount + idx)
+    keyEntity.createdAt = event.block.timestamp
+    keyEntity.createdAtBlock = event.block.number
+    keyEntity.editedAt = event.block.timestamp
+    keyEntity.editedAtBlock = event.block.number
     keyEntity.save()
   }
 
-  entity.keyCount = BigInt.fromI32(entity.keyCount.toI32() + (event.params.keys.length) / (48 + 96));
+  entity.total = BigInt.fromI32(entity.total.toI32() + ((event.params.keys.length) / KEY_PACK_LENGTH));
 
   entity.save()
 }
 
+export function handleValidatorRequest(event: ValidatorRequest): void {
+
+  const channelId = event.params.withdrawalChannel.toHex() + "@" + event.address.toHex();
+
+  let entity = WithdrawalChannel.load(channelId)
+
+  if (entity == null) {
+    entity = new WithdrawalChannel(channelId)
+    entity.withdrawalChannel = event.params.withdrawalChannel
+    entity.factory = event.address
+    entity.total = BigInt.fromI32(0)
+    entity.funded = BigInt.fromI32(0)
+    entity.limit = BigInt.fromI32(0)
+    entity.createdAt = event.block.timestamp
+    entity.createdAtBlock = event.block.number
+  }
+
+  const validatorRequestId = event.params.withdrawalChannel.toString() + "@" + event.transaction.hash.toString() + "@" + event.transactionLogIndex.toString()
+
+  const validatorRequest = new ValidatorRequestEntity(validatorRequestId)
+
+  validatorRequest.withdrawalChannel = channelId
+  validatorRequest.requestedTotal = event.params.total
+  validatorRequest.totalOnRequest = entity.total
+    validatorRequest.createdAt = event.block.timestamp
+    validatorRequest.createdAtBlock = event.block.number
+    validatorRequest.editedAt = event.block.timestamp
+    validatorRequest.editedAtBlock = event.block.number
+    
+  entity.lastValidatorRequest = validatorRequestId
+    entity.editedAt = event.block.timestamp
+    entity.editedAtBlock = event.block.number
+
+  entity.save()
+  validatorRequest.save()
+}
+
 export function handleRemovedValidator(event: RemovedValidator): void {
-  let channelId = event.params.withdrawalChannel.toHex() + "@" + event.address.toHex();
+  const channelId = event.params.withdrawalChannel.toHex() + "@" + event.address.toHex();
 
-  let channel = WithdrawalChannel.load(channelId)
+  const channel = WithdrawalChannel.load(channelId)
 
-  let keyId = event.params.withdrawalChannel.toHex() + "@" + event.params.validatorIndex.toString()
-  let keyIndex = event.params.validatorIndex.toI32()
+  const keyId = event.params.withdrawalChannel.toHex() + "@" + event.params.validatorIndex.toString()
+  const keyIndex = event.params.validatorIndex.toI32()
 
-  let keyToDelete = ValidationKey.load(keyId)
+  const keyToDelete = ValidationKey.load(keyId)
 
-  if (keyIndex == channel!.keyCount.toI32() - 1) {
+  if (keyIndex == channel!.total.toI32() - 1) {
     store.remove('ValidationKey', keyId)
   } else {
-    let lastKeyId = event.params.withdrawalChannel.toHex() + "@" + (channel!.keyCount.toI32() - 1).toString()
-    let lastKey = ValidationKey.load(lastKeyId)
+    const lastKeyId = event.params.withdrawalChannel.toHex() + "@" + (channel!.total.toI32() - 1).toString()
+    const lastKey = ValidationKey.load(lastKeyId)
     keyToDelete!.publicKey = lastKey!.publicKey
     keyToDelete!.signature = lastKey!.signature
     keyToDelete!.save()
     store.remove('ValidationKey', lastKeyId)
   }
 
-  channel!.keyCount = BigInt.fromI32(channel!.keyCount.toI32() - 1)
+  channel!.total = BigInt.fromI32(channel!.total.toI32() - 1)
+  channel!.editedAt = event.block.timestamp
+  channel!.editedAtBlock = event.block.number
   channel!.save()
 }
 
 export function handleFundedValidator(event: FundedValidator): void {
-  let keyId = event.params.withdrawalChannel.toHex() + "@" + event.params.validatorIndex.toString()
-
-  let key = ValidationKey.load(keyId)
-
-  let fundedKeyId = event.params.id.toString() + "@" + event.address.toString();
-
-  let fundedKey = new FundedValidationKey(fundedKeyId)
+  const keyId = event.params.withdrawalChannel.toHex() + "@" + event.params.validatorIndex.toString()
+  const key = ValidationKey.load(keyId)
+  const channelId = event.params.withdrawalChannel.toHex() + "@" + event.address.toHex();
+  const channel = WithdrawalChannel.load(channelId)
+  const fundedKeyId = event.params.id.toString() + "@" + event.address.toString();
+  const fundedKey = new FundedValidationKey(fundedKeyId)
 
   key!.funded = fundedKeyId
+  key!.editedAt = event.block.timestamp
+  key!.editedAtBlock = event.block.number
 
   fundedKey.validationKey = keyId
   fundedKey.validatorId = event.params.id
+  fundedKey.createdAt = event.block.timestamp
+  fundedKey.createdAtBlock = event.block.number
+  fundedKey.editedAt = event.block.timestamp
+  fundedKey.editedAtBlock = event.block.number
+
+  channel!.funded = BigInt.fromI32(channel!.funded.toI32() + 1)
+  channel!.editedAt = event.block.timestamp
+  channel!.editedAtBlock = event.block.number
 
   key!.save()
+  channel!.save()
   fundedKey.save()
 
 }
 
+export function handleExitValidator(event: ExitValidator): void {
+
+  const fundedKeyId = event.params.id.toString() + "@" + event.address.toString();
+  const fundedKey = FundedValidationKey.load(fundedKeyId)
+  
+  const exitRequestId = event.params.id.toString() + "@" + event.transaction.hash.toString() + "@" + event.transactionLogIndex.toString()
+  const exitRequest = new ExitRequest(exitRequestId)
+
+  exitRequest.validator = fundedKeyId
+  exitRequest.emitter = fundedKey!.owner as Bytes
+  exitRequest.createdAt = event.block.timestamp
+  exitRequest.createdAtBlock = event.block.number
+  exitRequest.editedAt = event.block.timestamp
+  exitRequest.editedAtBlock = event.block.number
+  
+  exitRequest.save()
+
+  fundedKey!.lastExitRequest = exitRequestId
+  fundedKey!.editedAt = event.block.timestamp
+  fundedKey!.editedAtBlock = event.block.number
+
+  fundedKey!.save()
+}
+
+export function handleUpdatedLimit(event: UpdatedLimit): void {
+  const channelId = event.params.withdrawalChannel.toHex() + "@" + event.address.toHex();
+  const channel = WithdrawalChannel.load(channelId)
+
+  channel!.limit = event.params.limit
+  channel!.editedAt = event.block.timestamp
+  channel!.editedAtBlock = event.block.number
+
+  channel!.save()
+}
+
 export function handleSetValidatorOwner(event: SetValidatorOwner): void {
   
-  let fundedKeyId = event.params.id.toString() + "@" + event.address.toString();
-  let fundedKey = FundedValidationKey.load(fundedKeyId)
+  const fundedKeyId = event.params.id.toString() + "@" + event.address.toString();
+  const fundedKey = FundedValidationKey.load(fundedKeyId)
 
   fundedKey!.owner = event.params.owner
+
+  fundedKey!.editedAt = event.block.timestamp
+  fundedKey!.editedAtBlock = event.block.number
 
   fundedKey!.save()
 }
 
 export function handleSetValidatorFeeRecipient(event: SetValidatorFeeRecipient): void {
   
-  let fundedKeyId = event.params.id.toString() + "@" + event.address.toString();
-  let fundedKey = FundedValidationKey.load(fundedKeyId)
+  const fundedKeyId = event.params.id.toString() + "@" + event.address.toString();
+  const fundedKey = FundedValidationKey.load(fundedKeyId)
 
   fundedKey!.feeRecipient = event.params.feeRecipient
+
+  fundedKey!.editedAt = event.block.timestamp
+  fundedKey!.editedAtBlock = event.block.number
 
   fundedKey!.save()
 }
 
+export function handleSetMetadata(event: SetMetadata): void {
+  const factory = vFactory.load(event.address)
+
+  factory!.operatorName = event.params.name
+  factory!.operatorUrl = event.params.url
+  factory!.operatorIconUrl = event.params.iconUrl
+
+  factory!.editedAt = event.block.timestamp
+  factory!.editedAtBlock = event.block.number
+
+  factory!.save()
+}
+
+export function handleSetAdmin(event: SetAdmin): void {
+  const factory = vFactory.load(event.address)
+  
+  factory!.admin = event.params.admin
+
+  factory!.editedAt = event.block.timestamp
+  factory!.editedAtBlock = event.block.number
+
+  factory!.save()
+}
+
+export function handleChangedOperator(event: ChangedOperator): void {
+  const factory = vFactory.load(event.address)
+  
+  factory!.operator = event.params.operator
+
+  factory!.editedAt = event.block.timestamp
+  factory!.editedAtBlock = event.block.number
+
+  factory!.save()
+}
+
+export function handleChangedTreasury(event: ChangedTreasury): void {
+
+  const factory = vFactory.load(event.address)
+  
+  factory!.treasury = event.params.treasury
+
+  factory!.editedAt = event.block.timestamp
+  factory!.editedAtBlock = event.block.number
+
+  factory!.save()
+}
+
+export function handleSetMinimalRecipientImplementation(event: SetMinimalRecipientImplementation): void {
+
+  const factory = vFactory.load(event.address)
+  
+  factory!.minimalRecipientImplementation = event.params.minimalRecipientImplementationAddress
+
+  factory!.editedAt = event.block.timestamp
+  factory!.editedAtBlock = event.block.number
+
+  factory!.save()
+}
+
+export function handleSetHatcherRegistry(event: SetHatcherRegistry): void {
+
+  const factory = vFactory.load(event.address)
+  
+  factory!.hatcherRegistry = event.params.hatcherRegistry
+
+  factory!.editedAt = event.block.timestamp
+  factory!.editedAtBlock = event.block.number
+
+  factory!.save()
+}

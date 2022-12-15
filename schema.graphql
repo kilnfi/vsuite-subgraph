@@ -2,14 +2,68 @@ type vFactory @entity {
   id: Bytes!
   address: Bytes!
   version: BigInt!
+  depositors: [FactoryDepositor!]! @derivedFrom(field: "factory")
+  
+  operator: Bytes
+  admin: Bytes
+
+  hatcherRegistry: Bytes
+  minimalRecipientImplementation: Bytes
+  treasury: Bytes
+
+  operatorName: String!
+  operatorUrl: String!
+  operatorIconUrl: String!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type FactoryDepositor @entity {
+  id: String! 
+  factory: vFactory!
+  address: Bytes!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type ValidatorRequest @entity {
+  id: String!
+  withdrawalChannel: WithdrawalChannel!
+  requestedTotal: BigInt!
+  totalOnRequest: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
 }
 
 type WithdrawalChannel @entity {
   id: String!
   factory: vFactory!
   withdrawalChannel: Bytes!
-  keyCount: BigInt!
+  lastValidatorRequest: ValidatorRequest
+
+  total: BigInt!
+  funded: BigInt!
+  limit: BigInt!
+
   keys: [ValidationKey!]! @derivedFrom(field: "withdrawalChannel")
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
 }
 
 type ValidationKey @entity {
@@ -19,6 +73,24 @@ type ValidationKey @entity {
   withdrawalChannel: WithdrawalChannel!
   index: BigInt!
   funded: FundedValidationKey
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type ExitRequest @entity {
+  id: String!
+  validator: FundedValidationKey!
+  emitter: Bytes!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
 }
 
 type FundedValidationKey @entity {
@@ -27,4 +99,11 @@ type FundedValidationKey @entity {
   validationKey: ValidationKey!
   owner: Bytes
   feeRecipient: Bytes
+  lastExitRequest: ExitRequest
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
 }

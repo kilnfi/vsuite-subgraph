@@ -45,11 +45,28 @@ templates:
         - event: AddedValidators(indexed bytes32,bytes)
           handler: handleAddedValidators
         - event: RemovedValidator(indexed bytes32,bytes,uint256)
-          handler: handleAddedValidators
+          handler: handleRemovedValidator
+        - event: UpdatedLimit(indexed bytes32,uint256)
+          handler: handleUpdatedLimit
         - event: FundedValidator(indexed bytes32,bytes,uint256,uint256)
           handler: handleFundedValidator
+        - event: ExitValidator(indexed uint256)
+          handler: handleExitValidator
+        - event: ValidatorRequest(indexed bytes32,uint256)
+          handler: handleValidatorRequest
         - event: SetValidatorOwner(indexed uint256,address)
           handler: handleSetValidatorOwner
         - event: SetValidatorFeeRecipient(indexed uint256,address)
           handler: handleSetValidatorFeeRecipient
-
+        - event: SetMetadata(string,string,string)
+          handler: handleSetMetadata
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: ChangedOperator(address)
+          handler: handleChangedOperator
+        - event: ChangedTreasury(address)
+          handler: handleChangedTreasury
+        - event: SetMinimalRecipientImplementation(address)
+          handler: handleSetMinimalRecipientImplementation
+        - event: SetHatcherRegistry(address)
+          handler: handleSetHatcherRegistry
