@@ -22,6 +22,8 @@ dataSources:
       eventHandlers:
         - event: SpawnedFactory(indexed address,address)
           handler: handleSpawnedFactory
+        - event: Initialized(uint256,bytes)
+          handler: handleInitialized
       file: ./src/NexusV1.mapping.ts
 
 
@@ -70,3 +72,6 @@ templates:
           handler: handleSetMinimalRecipientImplementation
         - event: SetHatcherRegistry(address)
           handler: handleSetHatcherRegistry
+        - event: ApproveDepositor(address,bool)
+          handler: handleApproveDepositor
+

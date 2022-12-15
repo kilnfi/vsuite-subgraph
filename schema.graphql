@@ -1,3 +1,15 @@
+type Nexus @entity {
+  id: Bytes!
+  address: Bytes!
+  factories: [vFactory!]! @derivedFrom(field: "nexus")
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
 type vFactory @entity {
   id: Bytes!
   address: Bytes!
@@ -8,7 +20,7 @@ type vFactory @entity {
   operator: Bytes
   admin: Bytes
 
-  hatcherRegistry: Bytes
+  nexus: Nexus
   minimalRecipientImplementation: Bytes
   treasury: vTreasury
 
@@ -27,6 +39,12 @@ type vTreasury @entity {
   id: Bytes!
   address: Bytes!
   factory: vFactory!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
 }
 
 type FactoryDepositor @entity {

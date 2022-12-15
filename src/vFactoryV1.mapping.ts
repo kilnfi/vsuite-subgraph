@@ -1,5 +1,5 @@
 import { BigInt } from "@graphprotocol/graph-ts"
-import { WithdrawalChannel, ValidationKey, FundedValidationKey, ExitRequest, ValidatorRequest as ValidatorRequestEntity, vFactory } from "../generated/schema"
+import { WithdrawalChannel, ValidationKey, FundedValidationKey, ExitRequest, ValidatorRequest as ValidatorRequestEntity, vFactory, FactoryDepositor } from "../generated/schema"
 import {
   AddedValidators,
   RemovedValidator,
@@ -13,7 +13,8 @@ import {
   SetAdmin,
   ChangedOperator,
   SetHatcherRegistry,
-  ChangedTreasury
+  ChangedTreasury,
+  ApproveDepositor
 } from "../generated/templates/vFactory/vFactoryV1"
 import { Bytes } from '@graphprotocol/graph-ts'
 import { store, log } from '@graphprotocol/graph-ts'
@@ -282,10 +283,39 @@ export function handleSetHatcherRegistry(event: SetHatcherRegistry): void {
 
   const factory = vFactory.load(event.address)
   
-  factory!.hatcherRegistry = event.params.hatcherRegistry
+  factory!.nexus = event.params.hatcherRegistry
 
   factory!.editedAt = event.block.timestamp
   factory!.editedAtBlock = event.block.number
 
   factory!.save()
 }
+
+export function handleApproveDepositor(event: ApproveDepositor): void {
+  const depositorId = event.params.depositor.toHexString() + "@" + event.address.toHexString()
+  let depositor = FactoryDepositor.load(depositorId)
+
+  if (depositor == null) {
+    if (event.params.allowed) {
+      depositor = new FactoryDepositor(depositorId)
+      
+      depositor.address = event.params.depositor
+      depositor.factory = event.address
+
+      depositor.createdAt = event.block.timestamp
+      depositor.createdAtBlock = event.block.number
+      depositor.editedAt = event.block.timestamp
+      depositor.editedAtBlock = event.block.number
+      depositor.save()
+    }
+  } else {
+    if (!event.params.allowed) {
+      store.remove("FactoryDepositor", depositorId)
+    } else {
+      depositor.editedAt = event.block.timestamp
+      depositor.editedAtBlock = event.block.number
+      depositor.save()
+    }
+  }
+}
+
