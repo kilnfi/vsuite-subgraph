@@ -2,6 +2,7 @@ type vFactory @entity {
   id: Bytes!
   address: Bytes!
   version: BigInt!
+  withdrawalChannels: [WithdrawalChannel!]! @derivedFrom(field: "factory")
   depositors: [FactoryDepositor!]! @derivedFrom(field: "factory")
   
   operator: Bytes
@@ -9,7 +10,7 @@ type vFactory @entity {
 
   hatcherRegistry: Bytes
   minimalRecipientImplementation: Bytes
-  treasury: Bytes
+  treasury: vTreasury
 
   operatorName: String!
   operatorUrl: String!
@@ -20,6 +21,12 @@ type vFactory @entity {
 
   createdAtBlock: BigInt!
   editedAtBlock: BigInt!
+}
+
+type vTreasury @entity {
+  id: Bytes!
+  address: Bytes!
+  factory: vFactory!
 }
 
 type FactoryDepositor @entity {
