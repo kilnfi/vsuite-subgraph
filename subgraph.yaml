@@ -41,7 +41,7 @@ templates:
       language: wasm/assemblyscript
       file: ./src/vFactoryV1.mapping.ts
       entities:
-        - Exchange
+        - vFactory
       abis:
         - name: vFactoryV1
           file: ./abis/vFactoryV1.json
@@ -88,7 +88,7 @@ templates:
       language: wasm/assemblyscript
       file: ./src/vPoolV1.mapping.ts
       entities:
-        - Exchange
+        - vPool
       abis:
         - name: vPoolV1
           file: ./abis/vPoolV1.json
@@ -101,3 +101,46 @@ templates:
           handler: handleBurn
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
+        - event: Approval(indexed address,indexed address,uint256)
+          handler: handleApproval
+        - event: PurchasedValidators(uint256[])
+          handler: handlePurchasedValidators
+        - event: RevenueUpdate(uint256,int256,uint256,uint256,uint256)
+          handler: handleRevenueUpdate
+        - event: SetReportBounds(uint64,uint64,uint64)
+          handler: handleSetReportBounds
+        - event: SetEpochsPerFrame(uint256)
+          handler: handleSetEpochsPerFrame
+        - event: SetOperatorFee(uint256)
+          handler: handleSetOperatorFee
+        - event: SetWithdrawalRecipient(address)
+          handler: handleSetWithdrawalRecipient
+        - event: SetExecLayerRecipient(address)
+          handler: handleSetExecLayerRecipient
+        - event: SetCoverageRecipient(address)
+          handler: handleSetCoverageRecipient
+        - event: SetOracleAggregator(address)
+          handler: handleSetOracleAggregator
+        - event: ApproveDepositor(address,bool)
+          handler: handleApproveDepositor
+
+
+  - name: vExecLayerRecipient
+    kind: ethereum/contract
+    network: goerli
+    source:
+      abi: vExecLayerRecipientV1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/vExecLayerRecipientV1.mapping.ts
+      entities:
+        - vExecLayerRecipient
+      abis:
+        - name: vExecLayerRecipientV1
+          file: ./abis/vExecLayerRecipientV1.json
+      eventHandlers:
+        - event: SuppliedEther(uint256)
+          handler: handleSuppliedEther
+

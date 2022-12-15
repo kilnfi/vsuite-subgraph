@@ -4,11 +4,12 @@ import {
   SpawnedPool
 } from "../generated/NexusV1/NexusV1"
 import {
+    vExecLayerRecipient as vExecLayerRecipientTemplate,
   vFactory as vFactoryTemplate,
   vPool as vPoolTemplate
 } from "../generated/templates"
-import { Nexus, vFactory, vTreasury, vPool } from "../generated/schema"
-import { BigInt } from "@graphprotocol/graph-ts"
+import { Nexus, vFactory, vTreasury, vPool, vExecLayerRecipient } from "../generated/schema"
+import { Address, BigInt } from "@graphprotocol/graph-ts"
 
 export function handleInitialized(event: Initialized): void {
   const nexus = new Nexus(event.address)
@@ -56,8 +57,20 @@ export function handleSpawnedPool(event: SpawnedPool): void {
   
   pool.address = event.params.pool
   pool.factory = event.params.factory
-  pool.totalSupply = BigInt.fromI32(0)
-  pool.totalUnderlyingSupply = BigInt.fromI32(0)
+  pool.nexus = event.address
+  pool.totalSupply = BigInt.zero()
+  pool.totalUnderlyingSupply = BigInt.zero()
+  pool.purchasedValidatorCount = BigInt.zero()
+
+  pool.oracleAggregator = Address.zero()
+  pool.coverageRecipient = Address.zero()
+  pool.execLayerRecipient = Address.zero()
+  pool.withdrawalRecipient = Address.zero()
+  pool.operatorFee = BigInt.zero()
+  pool.epochsPerFrame = BigInt.zero()
+  pool.maxAPRUpperBound = BigInt.zero()
+  pool.maxAPRUpperCoverageBoost = BigInt.zero()
+  pool.maxRelativeLowerBound = BigInt.zero()
 
   pool.createdAt = event.block.timestamp
   pool.editedAt = event.block.timestamp
@@ -66,5 +79,20 @@ export function handleSpawnedPool(event: SpawnedPool): void {
 
   pool.save()
   vPoolTemplate.create(event.params.pool);
+
+  const elr = new vExecLayerRecipient(event.params.execLayerRecipient)
+
+  elr.totalSuppliedEther = BigInt.zero()
+  elr.address = event.params.execLayerRecipient
+  elr.pool = event.params.pool
+
+  elr.createdAt = event.block.timestamp
+  elr.editedAt = event.block.timestamp
+  elr.createdAtBlock = event.block.number
+  elr.editedAtBlock = event.block.number
+
+  elr.save()
+  vExecLayerRecipientTemplate.create(event.params.execLayerRecipient)
+
 }
 

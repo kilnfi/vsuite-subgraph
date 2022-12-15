@@ -48,13 +48,96 @@ type vTreasury @entity {
   editedAtBlock: BigInt!
 }
 
-type PoolBalance @entity {
+type PoolBalanceApproval @entity {
   id: String!
   address: Bytes!
   amount: BigInt!
 
+  balance: PoolBalance!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type PoolBalance @entity {
+  id: String!
+  address: Bytes!
+  amount: BigInt!
+  approvals: [PoolBalanceApproval!]! @derivedFrom(field: "balance")
+  totalApproval: BigInt!
+
   pool: vPool!
 
+  createdAt: BigInt!
+  editedAt: BigInt!
+
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type PoolPurchasedValidator @entity {
+  id: String!
+  pool: vPool!
+  fundedValidationKey: FundedValidationKey!
+  index: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type RevenueUpdate @entity {
+  id: String!
+  pool: vPool!
+  epoch: BigInt!
+  delta: BigInt!
+  covered: BigInt!
+  totalSupply: BigInt!
+  totalUnderlyingSupply: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type PoolDepositor @entity {
+  id: String! 
+  pool: vPool!
+  address: Bytes!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type ExecLayerSuppliedEther @entity {
+  id: String!
+  amount: BigInt!
+  execLayerRecipient: vExecLayerRecipient!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vExecLayerRecipient @entity {
+  id: Bytes!
+  address: Bytes!
+  pool: vPool!
+  totalSuppliedEther: BigInt!
+  suppliedEther: [ExecLayerSuppliedEther!]! @derivedFrom(field: "execLayerRecipient")
+  
   createdAt: BigInt!
   editedAt: BigInt!
 
@@ -66,9 +149,25 @@ type vPool @entity {
   id: Bytes!
   address: Bytes!
   factory: vFactory!
+  nexus: Nexus!
+  depositors: [PoolDepositor!]! @derivedFrom(field: "pool")
   balances: [PoolBalance!]! @derivedFrom(field: "pool")
+  purchasedValidators: [PoolPurchasedValidator!]! @derivedFrom(field: "pool")
+  revenueUpdates: [RevenueUpdate!]! @derivedFrom(field: "pool")
+  purchasedValidatorCount: BigInt!
   totalSupply: BigInt!
   totalUnderlyingSupply: BigInt!
+
+  oracleAggregator: Bytes!
+  coverageRecipient: Bytes!
+  execLayerRecipient: vExecLayerRecipient!
+  withdrawalRecipient: Bytes!
+  
+  operatorFee: BigInt!
+  epochsPerFrame: BigInt!
+  maxAPRUpperBound: BigInt!
+  maxAPRUpperCoverageBoost: BigInt!
+  maxRelativeLowerBound: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!
