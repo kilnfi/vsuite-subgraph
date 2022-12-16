@@ -26,10 +26,305 @@ dataSources:
           handler: handleSpawnedPool
         - event: Initialized(uint256,bytes)
           handler: handleInitialized
+        - event: SetPluggableHatcher(indexed address,bool)
+          handler: handleSetPluggableHatcher
+        - event: SetCoreHatchers(address,address,address,address,address,address,address)
+          handler: handleSetCoreHatchers
       file: ./src/NexusV1.mapping.ts
 
+  - kind: ethereum
+    name: FactoryHatcher
+    network: goerli
+    source:
+      address: "0xc31458253f6e85ce69f508Cbe7Baabe7d6111974"
+      abi: PluggableHatcher
+      startBlock: 8122595
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vFactory
+        - vTreasury
+      abis:
+        - name: PluggableHatcher
+          file: ./abis/PluggableHatcher.json
+      eventHandlers:
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+        - event: Hatched(indexed address,bytes)
+          handler: handleHatched
+        - event: Pause(address)
+          handler: handlePause
+        - event: Unpause(address)
+          handler: handleUnpause
+        - event: GlobalPause()
+          handler: handleGlobalPause
+        - event: GlobalUnpause()
+          handler: handleGlobalUnpause
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetInitialProgress(uint256)
+          handler: handleSetInitialProgress
+        - event: RegisteredGlobalFix(address,uint256)
+          handler: handleRegisteredGlobalFix
+        - event: DeletedGlobalFix(uint256)
+          handler: handleDeletedGlobalFix
+      file: ./src/PluggableHatcher.mapping.ts
+  - kind: ethereum
+    name: TreasuryHatcher
+    network: goerli
+    source:
+      address: "0x6B0ad6E21F1336D6313B4Ff19D2d029Dd1A699da"
+      abi: PluggableHatcher
+      startBlock: 8122598
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vFactory
+        - vTreasury
+      abis:
+        - name: PluggableHatcher
+          file: ./abis/PluggableHatcher.json
+      eventHandlers:
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+        - event: Hatched(indexed address,bytes)
+          handler: handleHatched
+        - event: Pause(address)
+          handler: handlePause
+        - event: Unpause(address)
+          handler: handleUnpause
+        - event: GlobalPause()
+          handler: handleGlobalPause
+        - event: GlobalUnpause()
+          handler: handleGlobalUnpause
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetInitialProgress(uint256)
+          handler: handleSetInitialProgress
+        - event: RegisteredGlobalFix(address,uint256)
+          handler: handleRegisteredGlobalFix
+        - event: DeletedGlobalFix(uint256)
+          handler: handleDeletedGlobalFix
+      file: ./src/PluggableHatcher.mapping.ts
+  - kind: ethereum
+    name: PoolHatcher
+    network: goerli
+    source:
+      address: "0x952f3B8838D81F90C5c5640268Fb095e38Df4383"
+      abi: PluggableHatcher
+      startBlock: 8122596
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vFactory
+        - vTreasury
+      abis:
+        - name: PluggableHatcher
+          file: ./abis/PluggableHatcher.json
+      eventHandlers:
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+        - event: Hatched(indexed address,bytes)
+          handler: handleHatched
+        - event: Pause(address)
+          handler: handlePause
+        - event: Unpause(address)
+          handler: handleUnpause
+        - event: GlobalPause()
+          handler: handleGlobalPause
+        - event: GlobalUnpause()
+          handler: handleGlobalUnpause
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetInitialProgress(uint256)
+          handler: handleSetInitialProgress
+        - event: RegisteredGlobalFix(address,uint256)
+          handler: handleRegisteredGlobalFix
+        - event: DeletedGlobalFix(uint256)
+          handler: handleDeletedGlobalFix
+      file: ./src/PluggableHatcher.mapping.ts
+  - kind: ethereum
+    name: WithdrawalRecipientHatcher
+    network: goerli
+    source:
+      address: "0xD04280113f3793F05390146AAC2F472a309AcdC8"
+      abi: PluggableHatcher
+      startBlock: 8122599
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vFactory
+        - vTreasury
+      abis:
+        - name: PluggableHatcher
+          file: ./abis/PluggableHatcher.json
+      eventHandlers:
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+        - event: Hatched(indexed address,bytes)
+          handler: handleHatched
+        - event: Pause(address)
+          handler: handlePause
+        - event: Unpause(address)
+          handler: handleUnpause
+        - event: GlobalPause()
+          handler: handleGlobalPause
+        - event: GlobalUnpause()
+          handler: handleGlobalUnpause
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetInitialProgress(uint256)
+          handler: handleSetInitialProgress
+        - event: RegisteredGlobalFix(address,uint256)
+          handler: handleRegisteredGlobalFix
+        - event: DeletedGlobalFix(uint256)
+          handler: handleDeletedGlobalFix
+      file: ./src/PluggableHatcher.mapping.ts
+  - kind: ethereum
+    name: ExecLayerRecipientHatcher
+    network: goerli
+    source:
+      address: "0x29373d925A035e93910c511d78ebEa9B9221ABAC"
+      abi: PluggableHatcher
+      startBlock: 8122600
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vFactory
+        - vTreasury
+      abis:
+        - name: PluggableHatcher
+          file: ./abis/PluggableHatcher.json
+      eventHandlers:
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+        - event: Hatched(indexed address,bytes)
+          handler: handleHatched
+        - event: Pause(address)
+          handler: handlePause
+        - event: Unpause(address)
+          handler: handleUnpause
+        - event: GlobalPause()
+          handler: handleGlobalPause
+        - event: GlobalUnpause()
+          handler: handleGlobalUnpause
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetInitialProgress(uint256)
+          handler: handleSetInitialProgress
+        - event: RegisteredGlobalFix(address,uint256)
+          handler: handleRegisteredGlobalFix
+        - event: DeletedGlobalFix(uint256)
+          handler: handleDeletedGlobalFix
+      file: ./src/PluggableHatcher.mapping.ts
+  - kind: ethereum
+    name: CoverageRecipientHatcher
+    network: goerli
+    source:
+      address: "0x5b643617Fda6Ef2A101C1F25Cc2AB497AE76c440"
+      abi: PluggableHatcher
+      startBlock: 8122601
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vFactory
+        - vTreasury
+      abis:
+        - name: PluggableHatcher
+          file: ./abis/PluggableHatcher.json
+      eventHandlers:
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+        - event: Hatched(indexed address,bytes)
+          handler: handleHatched
+        - event: Pause(address)
+          handler: handlePause
+        - event: Unpause(address)
+          handler: handleUnpause
+        - event: GlobalPause()
+          handler: handleGlobalPause
+        - event: GlobalUnpause()
+          handler: handleGlobalUnpause
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetInitialProgress(uint256)
+          handler: handleSetInitialProgress
+        - event: RegisteredGlobalFix(address,uint256)
+          handler: handleRegisteredGlobalFix
+        - event: DeletedGlobalFix(uint256)
+          handler: handleDeletedGlobalFix
+      file: ./src/PluggableHatcher.mapping.ts
+  - kind: ethereum
+    name: OracleAggregatorHatcher
+    network: goerli
+    source:
+      address: "0xF8CB2329B75ED427d3bEa6CDD0971110eB6E858C"
+      abi: PluggableHatcher
+      startBlock: 8122604
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vFactory
+        - vTreasury
+      abis:
+        - name: PluggableHatcher
+          file: ./abis/PluggableHatcher.json
+      eventHandlers:
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+        - event: Hatched(indexed address,bytes)
+          handler: handleHatched
+        - event: Pause(address)
+          handler: handlePause
+        - event: Unpause(address)
+          handler: handleUnpause
+        - event: GlobalPause()
+          handler: handleGlobalPause
+        - event: GlobalUnpause()
+          handler: handleGlobalUnpause
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetInitialProgress(uint256)
+          handler: handleSetInitialProgress
+        - event: RegisteredGlobalFix(address,uint256)
+          handler: handleRegisteredGlobalFix
+        - event: DeletedGlobalFix(uint256)
+          handler: handleDeletedGlobalFix
+      file: ./src/PluggableHatcher.mapping.ts
 
 templates:
+  - name: Cub
+    kind: ethereum/contract
+    network: goerli
+    source:
+      abi: Cub
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/Cub.mapping.ts
+      entities:
+        - Cub
+      abis:
+        - name: Cub
+          file: ./abis/Cub.json
+      eventHandlers:
+        - event: AppliedFixes(address[])
+          handler: handleAppliedFixes
   - name: vFactory
     kind: ethereum/contract
     network: goerli
@@ -143,4 +438,54 @@ templates:
       eventHandlers:
         - event: SuppliedEther(uint256)
           handler: handleSuppliedEther
+
+  - name: vCoverageRecipient
+    kind: ethereum/contract
+    network: goerli
+    source:
+      abi: vCoverageRecipientV1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/vCoverageRecipientV1.mapping.ts
+      entities:
+        - vCoverageRecipient
+      abis:
+        - name: vCoverageRecipientV1
+          file: ./abis/vCoverageRecipientV1.json
+      eventHandlers:
+        - event: SuppliedEther(uint256)
+          handler: handleSuppliedEther
+        - event: VoidedShares(uint256)
+          handler: handleVoidedShares
+        - event: UpdatedEtherForCoverage(uint256)
+          handler: handleUpdatedEtherForCoverage
+        - event: UpdatedSharesForCoverage(uint256)
+          handler: handleUpdatedSharesForCoverage
+        - event: UpdatedSharesForCoverage(uint256)
+          handler: handleUpdatedSharesForCoverage
+        - event: AllowedDonator(address,bool)
+          handler: handleAllowedDonator
+
+  - name: vOracleAggregator
+    kind: ethereum/contract
+    network: goerli
+    source:
+      abi: vOracleAggregatorV1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/vOracleAggregatorV1.mapping.ts
+      entities:
+        - vOracleAggregator
+      abis:
+        - name: vOracleAggregatorV1
+          file: ./abis/vOracleAggregatorV1.json
+      eventHandlers:
+        - event: AddedOracleAggregatorMember(address)
+          handler: handleAddedOracleAggregatorMember
+        - event: RemovedOracleAggregatorMember(address)
+          handler: handleRemovedOracleAggregatorMember
 
