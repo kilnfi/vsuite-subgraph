@@ -8,11 +8,15 @@
     "create-local": "graph create --node http://localhost:8020/ vsuite-goerli",
     "remove-local": "graph remove --node http://localhost:8020/ vsuite-goerli",
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 vsuite-goerli",
-    "test": "graph test"
+    "test": "graph test",
+    "format": "prettier --config .prettierrc 'src/**/*.ts' --write"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.37.1",
-    "@graphprotocol/graph-ts": "0.28.1"
+    "@graphprotocol/graph-ts": "0.28.1",
+    "prettier": "^2.8.1"
   },
-  "devDependencies": { "matchstick-as": "0.5.0" }
+  "devDependencies": {
+    "matchstick-as": "0.5.0"
+  }
 }

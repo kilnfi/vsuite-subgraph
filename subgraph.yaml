@@ -70,6 +70,8 @@ dataSources:
           handler: handleRegisteredGlobalFix
         - event: DeletedGlobalFix(uint256)
           handler: handleDeletedGlobalFix
+        - event: AppliedFix(address,address)
+          handler: handleAppliedFix
       file: ./src/PluggableHatcher.mapping.ts
   - kind: ethereum
     name: TreasuryHatcher
@@ -109,6 +111,8 @@ dataSources:
           handler: handleRegisteredGlobalFix
         - event: DeletedGlobalFix(uint256)
           handler: handleDeletedGlobalFix
+        - event: AppliedFix(address,address)
+          handler: handleAppliedFix
       file: ./src/PluggableHatcher.mapping.ts
   - kind: ethereum
     name: PoolHatcher
@@ -148,6 +152,8 @@ dataSources:
           handler: handleRegisteredGlobalFix
         - event: DeletedGlobalFix(uint256)
           handler: handleDeletedGlobalFix
+        - event: AppliedFix(address,address)
+          handler: handleAppliedFix
       file: ./src/PluggableHatcher.mapping.ts
   - kind: ethereum
     name: WithdrawalRecipientHatcher
@@ -187,6 +193,8 @@ dataSources:
           handler: handleRegisteredGlobalFix
         - event: DeletedGlobalFix(uint256)
           handler: handleDeletedGlobalFix
+        - event: AppliedFix(address,address)
+          handler: handleAppliedFix
       file: ./src/PluggableHatcher.mapping.ts
   - kind: ethereum
     name: ExecLayerRecipientHatcher
@@ -226,6 +234,8 @@ dataSources:
           handler: handleRegisteredGlobalFix
         - event: DeletedGlobalFix(uint256)
           handler: handleDeletedGlobalFix
+        - event: AppliedFix(address,address)
+          handler: handleAppliedFix
       file: ./src/PluggableHatcher.mapping.ts
   - kind: ethereum
     name: CoverageRecipientHatcher
@@ -265,6 +275,8 @@ dataSources:
           handler: handleRegisteredGlobalFix
         - event: DeletedGlobalFix(uint256)
           handler: handleDeletedGlobalFix
+        - event: AppliedFix(address,address)
+          handler: handleAppliedFix
       file: ./src/PluggableHatcher.mapping.ts
   - kind: ethereum
     name: OracleAggregatorHatcher
@@ -304,6 +316,8 @@ dataSources:
           handler: handleRegisteredGlobalFix
         - event: DeletedGlobalFix(uint256)
           handler: handleDeletedGlobalFix
+        - event: AppliedFix(address,address)
+          handler: handleAppliedFix
       file: ./src/PluggableHatcher.mapping.ts
 
 templates:
