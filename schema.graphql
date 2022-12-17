@@ -1,16 +1,31 @@
-type Fix @entity {
-  id: String!
+
+#                                                                  
+# ██   ██  █████  ████████  ██████ ██   ██ ███████ ██████  ███████ 
+# ██   ██ ██   ██    ██    ██      ██   ██ ██      ██   ██ ██      
+# ███████ ███████    ██    ██      ███████ █████   ██████  ███████ 
+# ██   ██ ██   ██    ██    ██      ██   ██ ██      ██   ██      ██ 
+# ██   ██ ██   ██    ██     ██████ ██   ██ ███████ ██   ██ ███████ 
+# 
+
+type PluggableHatcher @entity {
+  id: Bytes!
   address: Bytes!
 
-  globalFix: PluggableHatcher
-  index: BigInt
-  deleted: Boolean
+  admin: Bytes!
+  cubCount: BigInt!
+  upgradeCount: BigInt!
+  globalPaused: Boolean!
+  hatcherRegistry: Nexus
+  initialProgress: BigInt!
+  globalFixesCount: BigInt!
 
-  fix: Cub
-  
+  cubs: [Cub!]! @derivedFrom(field: "hatcher")
+  globalFixes: [Fix!]! @derivedFrom(field: "globalFix")
+  currentImplementation: PluggableHatcherImplementation
+  implementations: [PluggableHatcherImplementation!]! @derivedFrom(field: "pluggableHatcher")
+
   createdAt: BigInt!
   editedAt: BigInt!
-
   createdAtBlock: BigInt!
   editedAtBlock: BigInt!
 }
@@ -18,15 +33,32 @@ type Fix @entity {
 type Cub @entity {
   id: Bytes!
   address: Bytes!
+
   paused: Boolean!
-  hatcher: PluggableHatcher!
-  constructionData: Bytes!
   progress: BigInt!
+  constructionData: Bytes!
+
+  hatcher: PluggableHatcher!
   appliedFixes: [Fix!]! @derivedFrom(field: "fix")
 
   createdAt: BigInt!
   editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
 
+type Fix @entity {
+  id: String!
+  address: Bytes!
+
+  index: BigInt
+  deleted: Boolean
+
+  fix: Cub
+  globalFix: PluggableHatcher
+  
+  createdAt: BigInt!
+  editedAt: BigInt!
   createdAtBlock: BigInt!
   editedAtBlock: BigInt!
 }
@@ -34,51 +66,31 @@ type Cub @entity {
 type PluggableHatcherImplementation @entity {
   id: String!
   address: Bytes!
+
   pluggableHatcher: PluggableHatcher!
 
   createdAt: BigInt!
   editedAt: BigInt!
-
   createdAtBlock: BigInt!
   editedAtBlock: BigInt!
 }
 
-type PluggableHatcher @entity {
-  id: Bytes!
-  address: Bytes!
-  admin: Bytes!
-  
-  upgradeCount: BigInt!
-  implementations: [PluggableHatcherImplementation!]! @derivedFrom(field: "pluggableHatcher")
-  currentImplementation: PluggableHatcherImplementation
-  hatcherRegistry: Nexus
-
-  initialProgress: BigInt!
-  globalFixesCount: BigInt!
-  globalFixes: [Fix!]! @derivedFrom(field: "globalFix")
-
-  cubCount: BigInt!
-  cubs: [Cub!]! @derivedFrom(field: "hatcher")
-  globalPaused: Boolean!
-
-  createdAt: BigInt!
-  editedAt: BigInt!
-
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
+# 
+# ███    ██ ███████ ██   ██ ██    ██ ███████ 
+# ████   ██ ██       ██ ██  ██    ██ ██      
+# ██ ██  ██ █████     ███   ██    ██ ███████ 
+# ██  ██ ██ ██       ██ ██  ██    ██      ██ 
+# ██   ████ ███████ ██   ██  ██████  ███████ 
+#                                            
 
 type Nexus @entity {
   id: Bytes!
   address: Bytes!
-  factories: [vFactory!]! @derivedFrom(field: "nexus")
-  hatchers: [PluggableHatcher!]! @derivedFrom(field: "hatcherRegistry")
 
   globalOracle: Bytes!
   globalRecipient: Bytes!
   depositContract: Bytes!
   minimalRecipientImplementation: Bytes!
-
   genesisTimestamp: BigInt!
   epochsUntilFinal: BigInt!
   slotsPerEpoch: BigInt!
@@ -91,57 +103,180 @@ type Nexus @entity {
   execLayerRecipientHatcher: PluggableHatcher
   coverageRecipientHatcher: PluggableHatcher
   oracleAggregatorHatcher: PluggableHatcher
+  factories: [vFactory!]! @derivedFrom(field: "nexus")
+  hatchers: [PluggableHatcher!]! @derivedFrom(field: "hatcherRegistry")
 
   createdAt: BigInt!
   editedAt: BigInt!
-
   createdAtBlock: BigInt!
   editedAtBlock: BigInt!
 }
+
+# 
+# ███████  █████   ██████ ████████  ██████  ██████  ██    ██ 
+# ██      ██   ██ ██         ██    ██    ██ ██   ██  ██  ██  
+# █████   ███████ ██         ██    ██    ██ ██████    ████   
+# ██      ██   ██ ██         ██    ██    ██ ██   ██    ██    
+# ██      ██   ██  ██████    ██     ██████  ██   ██    ██    
+#                                                            
 
 type vFactory @entity {
   id: Bytes!
   address: Bytes!
-  cub: Cub!
+
   version: BigInt!
-  withdrawalChannels: [WithdrawalChannel!]! @derivedFrom(field: "factory")
-  depositors: [FactoryDepositor!]! @derivedFrom(field: "factory")
-  pools: [vPool!]! @derivedFrom(field: "factory")
-  
   operator: Bytes
   admin: Bytes
-
-  nexus: Nexus
   minimalRecipientImplementation: Bytes
-  treasury: vTreasury
-
   operatorName: String!
   operatorUrl: String!
   operatorIconUrl: String!
 
+  cub: Cub!
+  withdrawalChannels: [WithdrawalChannel!]! @derivedFrom(field: "factory")
+  depositors: [FactoryDepositor!]! @derivedFrom(field: "factory")
+  pools: [vPool!]! @derivedFrom(field: "factory")
+  nexus: Nexus
+  treasury: vTreasury
+
   createdAt: BigInt!
   editedAt: BigInt!
-
   createdAtBlock: BigInt!
   editedAtBlock: BigInt!
 }
 
+type WithdrawalChannel @entity {
+  id: String!
+
+  withdrawalChannel: Bytes!
+  total: BigInt!
+  funded: BigInt!
+  limit: BigInt!
+
+  keys: [ValidationKey!]! @derivedFrom(field: "withdrawalChannel")
+  factory: vFactory!
+  lastValidatorRequest: ValidatorRequest
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type ValidatorRequest @entity {
+  id: String!
+
+  requestedTotal: BigInt!
+  totalOnRequest: BigInt!
+
+  withdrawalChannel: WithdrawalChannel!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+
+type ValidationKey @entity {
+  id: String!
+
+  publicKey: Bytes!
+  signature: Bytes!
+  index: BigInt!
+
+  funded: FundedValidationKey
+  withdrawalChannel: WithdrawalChannel!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type FundedValidationKey @entity {
+  id: String!
+
+  validatorId: BigInt!
+  owner: Bytes
+  feeRecipient: Bytes
+
+  lastExitRequest: ExitRequest
+  validationKey: ValidationKey!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type ExitRequest @entity {
+  id: String!
+
+  emitter: Bytes!
+
+  validator: FundedValidationKey!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type FactoryDepositor @entity {
+  id: String! 
+  address: Bytes!
+
+  factory: vFactory!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+# 
+# ████████ ██████  ███████  █████  ███████ ██    ██ ██████  ██    ██ 
+#    ██    ██   ██ ██      ██   ██ ██      ██    ██ ██   ██  ██  ██  
+#    ██    ██████  █████   ███████ ███████ ██    ██ ██████    ████   
+#    ██    ██   ██ ██      ██   ██      ██ ██    ██ ██   ██    ██    
+#    ██    ██   ██ ███████ ██   ██ ███████  ██████  ██   ██    ██    
+#                                                                    
+
 type vTreasury @entity {
   id: Bytes!
   address: Bytes!
+
   cub: Cub!
   factory: vFactory!
 
   createdAt: BigInt!
   editedAt: BigInt!
-
   createdAtBlock: BigInt!
   editedAtBlock: BigInt!
 }
 
+# 
+# ██████   ██████   ██████  ██      
+# ██   ██ ██    ██ ██    ██ ██      
+# ██████  ██    ██ ██    ██ ██      
+# ██      ██    ██ ██    ██ ██      
+# ██       ██████   ██████  ███████ 
+#                                   
+
 type vPool @entity {
   id: Bytes!
   address: Bytes!
+
+  purchasedValidatorCount: BigInt!
+  totalSupply: BigInt!
+  totalUnderlyingSupply: BigInt!
+  operatorFee: BigInt!
+  epochsPerFrame: BigInt!
+  maxAPRUpperBound: BigInt!
+  maxAPRUpperCoverageBoost: BigInt!
+  maxRelativeLowerBound: BigInt!
+
   cub: Cub!
   factory: vFactory!
   nexus: Nexus!
@@ -149,99 +284,149 @@ type vPool @entity {
   balances: [PoolBalance!]! @derivedFrom(field: "pool")
   purchasedValidators: [PoolPurchasedValidator!]! @derivedFrom(field: "pool")
   revenueUpdates: [RevenueUpdate!]! @derivedFrom(field: "pool")
-  purchasedValidatorCount: BigInt!
-  totalSupply: BigInt!
-  totalUnderlyingSupply: BigInt!
-
   oracleAggregator: vOracleAggregator!
   coverageRecipient: vCoverageRecipient!
   execLayerRecipient: vExecLayerRecipient!
   withdrawalRecipient: vWithdrawalRecipient!
-  
-  operatorFee: BigInt!
-  epochsPerFrame: BigInt!
-  maxAPRUpperBound: BigInt!
-  maxAPRUpperCoverageBoost: BigInt!
-  maxRelativeLowerBound: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!
-
   createdAtBlock: BigInt!
   editedAtBlock: BigInt!
 }
+
+type PoolBalanceApproval @entity {
+  id: String!
+  address: Bytes!
+
+  amount: BigInt!
+
+  balance: PoolBalance!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type PoolBalance @entity {
+  id: String!
+  address: Bytes!
+
+  amount: BigInt!
+  totalApproval: BigInt!
+
+  pool: vPool!
+  approvals: [PoolBalanceApproval!]! @derivedFrom(field: "balance")
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type PoolPurchasedValidator @entity {
+  id: String!
+
+  index: BigInt!
+
+  pool: vPool!
+  fundedValidationKey: FundedValidationKey!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type RevenueUpdate @entity {
+  id: String!
+
+  epoch: BigInt!
+  delta: BigInt!
+  covered: BigInt!
+  totalSupply: BigInt!
+  totalUnderlyingSupply: BigInt!
+
+  pool: vPool!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type PoolDepositor @entity {
+  id: String! 
+  address: Bytes!
+
+  pool: vPool!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+# 
+# ███████ ██   ██ ███████  ██████     ██       █████  ██    ██ ███████ ██████      ██████  ███████  ██████ ██ ██████  ██ ███████ ███    ██ ████████ 
+# ██       ██ ██  ██      ██          ██      ██   ██  ██  ██  ██      ██   ██     ██   ██ ██      ██      ██ ██   ██ ██ ██      ████   ██    ██    
+# █████     ███   █████   ██          ██      ███████   ████   █████   ██████      ██████  █████   ██      ██ ██████  ██ █████   ██ ██  ██    ██    
+# ██       ██ ██  ██      ██          ██      ██   ██    ██    ██      ██   ██     ██   ██ ██      ██      ██ ██      ██ ██      ██  ██ ██    ██    
+# ███████ ██   ██ ███████  ██████     ███████ ██   ██    ██    ███████ ██   ██     ██   ██ ███████  ██████ ██ ██      ██ ███████ ██   ████    ██    
+#                                                                                                                                                   
 
 type vExecLayerRecipient @entity {
   id: Bytes!
   address: Bytes!
+
+  totalSuppliedEther: BigInt!
+
+  suppliedEther: [ExecLayerSuppliedEther!]! @derivedFrom(field: "execLayerRecipient")
   cub: Cub!
   pool: vPool!
-  totalSuppliedEther: BigInt!
-  suppliedEther: [ExecLayerSuppliedEther!]! @derivedFrom(field: "execLayerRecipient")
   
   createdAt: BigInt!
   editedAt: BigInt!
-
   createdAtBlock: BigInt!
   editedAtBlock: BigInt!
 }
+
+type ExecLayerSuppliedEther @entity {
+  id: String!
+
+  amount: BigInt!
+  execLayerRecipient: vExecLayerRecipient!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+# 
+#  ██████  ██████  ██    ██ ███████ ██████   █████   ██████  ███████     ██████  ███████  ██████ ██ ██████  ██ ███████ ███    ██ ████████ 
+# ██      ██    ██ ██    ██ ██      ██   ██ ██   ██ ██       ██          ██   ██ ██      ██      ██ ██   ██ ██ ██      ████   ██    ██    
+# ██      ██    ██ ██    ██ █████   ██████  ███████ ██   ███ █████       ██████  █████   ██      ██ ██████  ██ █████   ██ ██  ██    ██    
+# ██      ██    ██  ██  ██  ██      ██   ██ ██   ██ ██    ██ ██          ██   ██ ██      ██      ██ ██      ██ ██      ██  ██ ██    ██    
+#  ██████  ██████    ████   ███████ ██   ██ ██   ██  ██████  ███████     ██   ██ ███████  ██████ ██ ██      ██ ███████ ██   ████    ██    
+#                                                                                                                                         
 
 type vCoverageRecipient @entity {
   id: Bytes!
   address: Bytes!
-  cub: Cub!
-  pool: vPool!
-  donators: [CoverageDonator!]! @derivedFrom(field: "coverageRecipient")
+
   totalAvailableEther: BigInt!
   totalSuppliedEther: BigInt!
-  suppliedEther: [CoverageSuppliedEther!]! @derivedFrom(field: "coverageRecipient")
   totalAvailableShares: BigInt!
   totalVoidedShares: BigInt!
+
+  cub: Cub!
+  pool: vPool!
+  suppliedEther: [CoverageSuppliedEther!]! @derivedFrom(field: "coverageRecipient")
   voidedShares: [CoverageVoidedShares!]! @derivedFrom(field: "coverageRecipient")
+  donators: [CoverageDonator!]! @derivedFrom(field: "coverageRecipient")
   
-  createdAt: BigInt!
-  editedAt: BigInt!
-
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
-
-type vWithdrawalRecipient @entity {
-  id: Bytes!
-  address: Bytes!
-  cub: Cub!
-  pool: vPool!
-  withdrawalCredentials: Bytes!
-
-  createdAt: BigInt!
-  editedAt: BigInt!
-
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
-
-type OracleAggregatorMember @entity {
-  id: String!
-  address: Bytes!
-  oracleAggregator: vOracleAggregator!
-  index: BigInt!
-
-  createdAt: BigInt!
-  editedAt: BigInt!
-
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-
-}
-
-type vOracleAggregator @entity {
-  id: Bytes!
-  address: Bytes!
-  cub: Cub!
-  pool: vPool!
-  memberCount: BigInt!
-  members: [OracleAggregatorMember!]! @derivedFrom(field: "oracleAggregator")
-
   createdAt: BigInt!
   editedAt: BigInt!
 
@@ -251,205 +436,101 @@ type vOracleAggregator @entity {
 
 type CoverageDonator @entity {
   id: String! 
-  coverageRecipient: vCoverageRecipient!
   address: Bytes!
+
+  coverageRecipient: vCoverageRecipient!
 
   createdAt: BigInt!
   editedAt: BigInt!
-
   createdAtBlock: BigInt!
   editedAtBlock: BigInt!
 }
 
 type CoverageSuppliedEther @entity {
   id: String!
+
   amount: BigInt!
+
   coverageRecipient: vCoverageRecipient!
 
   createdAt: BigInt!
   editedAt: BigInt!
-
   createdAtBlock: BigInt!
   editedAtBlock: BigInt!
 }
 
 type CoverageVoidedShares @entity {
   id: String!
+
   amount: BigInt!
+
   coverageRecipient: vCoverageRecipient!
 
   createdAt: BigInt!
   editedAt: BigInt!
-
   createdAtBlock: BigInt!
   editedAtBlock: BigInt!
 }
 
-type PoolBalanceApproval @entity {
-  id: String!
+
+# 
+# ██     ██ ██ ████████ ██   ██ ██████  ██████   █████  ██     ██  █████  ██          ██████  ███████  ██████ ██ ██████  ██ ███████ ███    ██ ████████ 
+# ██     ██ ██    ██    ██   ██ ██   ██ ██   ██ ██   ██ ██     ██ ██   ██ ██          ██   ██ ██      ██      ██ ██   ██ ██ ██      ████   ██    ██    
+# ██  █  ██ ██    ██    ███████ ██   ██ ██████  ███████ ██  █  ██ ███████ ██          ██████  █████   ██      ██ ██████  ██ █████   ██ ██  ██    ██    
+# ██ ███ ██ ██    ██    ██   ██ ██   ██ ██   ██ ██   ██ ██ ███ ██ ██   ██ ██          ██   ██ ██      ██      ██ ██      ██ ██      ██  ██ ██    ██    
+#  ███ ███  ██    ██    ██   ██ ██████  ██   ██ ██   ██  ███ ███  ██   ██ ███████     ██   ██ ███████  ██████ ██ ██      ██ ███████ ██   ████    ██    
+#                                                                                                                                                      
+
+type vWithdrawalRecipient @entity {
+  id: Bytes!
   address: Bytes!
-  amount: BigInt!
 
-  balance: PoolBalance!
+  withdrawalCredentials: Bytes!
 
-  createdAt: BigInt!
-  editedAt: BigInt!
-
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
-
-type PoolBalance @entity {
-  id: String!
-  address: Bytes!
-  amount: BigInt!
-  approvals: [PoolBalanceApproval!]! @derivedFrom(field: "balance")
-  totalApproval: BigInt!
-
+  cub: Cub!
   pool: vPool!
 
   createdAt: BigInt!
   editedAt: BigInt!
-
   createdAtBlock: BigInt!
   editedAtBlock: BigInt!
 }
 
-type PoolPurchasedValidator @entity {
-  id: String!
+# 
+#  ██████  ██████   █████   ██████ ██      ███████      █████   ██████   ██████  ██████  ███████  ██████   █████  ████████  ██████  ██████  
+# ██    ██ ██   ██ ██   ██ ██      ██      ██          ██   ██ ██       ██       ██   ██ ██      ██       ██   ██    ██    ██    ██ ██   ██ 
+# ██    ██ ██████  ███████ ██      ██      █████       ███████ ██   ███ ██   ███ ██████  █████   ██   ███ ███████    ██    ██    ██ ██████  
+# ██    ██ ██   ██ ██   ██ ██      ██      ██          ██   ██ ██    ██ ██    ██ ██   ██ ██      ██    ██ ██   ██    ██    ██    ██ ██   ██ 
+#  ██████  ██   ██ ██   ██  ██████ ███████ ███████     ██   ██  ██████   ██████  ██   ██ ███████  ██████  ██   ██    ██     ██████  ██   ██ 
+#                                                                                                                                           
+
+type vOracleAggregator @entity {
+  id: Bytes!
+  address: Bytes!
+
+  memberCount: BigInt!
+
+  cub: Cub!
   pool: vPool!
-  fundedValidationKey: FundedValidationKey!
+  members: [OracleAggregatorMember!]! @derivedFrom(field: "oracleAggregator")
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type OracleAggregatorMember @entity {
+  id: String!
+  address: Bytes!
+
   index: BigInt!
 
+  oracleAggregator: vOracleAggregator!
+
   createdAt: BigInt!
   editedAt: BigInt!
-
   createdAtBlock: BigInt!
   editedAtBlock: BigInt!
 }
 
-type RevenueUpdate @entity {
-  id: String!
-  pool: vPool!
-  epoch: BigInt!
-  delta: BigInt!
-  covered: BigInt!
-  totalSupply: BigInt!
-  totalUnderlyingSupply: BigInt!
-
-  createdAt: BigInt!
-  editedAt: BigInt!
-
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
-
-type PoolDepositor @entity {
-  id: String! 
-  pool: vPool!
-  address: Bytes!
-
-  createdAt: BigInt!
-  editedAt: BigInt!
-
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
-
-type ExecLayerSuppliedEther @entity {
-  id: String!
-  amount: BigInt!
-  execLayerRecipient: vExecLayerRecipient!
-
-  createdAt: BigInt!
-  editedAt: BigInt!
-
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
-
-type FactoryDepositor @entity {
-  id: String! 
-  factory: vFactory!
-  address: Bytes!
-
-  createdAt: BigInt!
-  editedAt: BigInt!
-
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
-
-type ValidatorRequest @entity {
-  id: String!
-  withdrawalChannel: WithdrawalChannel!
-  requestedTotal: BigInt!
-  totalOnRequest: BigInt!
-
-  createdAt: BigInt!
-  editedAt: BigInt!
-
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
-
-type WithdrawalChannel @entity {
-  id: String!
-  factory: vFactory!
-  withdrawalChannel: Bytes!
-  lastValidatorRequest: ValidatorRequest
-
-  total: BigInt!
-  funded: BigInt!
-  limit: BigInt!
-
-  keys: [ValidationKey!]! @derivedFrom(field: "withdrawalChannel")
-
-  createdAt: BigInt!
-  editedAt: BigInt!
-
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
-
-type ValidationKey @entity {
-  id: String!
-  publicKey: Bytes!
-  signature: Bytes!
-  withdrawalChannel: WithdrawalChannel!
-  index: BigInt!
-  funded: FundedValidationKey
-
-  createdAt: BigInt!
-  editedAt: BigInt!
-
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
-
-type ExitRequest @entity {
-  id: String!
-  validator: FundedValidationKey!
-  emitter: Bytes!
-
-  createdAt: BigInt!
-  editedAt: BigInt!
-
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
-
-type FundedValidationKey @entity {
-  id: String!
-  validatorId: BigInt!
-  validationKey: ValidationKey!
-  owner: Bytes
-  feeRecipient: Bytes
-  lastExitRequest: ExitRequest
-
-  createdAt: BigInt!
-  editedAt: BigInt!
-
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
