@@ -26,12 +26,7 @@ import {
 import { Bytes, BigInt, Address, store } from '@graphprotocol/graph-ts';
 import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum';
 
-function getOrCreateBalance(
-  pool: Bytes,
-  account: Bytes,
-  timestamp: BigInt,
-  block: BigInt
-): PoolBalance {
+function getOrCreateBalance(pool: Bytes, account: Bytes, timestamp: BigInt, block: BigInt): PoolBalance {
   const balanceId = account.toHexString() + '@' + pool.toHexString();
 
   let balance = PoolBalance.load(balanceId);
@@ -50,10 +45,7 @@ function getOrCreateBalance(
 }
 
 function saveOrEraseBalance(balance: PoolBalance, event: ethereum.Event): void {
-  if (
-    balance.amount == BigInt.zero() &&
-    balance.totalApproval == BigInt.zero()
-  ) {
+  if (balance.amount == BigInt.zero() && balance.totalApproval == BigInt.zero()) {
     store.remove('PoolBalance', balance.id);
   } else {
     balance.editedAt = event.block.timestamp;
@@ -67,8 +59,7 @@ export function handleDeposit(event: Deposit): void {
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
-  pool!.totalUnderlyingSupply =
-    pool!.totalUnderlyingSupply + event.params.amount;
+  pool!.totalUnderlyingSupply = pool!.totalUnderlyingSupply + event.params.amount;
 
   pool!.save();
 }
@@ -97,12 +88,7 @@ export function handleMint(event: Mint): void {
 export function handleBurn(event: Burn): void {
   const pool = vPool.load(event.address);
 
-  const balance = getOrCreateBalance(
-    event.address,
-    event.params.burner,
-    event.block.timestamp,
-    event.block.number
-  );
+  const balance = getOrCreateBalance(event.address, event.params.burner, event.block.timestamp, event.block.number);
 
   balance.amount = balance.amount - event.params.amount;
 
@@ -118,19 +104,9 @@ export function handleBurn(event: Burn): void {
 export function handleTransfer(event: Transfer): void {
   const pool = vPool.load(event.address);
 
-  const fromBalance = getOrCreateBalance(
-    event.address,
-    event.params.from,
-    event.block.timestamp,
-    event.block.number
-  );
+  const fromBalance = getOrCreateBalance(event.address, event.params.from, event.block.timestamp, event.block.number);
 
-  const toBalance = getOrCreateBalance(
-    event.address,
-    event.params.to,
-    event.block.timestamp,
-    event.block.number
-  );
+  const toBalance = getOrCreateBalance(event.address, event.params.to, event.block.timestamp, event.block.number);
 
   fromBalance.amount = fromBalance.amount - event.params.value;
   toBalance.amount = toBalance.amount + event.params.value;
@@ -155,13 +131,8 @@ export function handlePurchasedValidators(event: PurchasedValidators): void {
       event.params.validators[idx].toString() +
       '@' +
       pool!.factory.toHexString();
-    const poolPurchasedValidator = new PoolPurchasedValidator(
-      poolPurchasedValidatorId
-    );
-    const fundedKeyId =
-      event.params.validators[idx].toString() +
-      '@' +
-      pool!.factory.toHexString();
+    const poolPurchasedValidator = new PoolPurchasedValidator(poolPurchasedValidatorId);
+    const fundedKeyId = event.params.validators[idx].toString() + '@' + pool!.factory.toHexString();
 
     poolPurchasedValidator.pool = event.address;
     poolPurchasedValidator.index = BigInt.fromI32(validatorCount + idx);
@@ -185,8 +156,7 @@ export function handlePurchasedValidators(event: PurchasedValidators): void {
 export function handleRevenueUpdate(event: RevenueUpdate): void {
   const pool = vPool.load(event.address);
 
-  const revenueUpdateId =
-    event.address.toHexString() + '@' + event.params.epoch.toString();
+  const revenueUpdateId = event.address.toHexString() + '@' + event.params.epoch.toString();
   const revenueUpdate = new RevenueUpdateEntity(revenueUpdateId);
 
   revenueUpdate.pool = event.address;
@@ -228,9 +198,7 @@ export function handleSetCoverageRecipient(event: SetCoverageRecipient): void {
   pool!.save();
 }
 
-export function handleSetExecLayerRecipient(
-  event: SetExecLayerRecipient
-): void {
+export function handleSetExecLayerRecipient(event: SetExecLayerRecipient): void {
   const pool = vPool.load(event.address);
 
   pool!.execLayerRecipient = event.params.execLayerRecipient;
@@ -240,9 +208,7 @@ export function handleSetExecLayerRecipient(
   pool!.save();
 }
 
-export function handleSetWithdrawalRecipient(
-  event: SetWithdrawalRecipient
-): void {
+export function handleSetWithdrawalRecipient(event: SetWithdrawalRecipient): void {
   const pool = vPool.load(event.address);
 
   pool!.withdrawalRecipient = event.params.withdrawalRecipient;
@@ -284,12 +250,7 @@ export function handleSetReportBounds(event: SetReportBounds): void {
   pool!.save();
 }
 
-function getOrCreateApproval(
-  balance: string,
-  account: Bytes,
-  timestamp: BigInt,
-  block: BigInt
-): PoolBalanceApproval {
+function getOrCreateApproval(balance: string, account: Bytes, timestamp: BigInt, block: BigInt): PoolBalanceApproval {
   const approvalId = account.toHexString() + '@' + balance;
 
   let approval = PoolBalanceApproval.load(approvalId);
@@ -306,10 +267,7 @@ function getOrCreateApproval(
   return approval;
 }
 
-function saveOrEraseApproval(
-  approval: PoolBalanceApproval,
-  event: ethereum.Event
-): void {
+function saveOrEraseApproval(approval: PoolBalanceApproval, event: ethereum.Event): void {
   if (approval.amount == BigInt.zero()) {
     store.remove('PoolBalanceApproval', approval.id);
   } else {
@@ -320,25 +278,13 @@ function saveOrEraseApproval(
 }
 
 export function handleApproval(event: Approval): void {
-  const balance = getOrCreateBalance(
-    event.address,
-    event.params.owner,
-    event.block.timestamp,
-    event.block.number
-  );
-  const approval = getOrCreateApproval(
-    balance.id,
-    event.params.spender,
-    event.block.timestamp,
-    event.block.number
-  );
+  const balance = getOrCreateBalance(event.address, event.params.owner, event.block.timestamp, event.block.number);
+  const approval = getOrCreateApproval(balance.id, event.params.spender, event.block.timestamp, event.block.number);
 
   if (approval.amount >= event.params.value) {
-    balance.totalApproval =
-      balance.totalApproval - (approval.amount - event.params.value);
+    balance.totalApproval = balance.totalApproval - (approval.amount - event.params.value);
   } else {
-    balance.totalApproval =
-      balance.totalApproval + (event.params.value - approval.amount);
+    balance.totalApproval = balance.totalApproval + (event.params.value - approval.amount);
   }
   approval.amount = event.params.value;
 
@@ -347,8 +293,7 @@ export function handleApproval(event: Approval): void {
 }
 
 export function handleApproveDepositor(event: ApproveDepositor): void {
-  const depositorId =
-    event.params.depositor.toHexString() + '@' + event.address.toHexString();
+  const depositorId = event.params.depositor.toHexString() + '@' + event.address.toHexString();
   let depositor = PoolDepositor.load(depositorId);
 
   if (depositor == null) {

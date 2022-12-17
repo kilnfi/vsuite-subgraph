@@ -30,6 +30,16 @@ dataSources:
           handler: handleSetPluggableHatcher
         - event: SetCoreHatchers(address,address,address,address,address,address,address)
           handler: handleSetCoreHatchers
+        - event: SetGlobalRecipient(address)
+          handler: handleSetGlobalRecipient
+        - event: SetGlobalOracle(address)
+          handler: handleSetGlobalOracle
+        - event: SetMinimalRecipientImplementation(address)
+          handler: handleSetMinimalRecipientImplementation
+        - event: SetDepositContract(address)
+          handler: handleSetDepositContract
+        - event: SetGlobalConsensusLayerSpec(uint64,uint64,uint64,uint64)
+          handler: handlerSetGlobalConsensusLayerSpec
       file: ./src/NexusV1.mapping.ts
 
   - kind: ethereum

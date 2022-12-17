@@ -5,9 +5,7 @@ import {
 import { vOracleAggregator, OracleAggregatorMember } from '../generated/schema';
 import { BigInt, store } from '@graphprotocol/graph-ts';
 
-export function handleAddedOracleAggregatorMember(
-  event: AddedOracleAggregatorMember
-): void {
+export function handleAddedOracleAggregatorMember(event: AddedOracleAggregatorMember): void {
   const oa = vOracleAggregator.load(event.address);
 
   const memberCount = oa!.memberCount.toI32();
@@ -33,9 +31,7 @@ export function handleAddedOracleAggregatorMember(
   oa!.save();
 }
 
-export function handleRemovedOracleAggregatorMember(
-  event: RemovedOracleAggregatorMember
-): void {
+export function handleRemovedOracleAggregatorMember(event: RemovedOracleAggregatorMember): void {
   const oa = vOracleAggregator.load(event.address);
 
   const memberCount = oa!.memberCount.toI32();
@@ -57,14 +53,11 @@ export function handleRemovedOracleAggregatorMember(
   }
 
   if (removedMemberIndex == memberCount - 1) {
-    const oaMemberId =
-      removedMemberIndex.toString() + '@' + event.address.toHexString();
+    const oaMemberId = removedMemberIndex.toString() + '@' + event.address.toHexString();
     store.remove('OracleAggregatorMember', oaMemberId);
   } else {
-    const removedOaMemberId =
-      (memberCount - 1).toString() + '@' + event.address.toHexString();
-    const swapOaMemberId =
-      removedMemberIndex.toString() + '@' + event.address.toHexString();
+    const removedOaMemberId = (memberCount - 1).toString() + '@' + event.address.toHexString();
+    const swapOaMemberId = removedMemberIndex.toString() + '@' + event.address.toHexString();
 
     const removedOaMember = OracleAggregatorMember.load(removedOaMemberId);
     const swapOaMember = OracleAggregatorMember.load(swapOaMemberId);

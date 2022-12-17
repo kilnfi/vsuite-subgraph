@@ -12,18 +12,10 @@ import {
   Upgraded
 } from '../generated/FactoryHatcher/PluggableHatcher';
 import { SetAdmin } from '../generated/NexusV1/NexusV1';
-import {
-  Cub,
-  Fix,
-  PluggableHatcher,
-  PluggableHatcherImplementation
-} from '../generated/schema';
+import { Cub, Fix, PluggableHatcher, PluggableHatcherImplementation } from '../generated/schema';
 import { Cub as CubTemplate } from '../generated/templates';
 
-function _getOrCreatePluggableHatcher(
-  addr: Bytes,
-  event: ethereum.Event
-): PluggableHatcher {
+function _getOrCreatePluggableHatcher(addr: Bytes, event: ethereum.Event): PluggableHatcher {
   let ph = PluggableHatcher.load(addr);
 
   if (ph == null) {
@@ -144,12 +136,7 @@ export function handleSetInitialProgress(event: SetInitialProgress): void {
 export function handleRegisteredGlobalFix(event: RegisteredGlobalFix): void {
   const ph = _getOrCreatePluggableHatcher(event.address, event);
 
-  const globalFixId =
-    'globalFix' +
-    '@' +
-    event.address.toHexString() +
-    '@' +
-    event.params.index.toString();
+  const globalFixId = 'globalFix' + '@' + event.address.toHexString() + '@' + event.params.index.toString();
   const globalFix = new Fix(globalFixId);
   globalFix.address = event.params.fix;
   globalFix.globalFix = event.address;
@@ -169,12 +156,7 @@ export function handleRegisteredGlobalFix(event: RegisteredGlobalFix): void {
 }
 
 export function handleDeletedGlobalFix(event: DeletedGlobalFix): void {
-  const globalFixId =
-    'globalFix' +
-    '@' +
-    event.address.toHexString() +
-    '@' +
-    event.params.index.toString();
+  const globalFixId = 'globalFix' + '@' + event.address.toHexString() + '@' + event.params.index.toString();
   const globalFix = Fix.load(globalFixId);
   globalFix!.deleted = false;
 

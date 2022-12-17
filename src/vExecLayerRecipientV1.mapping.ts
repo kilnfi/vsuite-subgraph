@@ -1,8 +1,5 @@
 import { SuppliedEther } from '../generated/templates/vExecLayerRecipient/vExecLayerRecipientV1';
-import {
-  vExecLayerRecipient,
-  ExecLayerSuppliedEther
-} from '../generated/schema';
+import { vExecLayerRecipient, ExecLayerSuppliedEther } from '../generated/schema';
 
 export function handleSuppliedEther(event: SuppliedEther): void {
   const elseId =

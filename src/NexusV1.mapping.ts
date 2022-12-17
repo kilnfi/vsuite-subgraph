@@ -1,6 +1,11 @@
 import {
   Initialized,
   SetCoreHatchers,
+  SetDepositContract,
+  SetGlobalConsensusLayerSpec,
+  SetGlobalOracle,
+  SetGlobalRecipient,
+  SetMinimalRecipientImplementation,
   SetPluggableHatcher,
   SpawnedFactory,
   SpawnedPool
@@ -31,6 +36,14 @@ function _getOrCreateNexus(addr: Bytes, event: ethereum.Event): Nexus {
     nexus = new Nexus(event.address);
 
     nexus.address = event.address;
+    nexus.globalOracle = Address.zero();
+    nexus.globalRecipient = Address.zero();
+    nexus.depositContract = Address.zero();
+    nexus.genesisTimestamp = BigInt.zero();
+    nexus.epochsUntilFinal = BigInt.zero();
+    nexus.slotsPerEpoch = BigInt.zero();
+    nexus.secondsPerSlot = BigInt.zero();
+    nexus.minimalRecipientImplementation = Address.zero();
 
     nexus.createdAt = event.block.timestamp;
     nexus.createdAtBlock = event.block.number;
@@ -145,9 +158,9 @@ export function handleSpawnedPool(event: SpawnedPool): void {
   {
     const wr = new vWithdrawalRecipient(event.params.withdrawalRecipient);
 
-    wr.withdrawalCredentials = Bytes.fromHexString(
-      '0x010000000000000000000000'
-    ).concat(event.params.withdrawalRecipient);
+    wr.withdrawalCredentials = Bytes.fromHexString('0x010000000000000000000000').concat(
+      event.params.withdrawalRecipient
+    );
     wr.address = event.params.withdrawalRecipient;
     wr.cub = event.params.withdrawalRecipient;
     wr.pool = event.params.pool;
@@ -206,6 +219,54 @@ export function handleSetCoreHatchers(event: SetCoreHatchers): void {
   nexus.coverageRecipientHatcher = event.params.coverageRecipient;
   nexus.oracleAggregatorHatcher = event.params.oracleAggregator;
 
+  nexus.editedAt = event.block.timestamp;
+  nexus.editedAtBlock = event.block.number;
+  nexus.save();
+}
+
+export function handleSetGlobalRecipient(event: SetGlobalRecipient): void {
+  const nexus = _getOrCreateNexus(event.address, event);
+
+  nexus.globalRecipient = event.params.globalRecipient;
+  nexus.editedAt = event.block.timestamp;
+  nexus.editedAtBlock = event.block.number;
+  nexus.save();
+}
+
+export function handleSetGlobalOracle(event: SetGlobalOracle): void {
+  const nexus = _getOrCreateNexus(event.address, event);
+
+  nexus.globalOracle = event.params.globalOracle;
+  nexus.editedAt = event.block.timestamp;
+  nexus.editedAtBlock = event.block.number;
+  nexus.save();
+}
+
+export function handleSetMinimalRecipientImplementation(event: SetMinimalRecipientImplementation): void {
+  const nexus = _getOrCreateNexus(event.address, event);
+
+  nexus.minimalRecipientImplementation = event.params.minimalRecipientImplementationAddress;
+  nexus.editedAt = event.block.timestamp;
+  nexus.editedAtBlock = event.block.number;
+  nexus.save();
+}
+
+export function handleSetDepositContract(event: SetDepositContract): void {
+  const nexus = _getOrCreateNexus(event.address, event);
+
+  nexus.depositContract = event.params.depositContractAddress;
+  nexus.editedAt = event.block.timestamp;
+  nexus.editedAtBlock = event.block.number;
+  nexus.save();
+}
+
+export function handlerSetGlobalConsensusLayerSpec(event: SetGlobalConsensusLayerSpec): void {
+  const nexus = _getOrCreateNexus(event.address, event);
+
+  nexus.genesisTimestamp = event.params.genesisTimestamp;
+  nexus.epochsUntilFinal = event.params.epochsUntilFinal;
+  nexus.slotsPerEpoch = event.params.slotsPerEpoch;
+  nexus.secondsPerSlot = event.params.secondsPerSlot;
   nexus.editedAt = event.block.timestamp;
   nexus.editedAtBlock = event.block.number;
   nexus.save();

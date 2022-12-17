@@ -74,6 +74,16 @@ type Nexus @entity {
   factories: [vFactory!]! @derivedFrom(field: "nexus")
   hatchers: [PluggableHatcher!]! @derivedFrom(field: "hatcherRegistry")
 
+  globalOracle: Bytes!
+  globalRecipient: Bytes!
+  depositContract: Bytes!
+  minimalRecipientImplementation: Bytes!
+
+  genesisTimestamp: BigInt!
+  epochsUntilFinal: BigInt!
+  slotsPerEpoch: BigInt!
+  secondsPerSlot: BigInt!
+
   factoryHatcher: PluggableHatcher
   treasuryHatcher: PluggableHatcher
   poolHatcher: PluggableHatcher

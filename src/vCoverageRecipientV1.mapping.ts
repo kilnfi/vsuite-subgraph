@@ -5,12 +5,7 @@ import {
   UpdatedSharesForCoverage,
   VoidedShares
 } from '../generated/templates/vCoverageRecipient/vCoverageRecipientV1';
-import {
-  CoverageDonator,
-  CoverageSuppliedEther,
-  CoverageVoidedShares,
-  vCoverageRecipient
-} from '../generated/schema';
+import { CoverageDonator, CoverageSuppliedEther, CoverageVoidedShares, vCoverageRecipient } from '../generated/schema';
 import { store } from '@graphprotocol/graph-ts';
 
 export function handleSuppliedEther(event: SuppliedEther): void {
@@ -69,9 +64,7 @@ export function handleVoidedShares(event: VoidedShares): void {
   cvs.save();
 }
 
-export function handleUpdatedEtherForCoverage(
-  event: UpdatedEtherForCoverage
-): void {
+export function handleUpdatedEtherForCoverage(event: UpdatedEtherForCoverage): void {
   const cr = vCoverageRecipient.load(event.address);
 
   cr!.totalAvailableEther = event.params.amount;
@@ -82,9 +75,7 @@ export function handleUpdatedEtherForCoverage(
   cr!.save();
 }
 
-export function handleUpdatedSharesForCoverage(
-  event: UpdatedSharesForCoverage
-): void {
+export function handleUpdatedSharesForCoverage(event: UpdatedSharesForCoverage): void {
   const cr = vCoverageRecipient.load(event.address);
 
   cr!.totalAvailableShares = event.params.amount;
@@ -96,10 +87,7 @@ export function handleUpdatedSharesForCoverage(
 }
 
 export function handleAllowedDonator(event: AllowedDonator): void {
-  const donatorId =
-    event.params.donatorAddress.toHexString() +
-    '@' +
-    event.address.toHexString();
+  const donatorId = event.params.donatorAddress.toHexString() + '@' + event.address.toHexString();
 
   let donator = CoverageDonator.load(donatorId);
 
