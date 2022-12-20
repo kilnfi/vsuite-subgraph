@@ -9,12 +9,7 @@ import { CoverageDonator, CoverageSuppliedEther, CoverageVoidedShares, vCoverage
 import { store } from '@graphprotocol/graph-ts';
 
 export function handleSuppliedEther(event: SuppliedEther): void {
-  const cseId =
-    event.transaction.hash.toHexString() +
-    '@' +
-    event.transactionLogIndex.toString() +
-    '@' +
-    event.address.toHexString();
+  const cseId = event.transaction.hash.toHexString() + '@' + event.address.toHexString();
   const cse = new CoverageSuppliedEther(cseId);
   const cr = vCoverageRecipient.load(event.address);
 
@@ -37,12 +32,7 @@ export function handleSuppliedEther(event: SuppliedEther): void {
 }
 
 export function handleVoidedShares(event: VoidedShares): void {
-  const cseId =
-    event.transaction.hash.toHexString() +
-    '@' +
-    event.transactionLogIndex.toString() +
-    '@' +
-    event.address.toHexString();
+  const cseId = event.transaction.hash.toHexString() + '@' + event.address.toHexString();
   const cvs = new CoverageVoidedShares(cseId);
   const cr = vCoverageRecipient.load(event.address);
 

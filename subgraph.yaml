@@ -512,4 +512,10 @@ templates:
           handler: handleAddedOracleAggregatorMember
         - event: RemovedOracleAggregatorMember(address)
           handler: handleRemovedOracleAggregatorMember
+        - event: MemberVoted(indexed address,uint256,uint256,uint256,uint256,bytes32)
+          handler: handleMemberVoted
+        - event: GlobalMemberVoted(indexed address,uint256,uint256,uint256,uint256,bytes32)
+          handler: handlerGlobalMemberVoted
+        - event: SubmittedReport(uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleSubmittedReport
 

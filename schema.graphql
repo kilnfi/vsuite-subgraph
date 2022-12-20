@@ -347,6 +347,9 @@ type RevenueUpdate @entity {
   covered: BigInt!
   totalSupply: BigInt!
   totalUnderlyingSupply: BigInt!
+  execLayerSuppliedEther: ExecLayerSuppliedEther
+  coverageSuppliedEther: CoverageSuppliedEther
+  coverageVoidedShares: CoverageVoidedShares
 
   pool: vPool!
 
@@ -509,10 +512,13 @@ type vOracleAggregator @entity {
   address: Bytes!
 
   memberCount: BigInt!
+  quorum: BigInt!
 
   cub: Cub!
   pool: vPool!
   members: [OracleAggregatorMember!]! @derivedFrom(field: "oracleAggregator")
+
+  variants: [OracleAggregatorReportVariant!]! @derivedFrom(field: "oracleAggregator")
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -527,6 +533,39 @@ type OracleAggregatorMember @entity {
   index: BigInt!
 
   oracleAggregator: vOracleAggregator!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type OracleAggregatorReportVariant @entity {
+  id: String!
+
+  voteCount: BigInt!
+  epoch: BigInt!
+  validatorCount: BigInt!
+  validatorBalanceSum: BigInt!
+  validatorSlashedBalanceSum: BigInt!
+  submitted: Boolean!
+
+  oracleAggregator: vOracleAggregator!
+  votes: [OracleAggregatorReportVariantVote!]! @derivedFrom(field: "variant")
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type OracleAggregatorReportVariantVote @entity {
+  id: String!
+
+  member: Bytes!
+  globalMember: Boolean!
+
+  variant: OracleAggregatorReportVariant!
 
   createdAt: BigInt!
   editedAt: BigInt!

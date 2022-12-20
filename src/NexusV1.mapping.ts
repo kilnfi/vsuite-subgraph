@@ -180,6 +180,7 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     oa.cub = event.params.oracleAggregator;
     oa.pool = event.params.pool;
     oa.memberCount = BigInt.zero();
+    oa.quorum = BigInt.fromI32(1);
 
     oa.createdAt = event.block.timestamp;
     oa.editedAt = event.block.timestamp;

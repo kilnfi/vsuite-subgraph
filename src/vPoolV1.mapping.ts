@@ -165,6 +165,12 @@ export function handleRevenueUpdate(event: RevenueUpdate): void {
   revenueUpdate.covered = event.params.covered;
   revenueUpdate.totalSupply = event.params.newTotalSupply;
   revenueUpdate.totalUnderlyingSupply = event.params.newTotalUnderlyingSupply;
+  revenueUpdate.execLayerSuppliedEther =
+    event.transaction.hash.toHexString() + '@' + pool!.execLayerRecipient.toHexString();
+  revenueUpdate.coverageSuppliedEther =
+    event.transaction.hash.toHexString() + '@' + pool!.coverageRecipient.toHexString();
+  revenueUpdate.coverageVoidedShares =
+    event.transaction.hash.toHexString() + '@' + pool!.coverageRecipient.toHexString();
 
   revenueUpdate.createdAt = event.block.timestamp;
   revenueUpdate.createdAtBlock = event.block.number;
@@ -172,6 +178,9 @@ export function handleRevenueUpdate(event: RevenueUpdate): void {
   revenueUpdate.editedAtBlock = event.block.number;
 
   revenueUpdate.save();
+
+  pool!.totalSupply = event.params.newTotalSupply;
+  pool!.totalUnderlyingSupply = event.params.newTotalUnderlyingSupply;
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;

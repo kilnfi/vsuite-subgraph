@@ -1,9 +1,21 @@
 import {
   AddedOracleAggregatorMember,
-  RemovedOracleAggregatorMember
+  GlobalMemberVoted,
+  MemberVoted,
+  RemovedOracleAggregatorMember,
+  SubmittedReport
 } from '../generated/templates/vOracleAggregator/vOracleAggregatorV1';
-import { vOracleAggregator, OracleAggregatorMember } from '../generated/schema';
-import { BigInt, store } from '@graphprotocol/graph-ts';
+import {
+  vOracleAggregator,
+  OracleAggregatorMember,
+  OracleAggregatorReportVariant,
+  OracleAggregatorReportVariantVote
+} from '../generated/schema';
+import { BigInt, Bytes, ethereum, store } from '@graphprotocol/graph-ts';
+
+function getQuorum(memberCount: BigInt): BigInt {
+  return ((memberCount + BigInt.fromI32(1)) * BigInt.fromI32(3)) / BigInt.fromI32(4) + BigInt.fromI32(1);
+}
 
 export function handleAddedOracleAggregatorMember(event: AddedOracleAggregatorMember): void {
   const oa = vOracleAggregator.load(event.address);
@@ -25,6 +37,7 @@ export function handleAddedOracleAggregatorMember(event: AddedOracleAggregatorMe
   oaMember.save();
 
   oa!.memberCount = oa!.memberCount + BigInt.fromI32(1);
+  oa!.quorum = getQuorum(oa!.memberCount);
 
   oa!.editedAt = event.block.timestamp;
   oa!.editedAtBlock = event.block.number;
@@ -72,8 +85,117 @@ export function handleRemovedOracleAggregatorMember(event: RemovedOracleAggregat
   }
 
   oa!.memberCount = oa!.memberCount - BigInt.fromI32(1);
+  oa!.quorum = getQuorum(oa!.memberCount);
 
   oa!.editedAt = event.block.timestamp;
   oa!.editedAtBlock = event.block.number;
   oa!.save();
+}
+
+export function handleVote(
+  event: ethereum.Event,
+  globalMember: boolean,
+  voter: Bytes,
+  epoch: BigInt,
+  validatorCount: BigInt,
+  balanceSum: BigInt,
+  slashedBalanceSum: BigInt
+): void {
+  const variantId =
+    epoch.toString() +
+    '@' +
+    validatorCount.toString() +
+    '@' +
+    balanceSum.toString() +
+    '@' +
+    slashedBalanceSum.toString() +
+    '@' +
+    event.address.toHexString();
+
+  let variant = OracleAggregatorReportVariant.load(variantId);
+
+  if (variant === null) {
+    variant = new OracleAggregatorReportVariant(variantId);
+    variant.epoch = epoch;
+    variant.validatorCount = validatorCount;
+    variant.validatorBalanceSum = balanceSum;
+    variant.validatorSlashedBalanceSum = slashedBalanceSum;
+    variant.submitted = false;
+    variant.voteCount = BigInt.zero();
+    variant.oracleAggregator = event.address;
+    variant.createdAt = event.block.timestamp;
+    variant.createdAtBlock = event.block.number;
+  }
+
+  const voteId =
+    voter.toHexString() +
+    '@' +
+    (globalMember ? 'globalMember' : 'member') +
+    '@' +
+    epoch.toString() +
+    '@' +
+    validatorCount.toString() +
+    '@' +
+    balanceSum.toString() +
+    '@' +
+    slashedBalanceSum.toString() +
+    '@' +
+    event.address.toHexString();
+  const vote = new OracleAggregatorReportVariantVote(voteId);
+  vote.member = voter;
+  vote.globalMember = globalMember;
+  vote.variant = variantId;
+  vote.createdAt = event.block.timestamp;
+  vote.createdAtBlock = event.block.number;
+  vote.editedAt = event.block.timestamp;
+  vote.editedAtBlock = event.block.number;
+  vote.save();
+
+  variant.voteCount = variant.voteCount + BigInt.fromI32(1);
+  variant.editedAt = event.block.timestamp;
+  variant.editedAtBlock = event.block.number;
+  variant.save();
+}
+
+export function handleMemberVoted(event: MemberVoted): void {
+  handleVote(
+    event,
+    false,
+    event.params.member,
+    event.params.epoch,
+    event.params.validatorCount,
+    event.params.balanceSum,
+    event.params.slashedBalanceSum
+  );
+}
+
+export function handlerGlobalMemberVoted(event: GlobalMemberVoted): void {
+  handleVote(
+    event,
+    true,
+    event.params.globalMember,
+    event.params.epoch,
+    event.params.validatorCount,
+    event.params.balanceSum,
+    event.params.slashedBalanceSum
+  );
+}
+
+export function handleSubmittedReport(event: SubmittedReport): void {
+  const variantId =
+    event.params.epoch.toString() +
+    '@' +
+    event.params.validatorCount.toString() +
+    '@' +
+    event.params.balanceSum.toString() +
+    '@' +
+    event.params.slashedBalanceSum.toString() +
+    '@' +
+    event.address.toHexString();
+
+  const variant = OracleAggregatorReportVariant.load(variantId);
+
+  variant!.submitted = true;
+
+  variant!.save();
 }

@@ -2,12 +2,7 @@ import { SuppliedEther } from '../generated/templates/vExecLayerRecipient/vExecL
 import { vExecLayerRecipient, ExecLayerSuppliedEther } from '../generated/schema';
 
 export function handleSuppliedEther(event: SuppliedEther): void {
-  const elseId =
-    event.transaction.hash.toHexString() +
-    '@' +
-    event.transactionLogIndex.toString() +
-    '@' +
-    event.address.toHexString();
+  const elseId = event.transaction.hash.toHexString() + '@' + event.address.toHexString();
   const else_ = new ExecLayerSuppliedEther(elseId);
   const elr = vExecLayerRecipient.load(event.address);
 
