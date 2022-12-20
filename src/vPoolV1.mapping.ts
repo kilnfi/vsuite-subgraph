@@ -181,6 +181,8 @@ export function handleRevenueUpdate(event: RevenueUpdate): void {
 
   pool!.totalSupply = event.params.newTotalSupply;
   pool!.totalUnderlyingSupply = event.params.newTotalUnderlyingSupply;
+  pool!.lastEpoch = event.params.epoch;
+  pool!.expectedEpoch = event.params.epoch + pool!.epochsPerFrame;
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
@@ -241,6 +243,7 @@ export function handleSetEpochsPerFrame(event: SetEpochsPerFrame): void {
   const pool = vPool.load(event.address);
 
   pool!.epochsPerFrame = event.params.epochsPerFrame;
+  pool!.expectedEpoch = pool!.lastEpoch + pool!.epochsPerFrame;
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;

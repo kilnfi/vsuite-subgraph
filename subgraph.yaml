@@ -518,4 +518,6 @@ templates:
           handler: handlerGlobalMemberVoted
         - event: SubmittedReport(uint256,uint256,uint256,uint256,uint256,uint256)
           handler: handleSubmittedReport
+        - event: SetHighestReportedEpoch(uint256)
+          handler: handleSetHighestReportedEpoch
 

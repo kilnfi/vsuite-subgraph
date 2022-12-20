@@ -3,6 +3,7 @@ import {
   GlobalMemberVoted,
   MemberVoted,
   RemovedOracleAggregatorMember,
+  SetHighestReportedEpoch,
   SubmittedReport
 } from '../generated/templates/vOracleAggregator/vOracleAggregatorV1';
 import {
@@ -101,6 +102,8 @@ export function handleVote(
   balanceSum: BigInt,
   slashedBalanceSum: BigInt
 ): void {
+  const oa = vOracleAggregator.load(event.address);
+
   const variantId =
     epoch.toString() +
     '@' +
@@ -155,6 +158,10 @@ export function handleVote(
   variant.editedAt = event.block.timestamp;
   variant.editedAtBlock = event.block.number;
   variant.save();
+
+  oa!.editedAt = event.block.timestamp;
+  oa!.editedAtBlock = event.block.number;
+  oa!.save();
 }
 
 export function handleMemberVoted(event: MemberVoted): void {
@@ -182,6 +189,7 @@ export function handlerGlobalMemberVoted(event: GlobalMemberVoted): void {
 }
 
 export function handleSubmittedReport(event: SubmittedReport): void {
+  const oa = vOracleAggregator.load(event.address);
   const variantId =
     event.params.epoch.toString() +
     '@' +
@@ -198,4 +206,15 @@ export function handleSubmittedReport(event: SubmittedReport): void {
   variant!.submitted = true;
 
   variant!.save();
+  oa!.editedAt = event.block.timestamp;
+  oa!.editedAtBlock = event.block.number;
+  oa!.save();
+}
+
+export function handleSetHighestReportedEpoch(event: SetHighestReportedEpoch): void {
+  const oa = vOracleAggregator.load(event.address);
+  oa!.highestReportedEpoch = event.params.epoch;
+  oa!.editedAt = event.block.timestamp;
+  oa!.editedAtBlock = event.block.number;
+  oa!.save();
 }

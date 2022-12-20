@@ -276,6 +276,8 @@ type vPool @entity {
   maxAPRUpperBound: BigInt!
   maxAPRUpperCoverageBoost: BigInt!
   maxRelativeLowerBound: BigInt!
+  lastEpoch: BigInt!
+  expectedEpoch: BigInt!
 
   cub: Cub!
   factory: vFactory!
@@ -513,6 +515,7 @@ type vOracleAggregator @entity {
 
   memberCount: BigInt!
   quorum: BigInt!
+  highestReportedEpoch: BigInt!
 
   cub: Cub!
   pool: vPool!

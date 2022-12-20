@@ -28,7 +28,7 @@ import {
   vOracleAggregator,
   PluggableHatcher
 } from '../generated/schema';
-import { Address, BigInt, Bytes, ethereum } from '@graphprotocol/graph-ts';
+import { Address, bigInt, BigInt, Bytes, ethereum } from '@graphprotocol/graph-ts';
 
 function _getOrCreateNexus(addr: Bytes, event: ethereum.Event): Nexus {
   let nexus = Nexus.load(addr);
@@ -100,6 +100,8 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     pool.totalSupply = BigInt.zero();
     pool.totalUnderlyingSupply = BigInt.zero();
     pool.purchasedValidatorCount = BigInt.zero();
+    pool.lastEpoch = BigInt.zero();
+    pool.expectedEpoch = BigInt.zero();
 
     pool.oracleAggregator = Address.zero();
     pool.coverageRecipient = Address.zero();
@@ -181,6 +183,7 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     oa.pool = event.params.pool;
     oa.memberCount = BigInt.zero();
     oa.quorum = BigInt.fromI32(1);
+    oa.highestReportedEpoch = BigInt.zero();
 
     oa.createdAt = event.block.timestamp;
     oa.editedAt = event.block.timestamp;
