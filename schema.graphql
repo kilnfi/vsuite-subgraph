@@ -520,7 +520,7 @@ type vOracleAggregator @entity {
   cub: Cub!
   pool: vPool!
   members: [OracleAggregatorMember!]! @derivedFrom(field: "oracleAggregator")
-
+  lastVariant: OracleAggregatorReportVariant
   variants: [OracleAggregatorReportVariant!]! @derivedFrom(field: "oracleAggregator")
 
   createdAt: BigInt!
@@ -551,6 +551,7 @@ type OracleAggregatorReportVariant @entity {
   validatorCount: BigInt!
   validatorBalanceSum: BigInt!
   validatorSlashedBalanceSum: BigInt!
+  period: BigInt!
   submitted: Boolean!
 
   oracleAggregator: vOracleAggregator!

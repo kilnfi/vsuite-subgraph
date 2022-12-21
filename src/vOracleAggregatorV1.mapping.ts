@@ -10,7 +10,9 @@ import {
   vOracleAggregator,
   OracleAggregatorMember,
   OracleAggregatorReportVariant,
-  OracleAggregatorReportVariantVote
+  OracleAggregatorReportVariantVote,
+  vPool,
+  Nexus
 } from '../generated/schema';
 import { BigInt, Bytes, ethereum, store } from '@graphprotocol/graph-ts';
 
@@ -93,6 +95,30 @@ export function handleRemovedOracleAggregatorMember(event: RemovedOracleAggregat
   oa!.save();
 }
 
+function timeSinceLastVariant(epoch: BigInt, oracleAggregatorAddress: Bytes): BigInt {
+  const oa = vOracleAggregator.load(oracleAggregatorAddress);
+
+  if (oa != null) {
+    if (oa.lastVariant != null) {
+      const lastVariant = OracleAggregatorReportVariant.load(oa.lastVariant as string);
+      if (lastVariant != null) {
+        if (lastVariant.epoch == epoch) {
+          return lastVariant.period;
+        }
+        const epochDelta = epoch - lastVariant.epoch;
+        const pool = vPool.load(oa.pool);
+        if (pool != null) {
+          const nexus = Nexus.load(pool.nexus);
+          if (nexus != null) {
+            return epochDelta * nexus.slotsPerEpoch * nexus.secondsPerSlot;
+          }
+        }
+      }
+    }
+  }
+  return BigInt.zero();
+}
+
 export function handleVote(
   event: ethereum.Event,
   globalMember: boolean,
@@ -125,6 +151,7 @@ export function handleVote(
     variant.validatorSlashedBalanceSum = slashedBalanceSum;
     variant.submitted = false;
     variant.voteCount = BigInt.zero();
+    variant.period = timeSinceLastVariant(epoch, event.address);
     variant.oracleAggregator = event.address;
     variant.createdAt = event.block.timestamp;
     variant.createdAtBlock = event.block.number;
@@ -159,6 +186,7 @@ export function handleVote(
   variant.editedAtBlock = event.block.number;
   variant.save();
 
+  oa!.lastVariant = variantId;
   oa!.editedAt = event.block.timestamp;
   oa!.editedAtBlock = event.block.number;
   oa!.save();
