@@ -1,3 +1,7 @@
+type MetaContract @entity {
+  id: String!
+  abi: String!
+}
 
 #                                                                  
 # ██   ██  █████  ████████  ██████ ██   ██ ███████ ██████  ███████ 
@@ -10,6 +14,7 @@
 type PluggableHatcher @entity {
   id: Bytes!
   address: Bytes!
+  contract: MetaContract!
 
   admin: Bytes!
   cubCount: BigInt!
@@ -33,6 +38,7 @@ type PluggableHatcher @entity {
 type Cub @entity {
   id: Bytes!
   address: Bytes!
+  contract: MetaContract!
 
   paused: Boolean!
   progress: BigInt!
@@ -86,6 +92,7 @@ type PluggableHatcherImplementation @entity {
 type Nexus @entity {
   id: Bytes!
   address: Bytes!
+  contract: MetaContract!
 
   globalOracle: Bytes!
   globalRecipient: Bytes!
@@ -123,6 +130,7 @@ type Nexus @entity {
 type vFactory @entity {
   id: Bytes!
   address: Bytes!
+  contract: MetaContract!
 
   version: BigInt!
   operator: Bytes
@@ -267,6 +275,7 @@ type vTreasury @entity {
 type vPool @entity {
   id: Bytes!
   address: Bytes!
+  contract: MetaContract!
 
   purchasedValidatorCount: BigInt!
   totalSupply: BigInt!
@@ -384,6 +393,7 @@ type PoolDepositor @entity {
 type vExecLayerRecipient @entity {
   id: Bytes!
   address: Bytes!
+  contract: MetaContract!
 
   totalSuppliedEther: BigInt!
 
@@ -420,6 +430,7 @@ type ExecLayerSuppliedEther @entity {
 type vCoverageRecipient @entity {
   id: Bytes!
   address: Bytes!
+  contract: MetaContract!
 
   totalAvailableEther: BigInt!
   totalSuppliedEther: BigInt!
@@ -512,6 +523,7 @@ type vWithdrawalRecipient @entity {
 type vOracleAggregator @entity {
   id: Bytes!
   address: Bytes!
+  contract: MetaContract!
 
   memberCount: BigInt!
   quorum: BigInt!

@@ -14,6 +14,7 @@ import {
 import { SetAdmin } from '../generated/NexusV1/NexusV1';
 import { Cub, Fix, PluggableHatcher, PluggableHatcherImplementation } from '../generated/schema';
 import { Cub as CubTemplate } from '../generated/templates';
+import { getOrCreateMetaContract } from './MetaContract.utils';
 
 function _getOrCreatePluggableHatcher(addr: Bytes, event: ethereum.Event): PluggableHatcher {
   let ph = PluggableHatcher.load(addr);
@@ -21,6 +22,7 @@ function _getOrCreatePluggableHatcher(addr: Bytes, event: ethereum.Event): Plugg
   if (ph == null) {
     ph = new PluggableHatcher(addr);
     ph.address = addr;
+    ph.contract = getOrCreateMetaContract('PluggableHatcher');
     ph.admin = Address.zero();
     ph.initialProgress = BigInt.zero();
     ph.globalPaused = false;
@@ -66,6 +68,7 @@ export function handleHatched(event: Hatched): void {
   const cubId = event.params.cub;
   const cub = new Cub(cubId);
   cub.address = event.params.cub;
+  cub.contract = getOrCreateMetaContract('Cub');
   cub.progress = ph.initialProgress;
   cub.paused = false;
   cub.hatcher = event.address;

@@ -1,3 +1,4 @@
+import { getOrCreateMetaContract } from './MetaContract.utils';
 import {
   Initialized,
   SetCoreHatchers,
@@ -28,7 +29,7 @@ import {
   vOracleAggregator,
   PluggableHatcher
 } from '../generated/schema';
-import { Address, bigInt, BigInt, Bytes, ethereum } from '@graphprotocol/graph-ts';
+import { Address, BigInt, Bytes, ethereum } from '@graphprotocol/graph-ts';
 
 function _getOrCreateNexus(addr: Bytes, event: ethereum.Event): Nexus {
   let nexus = Nexus.load(addr);
@@ -36,6 +37,7 @@ function _getOrCreateNexus(addr: Bytes, event: ethereum.Event): Nexus {
     nexus = new Nexus(event.address);
 
     nexus.address = event.address;
+    nexus.contract = getOrCreateMetaContract('NexusV1');
     nexus.globalOracle = Address.zero();
     nexus.globalRecipient = Address.zero();
     nexus.depositContract = Address.zero();
@@ -74,6 +76,7 @@ export function handleSpawnedFactory(event: SpawnedFactory): void {
   const factory = new vFactory(event.params.factory);
   factory.version = BigInt.fromI32(1);
   factory.address = event.params.factory;
+  factory.contract = getOrCreateMetaContract('vFactoryV1');
   factory.cub = event.params.factory;
   factory.treasury = event.params.treasury;
   factory.operatorName = '';
@@ -94,6 +97,7 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     const pool = new vPool(event.params.pool);
 
     pool.address = event.params.pool;
+    pool.contract = getOrCreateMetaContract('vPoolV1');
     pool.cub = event.params.pool;
     pool.factory = event.params.factory;
     pool.nexus = event.address;
@@ -126,6 +130,7 @@ export function handleSpawnedPool(event: SpawnedPool): void {
 
     elr.totalSuppliedEther = BigInt.zero();
     elr.address = event.params.execLayerRecipient;
+    elr.contract = getOrCreateMetaContract('vExecLayerRecipientV1');
     elr.cub = event.params.execLayerRecipient;
     elr.pool = event.params.pool;
 
@@ -145,6 +150,7 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     cr.totalAvailableEther = BigInt.zero();
     cr.totalAvailableShares = BigInt.zero();
     cr.address = event.params.coverageRecipient;
+    cr.contract = getOrCreateMetaContract('vCoverageRecipientV1');
     cr.cub = event.params.coverageRecipient;
     cr.pool = event.params.pool;
 
@@ -179,6 +185,7 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     const oa = new vOracleAggregator(event.params.oracleAggregator);
 
     oa.address = event.params.oracleAggregator;
+    oa.contract = getOrCreateMetaContract('vOracleAggregatorV1');
     oa.cub = event.params.oracleAggregator;
     oa.pool = event.params.pool;
     oa.memberCount = BigInt.zero();

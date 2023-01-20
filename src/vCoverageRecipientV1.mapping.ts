@@ -22,7 +22,6 @@ export function handleSuppliedEther(event: SuppliedEther): void {
   cse.editedAtBlock = event.block.number;
 
   cr!.totalSuppliedEther = cr!.totalSuppliedEther + event.params.amount;
-  cr!.totalAvailableEther = cr!.totalAvailableEther - event.params.amount;
 
   cr!.editedAt = event.block.timestamp;
   cr!.editedAtBlock = event.block.number;
@@ -45,7 +44,6 @@ export function handleVoidedShares(event: VoidedShares): void {
   cvs.editedAtBlock = event.block.number;
 
   cr!.totalVoidedShares = cr!.totalVoidedShares + event.params.amount;
-  cr!.totalAvailableShares = cr!.totalAvailableShares - event.params.amount;
 
   cr!.editedAt = event.block.timestamp;
   cr!.editedAtBlock = event.block.number;
