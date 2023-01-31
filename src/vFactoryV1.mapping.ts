@@ -27,6 +27,7 @@ import {
 import { Bytes } from '@graphprotocol/graph-ts';
 import { store } from '@graphprotocol/graph-ts';
 import { SetMinimalRecipientImplementation } from '../generated/NexusV1/NexusV1';
+import { SetValidatorExtraData } from '../generated/templates/vFactory/vFactoryV1';
 
 const PUBLIC_KEY_LENGTH = 48;
 const SIGNATURE_LENGTH = 96;
@@ -229,6 +230,18 @@ export function handleSetValidatorFeeRecipient(event: SetValidatorFeeRecipient):
   const fundedKey = FundedValidationKey.load(fundedKeyId);
 
   fundedKey!.feeRecipient = event.params.feeRecipient;
+
+  fundedKey!.editedAt = event.block.timestamp;
+  fundedKey!.editedAtBlock = event.block.number;
+
+  fundedKey!.save();
+}
+
+export function handleSetValidatorExtraData(event: SetValidatorExtraData): void {
+  const fundedKeyId = event.params.id.toString() + '@' + event.address.toHexString();
+  const fundedKey = FundedValidationKey.load(fundedKeyId);
+
+  fundedKey!.extraData = event.params.extraData;
 
   fundedKey!.editedAt = event.block.timestamp;
   fundedKey!.editedAtBlock = event.block.number;

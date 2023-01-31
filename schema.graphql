@@ -94,6 +94,7 @@ type Nexus @entity {
   address: Bytes!
   contract: MetaContract!
 
+  admin: Bytes!
   globalOracle: Bytes!
   globalRecipient: Bytes!
   depositContract: Bytes!
@@ -208,6 +209,7 @@ type FundedValidationKey @entity {
   validatorId: BigInt!
   owner: Bytes
   feeRecipient: Bytes
+  extraData: String
 
   lastExitRequest: ExitRequest
   validationKey: ValidationKey!
@@ -441,7 +443,7 @@ type vCoverageRecipient @entity {
   pool: vPool!
   suppliedEther: [CoverageSuppliedEther!]! @derivedFrom(field: "coverageRecipient")
   voidedShares: [CoverageVoidedShares!]! @derivedFrom(field: "coverageRecipient")
-  donators: [CoverageDonator!]! @derivedFrom(field: "coverageRecipient")
+  donors: [CoverageDonor!]! @derivedFrom(field: "coverageRecipient")
   
   createdAt: BigInt!
   editedAt: BigInt!
@@ -450,7 +452,7 @@ type vCoverageRecipient @entity {
   editedAtBlock: BigInt!
 }
 
-type CoverageDonator @entity {
+type CoverageDonor @entity {
   id: String! 
   address: Bytes!
 

@@ -1,11 +1,11 @@
 import {
-  AllowedDonator,
+  AllowedDonor,
   SuppliedEther,
   UpdatedEtherForCoverage,
   UpdatedSharesForCoverage,
   VoidedShares
 } from '../generated/templates/vCoverageRecipient/vCoverageRecipientV1';
-import { CoverageDonator, CoverageSuppliedEther, CoverageVoidedShares, vCoverageRecipient } from '../generated/schema';
+import { CoverageDonor, CoverageSuppliedEther, CoverageVoidedShares, vCoverageRecipient } from '../generated/schema';
 import { store } from '@graphprotocol/graph-ts';
 
 export function handleSuppliedEther(event: SuppliedEther): void {
@@ -74,31 +74,31 @@ export function handleUpdatedSharesForCoverage(event: UpdatedSharesForCoverage):
   cr!.save();
 }
 
-export function handleAllowedDonator(event: AllowedDonator): void {
-  const donatorId = event.params.donatorAddress.toHexString() + '@' + event.address.toHexString();
+export function handleAllowedDonor(event: AllowedDonor): void {
+  const donorId = event.params.donorAddress.toHexString() + '@' + event.address.toHexString();
 
-  let donator = CoverageDonator.load(donatorId);
+  let donor = CoverageDonor.load(donorId);
 
-  if (donator == null) {
+  if (donor == null) {
     if (event.params.allowed) {
-      donator = new CoverageDonator(donatorId);
+      donor = new CoverageDonor(donorId);
 
-      donator.address = event.params.donatorAddress;
-      donator.coverageRecipient = event.address;
+      donor.address = event.params.donorAddress;
+      donor.coverageRecipient = event.address;
 
-      donator.createdAt = event.block.timestamp;
-      donator.createdAtBlock = event.block.number;
-      donator.editedAt = event.block.timestamp;
-      donator.editedAtBlock = event.block.number;
-      donator.save();
+      donor.createdAt = event.block.timestamp;
+      donor.createdAtBlock = event.block.number;
+      donor.editedAt = event.block.timestamp;
+      donor.editedAtBlock = event.block.number;
+      donor.save();
     }
   } else {
     if (!event.params.allowed) {
-      store.remove('CoverageDonator', donatorId);
+      store.remove('CoverageDonator', donorId);
     } else {
-      donator.editedAt = event.block.timestamp;
-      donator.editedAtBlock = event.block.number;
-      donator.save();
+      donor.editedAt = event.block.timestamp;
+      donor.editedAtBlock = event.block.number;
+      donor.save();
     }
   }
 }

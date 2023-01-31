@@ -9,7 +9,8 @@ import {
   SetMinimalRecipientImplementation,
   SetPluggableHatcher,
   SpawnedFactory,
-  SpawnedPool
+  SpawnedPool,
+  SetAdmin
 } from '../generated/NexusV1/NexusV1';
 import {
   vOracleAggregator as vOracleAggregatorTemplate,
@@ -280,5 +281,16 @@ export function handlerSetGlobalConsensusLayerSpec(event: SetGlobalConsensusLaye
   nexus.secondsPerSlot = event.params.secondsPerSlot;
   nexus.editedAt = event.block.timestamp;
   nexus.editedAtBlock = event.block.number;
+  nexus.save();
+}
+
+export function handleSetAdmin(event: SetAdmin): void {
+  const nexus = _getOrCreateNexus(event.address, event);
+
+  nexus.admin = event.params.admin;
+
+  nexus.editedAt = event.block.timestamp;
+  nexus.editedAtBlock = event.block.number;
+
   nexus.save();
 }

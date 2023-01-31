@@ -2,32 +2,64 @@ const abi = `
 [
   {
     "inputs": [
-      { "internalType": "uint256", "name": "version", "type": "uint256" },
-      { "internalType": "uint256", "name": "currentVersion", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "version",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "currentVersion",
+        "type": "uint256"
+      }
     ],
     "name": "AlreadyInitialized",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "hatcher", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "hatcher",
+        "type": "address"
+      }
     ],
     "name": "InvalidProvidedHatcher",
     "type": "error"
   },
-  { "inputs": [], "name": "InvalidZeroAddress", "type": "error" },
+  {
+    "inputs": [],
+    "name": "InvalidZeroAddress",
+    "type": "error"
+  },
   {
     "inputs": [
-      { "internalType": "address", "name": "caller", "type": "address" },
-      { "internalType": "address", "name": "invalidFactory", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "invalidFactory",
+        "type": "address"
+      }
     ],
     "name": "NotSpawnedFactory",
     "type": "error"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "account", "type": "address" },
-      { "internalType": "address", "name": "expected", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "expected",
+        "type": "address"
+      }
     ],
     "name": "Unauthorized",
     "type": "error"
@@ -325,7 +357,13 @@ const abi = `
   {
     "inputs": [],
     "name": "admin",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
@@ -333,7 +371,11 @@ const abi = `
     "inputs": [],
     "name": "coreHatchers",
     "outputs": [
-      { "internalType": "address[]", "name": "", "type": "address[]" }
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -341,7 +383,13 @@ const abi = `
   {
     "inputs": [],
     "name": "depositContract",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
@@ -383,20 +431,36 @@ const abi = `
   {
     "inputs": [],
     "name": "globalOracle",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "globalRecipient",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "admin", "type": "address" },
+      {
+        "internalType": "address",
+        "name": "admin",
+        "type": "address"
+      },
       {
         "internalType": "address[7]",
         "name": "pluggableHatcherList",
@@ -417,7 +481,11 @@ const abi = `
         "name": "globalRecipient_",
         "type": "address"
       },
-      { "internalType": "address", "name": "globalOracle_", "type": "address" },
+      {
+        "internalType": "address",
+        "name": "globalOracle_",
+        "type": "address"
+      },
       {
         "internalType": "uint64",
         "name": "genesisTimestamp_",
@@ -428,8 +496,16 @@ const abi = `
         "name": "epochsUntilFinal_",
         "type": "uint64"
       },
-      { "internalType": "uint64", "name": "slotsPerEpoch_", "type": "uint64" },
-      { "internalType": "uint64", "name": "secondsPerSlot_", "type": "uint64" }
+      {
+        "internalType": "uint64",
+        "name": "slotsPerEpoch_",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "secondsPerSlot_",
+        "type": "uint64"
+      }
     ],
     "name": "initializeV1",
     "outputs": [],
@@ -445,36 +521,68 @@ const abi = `
       }
     ],
     "name": "isPluggableHatcher",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "minimalRecipientImplementation",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "pendingAdmin",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "factory", "type": "address" },
+      {
+        "internalType": "address",
+        "name": "factory",
+        "type": "address"
+      },
       {
         "internalType": "address",
         "name": "pluggableHatcher",
         "type": "address"
       },
-      { "internalType": "bytes", "name": "cdata", "type": "bytes" }
+      {
+        "internalType": "bytes",
+        "name": "cdata",
+        "type": "bytes"
+      }
     ],
     "name": "plugOnFactory",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -516,8 +624,16 @@ const abi = `
         "name": "epochsUntilFinal",
         "type": "uint64"
       },
-      { "internalType": "uint64", "name": "slotsPerEpoch", "type": "uint64" },
-      { "internalType": "uint64", "name": "secondsPerSlot", "type": "uint64" }
+      {
+        "internalType": "uint64",
+        "name": "slotsPerEpoch",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "secondsPerSlot",
+        "type": "uint64"
+      }
     ],
     "name": "setGlobalConsensusLayerSpec",
     "outputs": [],
@@ -552,52 +668,117 @@ const abi = `
   },
   {
     "inputs": [
-      { "internalType": "string", "name": "operatorName", "type": "string" },
-      { "internalType": "address", "name": "admin", "type": "address" },
-      { "internalType": "address", "name": "operator", "type": "address" },
-      { "internalType": "uint256", "name": "treasuryFee", "type": "uint256" }
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "treasuryFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "admin",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "operator",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "operatorName",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct INexusV1.FactoryConstructionArguments",
+        "name": "fca",
+        "type": "tuple"
+      }
     ],
     "name": "spawnFactory",
     "outputs": [
-      { "internalType": "address[2]", "name": "spawned", "type": "address[2]" }
+      {
+        "internalType": "address[2]",
+        "name": "spawned",
+        "type": "address[2]"
+      }
     ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "factory", "type": "address" },
       {
-        "internalType": "uint256",
-        "name": "epochsPerFrame",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint64[3]",
-        "name": "reportBounds",
-        "type": "uint64[3]"
-      },
-      { "internalType": "uint256", "name": "operatorFeeBps", "type": "uint256" }
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "epochsPerFrame",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "operatorFeeBps",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "factory",
+            "type": "address"
+          },
+          {
+            "internalType": "uint64[3]",
+            "name": "reportBounds",
+            "type": "uint64[3]"
+          },
+          {
+            "internalType": "string",
+            "name": "initialExtraData",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct INexusV1.PoolConstructionArguments",
+        "name": "pca",
+        "type": "tuple"
+      }
     ],
     "name": "spawnPool",
     "outputs": [
-      { "internalType": "address[5]", "name": "spawned", "type": "address[5]" }
+      {
+        "internalType": "address[5]",
+        "name": "spawned",
+        "type": "address[5]"
+      }
     ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "factory", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "factory",
+        "type": "address"
+      }
     ],
     "name": "spawnedFactory",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "newAdmin", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "newAdmin",
+        "type": "address"
+      }
     ],
     "name": "transferAdmin",
     "outputs": [],
@@ -616,143 +797,7 @@ const abi = `
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "_logic", "type": "address" },
-      { "internalType": "address", "name": "admin_", "type": "address" },
-      { "internalType": "bytes", "name": "_data", "type": "bytes" }
-    ],
-    "stateMutability": "payable",
-    "type": "constructor"
-  },
-  { "inputs": [], "name": "CallWhenPaused", "type": "error" },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "previousAdmin",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "newAdmin",
-        "type": "address"
-      }
-    ],
-    "name": "AdminChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "beacon",
-        "type": "address"
-      }
-    ],
-    "name": "BeaconUpgraded",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "implementation",
-        "type": "address"
-      }
-    ],
-    "name": "Upgraded",
-    "type": "event"
-  },
-  { "stateMutability": "payable", "type": "fallback" },
-  {
-    "inputs": [],
-    "name": "admin",
-    "outputs": [
-      { "internalType": "address", "name": "admin_", "type": "address" }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "newAdmin", "type": "address" }
-    ],
-    "name": "changeAdmin",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "implementation",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "implementation_",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "pause",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "paused",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "unpause",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "newImplementation",
-        "type": "address"
-      }
-    ],
-    "name": "upgradeTo",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "newImplementation",
-        "type": "address"
-      },
-      { "internalType": "bytes", "name": "data", "type": "bytes" }
-    ],
-    "name": "upgradeToAndCall",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  { "stateMutability": "payable", "type": "receive" }
+  }
 ]
 `
 
