@@ -332,6 +332,49 @@ dataSources:
           handler: handleAppliedFix
       file: ./src/PluggableHatcher.mapping.ts
 
+  - kind: ethereum
+    name: ProxyFactory
+    network: goerli
+    source:
+      address: "0x223f9C1aA495fb1d387Cbaa3Df9b3192C379Dc49"
+      abi: ProxyFactory
+      startBlock: 8409500
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vStake
+      abis:
+        - name: ProxyFactory
+          file: ./abis/ProxyFactory.json
+      eventHandlers:
+        - event: DeployedProxy(bytes32,address,address,bytes,address)
+          handler: handleDeployedProxy
+      file: ./src/ProxyFactory.mapping.ts
+
+
+  - kind: ethereum
+    name: IntegrationRouter
+    network: goerli
+    source:
+      address: "0xB134298cf125B164f0cD072Ed9cf4f5c1F45473a"
+      abi: IntegrationRouterV1
+      startBlock: 8409500
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - IntegrationChannel
+      abis:
+        - name: IntegrationRouterV1
+          file: ./abis/IntegrationRouterV1.json
+      eventHandlers:
+        - event: ChannelImplementationUpdated(indexed bytes32,address)
+          handler: handleChannelImplementationUpdated
+      file: ./src/IntegrationRouterV1.mapping.ts
+
 templates:
   - name: Cub
     kind: ethereum/contract
@@ -524,4 +567,43 @@ templates:
           handler: handleSubmittedReport
         - event: SetHighestReportedEpoch(uint256)
           handler: handleSetHighestReportedEpoch
+
+  - name: vStakes
+    kind: ethereum/contract
+    network: goerli
+    source:
+      abi: vStakesV1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/vStakesV1.mapping.ts
+      entities:
+        - vStake
+        - OperatorCommission
+        - vStakesDeposit
+        - vStakesBalance
+      abis:
+        - name: vStakesV1
+          file: ./abis/vStakesV1.json
+      eventHandlers:
+        - event: SetPool(address)
+          handler: handleSetPool
+        - event: SetName(string)
+          handler: handleSetName
+        - event: SetSymbol(string)
+          handler: handleSetSymbol
+        - event: SetIntegratorFee(uint256)
+          handler: handleSetIntegratorFee
+        - event: NewCommissionSplit(address[],uint256[])
+          handler: handleNewCommissionSplit
+        - event: CommissionWithdrawn(indexed address,uint256)
+          handler: handleNewCommissionWithdrawn
+        - event: Stake(indexed address,uint256,uint256)
+          handler: handleStake
+        - event: VPoolSharesReceived(address,uint256)
+          handler: handleVPoolSharesReceived
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+        
 
