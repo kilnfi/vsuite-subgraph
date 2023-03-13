@@ -1,5 +1,6 @@
-import { ChannelImplementationUpdated } from '../generated/IntegrationRouter/IntegrationRouterV1';
+import { ChannelImplementationUpdated, ProxyFactoryDeployed } from '../generated/IntegrationRouter/IntegrationRouterV1';
 import { IntegrationChannel } from '../generated/schema';
+import { ProxyFactory } from '../generated/templates';
 import { existsChannel, getChannelName } from './IntegrationChannel.utils';
 import { getOrCreateMetaContract } from './MetaContract.utils';
 
@@ -24,5 +25,12 @@ export function handleChannelImplementationUpdated(event: ChannelImplementationU
     implem.editedAtBlock = blockId;
 
     implem.save();
+  }
+}
+
+export function handleProxyFactoryDeployed(event: ProxyFactoryDeployed): void {
+  const channel = event.params.channel;
+  if (existsChannel(channel)) {
+    ProxyFactory.create(event.params.factory);
   }
 }

@@ -333,32 +333,10 @@ dataSources:
       file: ./src/PluggableHatcher.mapping.ts
 
   - kind: ethereum
-    name: ProxyFactory
-    network: goerli
-    source:
-      address: "0x223f9C1aA495fb1d387Cbaa3Df9b3192C379Dc49"
-      abi: ProxyFactory
-      startBlock: 8409500
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - vStake
-      abis:
-        - name: ProxyFactory
-          file: ./abis/ProxyFactory.json
-      eventHandlers:
-        - event: DeployedProxy(bytes32,address,address,bytes,address)
-          handler: handleDeployedProxy
-      file: ./src/ProxyFactory.mapping.ts
-
-
-  - kind: ethereum
     name: IntegrationRouter
     network: goerli
     source:
-      address: "0xB134298cf125B164f0cD072Ed9cf4f5c1F45473a"
+      address: "0x3D5628b1431706201C39c3E821646952992eE205"
       abi: IntegrationRouterV1
       startBlock: 8409500
     mapping:
@@ -373,6 +351,8 @@ dataSources:
       eventHandlers:
         - event: ChannelImplementationUpdated(indexed bytes32,address)
           handler: handleChannelImplementationUpdated
+        - event: ProxyFactoryDeployed(indexed bytes32,address)
+          handler: handleProxyFactoryDeployed
       file: ./src/IntegrationRouterV1.mapping.ts
 
 templates:
@@ -605,5 +585,23 @@ templates:
           handler: handleVPoolSharesReceived
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
+  - kind: ethereum
+    name: ProxyFactory
+    network: goerli
+    source:
+      abi: ProxyFactory
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vStake
+      abis:
+        - name: ProxyFactory
+          file: ./abis/ProxyFactory.json
+      eventHandlers:
+        - event: DeployedProxy(bytes32,address,address,bytes,address)
+          handler: handleDeployedProxy
+      file: ./src/ProxyFactory.mapping.ts
         
 
