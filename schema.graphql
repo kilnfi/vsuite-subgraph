@@ -591,3 +591,92 @@ type OracleAggregatorReportVariantVote @entity {
   editedAtBlock: BigInt!
 }
 
+
+#
+# ██ ███    ██ ████████ ███████  ██████  ██████   █████  ████████ ██  ██████  ███    ██ ███████ 
+# ██ ████   ██    ██    ██      ██       ██   ██ ██   ██    ██    ██ ██    ██ ████   ██ ██      
+# ██ ██ ██  ██    ██    █████   ██   ███ ██████  ███████    ██    ██ ██    ██ ██ ██  ██ ███████ 
+# ██ ██  ██ ██    ██    ██      ██    ██ ██   ██ ██   ██    ██    ██ ██    ██ ██  ██ ██      ██ 
+# ██ ██   ████    ██    ███████  ██████  ██   ██ ██   ██    ██    ██  ██████  ██   ████ ███████
+#
+
+
+type IntegrationChannel @entity {
+  id: Bytes!
+  name: String!
+  implementation: Bytes!
+  contract: MetaContract!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vStake @entity {
+  id: Bytes!
+  vPool: vPool!
+
+  address: Bytes!
+  channel: IntegrationChannel!
+  name: String!
+  symbol: String!
+  decimals: BigInt!
+
+  integratorFee: BigInt!
+  totalSupply: BigInt!
+  totalUnderlyingSupply: BigInt!
+
+  operatorCommissions: [OperatorCommission!]! @derivedFrom(field: "vStake")
+  deposits: [vStakesDeposit!]! @derivedFrom(field: "vStake")
+  balances: [vStakesBalance!]! @derivedFrom(field: "vStake")
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type OperatorCommission @entity {
+  id: String! # "{vStakesAddress}@{operatorAddres}"
+  vStake: vStake!
+
+  recipient: Bytes!
+  commission: BigInt!
+  withdrawnCommission: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vStakesDeposit @entity {
+  id: String! # "{vStakesAddress}@{stakerAddress}@{txHash}"
+  vStake: vStake!
+  
+  hash: Bytes!
+  
+  staker: Bytes!
+  depositAmount: BigInt!
+  mintedShares: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vStakesBalance @entity {
+  id: String! # "{vStakesAddress}@{stakerAddress}"
+  vStake: vStake!
+    
+  staker: Bytes!
+  underlyingBalance: BigInt!
+  sharesBalance: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}

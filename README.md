@@ -50,7 +50,7 @@ graph create --node http://localhost:8020 vsuite-goerli
 graph deploy vsuite-goerli --node http://localhost:8020 --ipfs http://localhost:5001
 ```
 
-### 7. Visit the [web UI](http://localhost:8000/subgraphs/name/vsuite-goerli/graphq)
+### 7. Visit the [web UI](http://localhost:8000/subgraphs/name/vsuite-goerli/graphql)
 
 Test the following GraphQL request to ensure everything works well
 
