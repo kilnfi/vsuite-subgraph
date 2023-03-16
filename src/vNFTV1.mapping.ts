@@ -1,6 +1,6 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts";
-import { vNFT, vNFTIntegration, vNFTTransfer } from "../generated/schema";
-import { PurchasedValidator, SetExtraData, SetIntegrator, SetIntegratorCommission, SetName, SetOperatorCommission, SetSymbol, SetURIPrefix, Transfer } from "../generated/vNFT/vNFTV1";
+import { vNFT, vNFTIntegration, vNFTTransfer, vNFTUser } from "../generated/schema";
+import { Approval, PurchasedValidator, SetExtraData, SetIntegrator, SetIntegratorCommission, SetName, SetOperatorCommission, SetSymbol, SetURIPrefix, Transfer, UpdateUser } from "../generated/vNFT/vNFTV1";
 import { uid } from "./utils";
 
 export function handleSetName(event: SetName): void {
@@ -134,9 +134,42 @@ export function handleTransfer(event: Transfer): void {
     vnft!.owner = event.params.to;
     vnft!.editedAt = ts;
     vnft!.editedAtBlock = blockId;
+    vnft!.approval = null;
 
     transfer.vNFT = vnft!.id;
 
     vnft!.save();
     transfer.save();
+}
+
+export function handleUpdateUser(event: UpdateUser): void {
+    const tokenId = event.params.tokenId;
+    const id = `${event.address}@${tokenId}`;
+    const ts = event.block.timestamp;
+    const blockId = event.block.number;
+
+    let user = vNFTUser.load(id);
+    if(!user) {
+        user = new vNFTUser(id);
+        user.createdAt = ts;
+        user.createdAtBlock = blockId;
+        user.vNFT = id;
+    }
+    user.user = event.params.user;
+    user.expiry = event.params.expires;
+    user.editedAt = ts;
+    user.editedAtBlock = blockId;
+
+    user.save();
+}
+
+export function handleApproval(event: Approval): void {
+    const ts = event.block.timestamp;
+    const blockId = event.block.number;
+
+    const vnft = vNFT.load(`${event.address.toHexString()}@${event.params.tokenId}`);
+    vnft!.editedAt = ts;
+    vnft!.editedAtBlock = blockId;
+    vnft!.approval = event.params.approved;
+    vnft!.save();
 }

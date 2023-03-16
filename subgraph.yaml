@@ -391,6 +391,10 @@ dataSources:
           handler: handleSetIntegratorCommission
         - event: SetIntegrator(address)
           handler: handleSetIntegrator
+        - event: UpdateUser(indexed uint256,indexed address,uint64)
+          handler: handleUpdateUser
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
       file: ./src/vNFTV1.mapping.ts
 
 templates:

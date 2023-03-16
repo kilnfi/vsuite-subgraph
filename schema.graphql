@@ -726,6 +726,8 @@ type vNFT @entity {
   validatorId: BigInt!
 
   transfers: [vNFTTransfer!]! @derivedFrom(field: "vNFT")
+  user: vNFTUser @derivedFrom(field: "vNFT")
+  approval: Bytes
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -739,6 +741,19 @@ type vNFTTransfer @entity {
 
   from: Bytes!
   to: Bytes!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vNFTUser @entity {
+  id: String!
+
+  vNFT: vNFT!
+  user: Bytes!
+  expiry: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!
