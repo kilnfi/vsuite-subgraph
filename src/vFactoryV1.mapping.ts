@@ -252,9 +252,10 @@ export function handleSetValidatorExtraData(event: SetValidatorExtraData): void 
 export function handleSetMetadata(event: SetMetadata): void {
   const factory = vFactory.load(event.address);
 
-  factory!.operatorName = event.params.name;
-  factory!.operatorUrl = event.params.url;
-  factory!.operatorIconUrl = event.params.iconUrl;
+  // @TODO OPERATOR NAME
+  // factory!.operatorName = event.params.name;
+  // factory!.operatorUrl = event.params.url;
+  // factory!.operatorIconUrl = event.params.iconUrl;
 
   factory!.editedAt = event.block.timestamp;
   factory!.editedAtBlock = event.block.number;
