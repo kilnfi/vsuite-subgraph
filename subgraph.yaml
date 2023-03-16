@@ -408,8 +408,9 @@ templates:
           handler: handleSetValidatorFeeRecipient
         - event: SetValidatorExtraData(indexed uint256,string)
           handler: handleSetValidatorExtraData
-        - event: SetMetadata(string,string,string)
-          handler: handleSetMetadata
+        # @TODO OPERATOR NAME
+        # - event: SetMetadata(string,string,string)
+        #   handler: handleSetMetadata
         - event: SetAdmin(address)
           handler: handleSetAdmin
         - event: ChangedOperator(address)

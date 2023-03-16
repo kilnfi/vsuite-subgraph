@@ -137,9 +137,10 @@ type vFactory @entity {
   operator: Bytes
   admin: Bytes
   minimalRecipientImplementation: Bytes
-  operatorName: String!
-  operatorUrl: String!
-  operatorIconUrl: String!
+  # @TODO OPERATOR NAME
+  # operatorName: String!
+  # operatorUrl: String!
+  # operatorIconUrl: String!
 
   cub: Cub!
   withdrawalChannels: [WithdrawalChannel!]! @derivedFrom(field: "factory")
