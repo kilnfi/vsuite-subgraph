@@ -697,11 +697,11 @@ type vStakesBalance @entity {
 
 type vNFTIntegration @entity {
   id: Bytes!
-  # vFactory: vFactory!
-  # execLayerVault
-  # operatorCommissions
-  # integratorCommissions
-  # integrator
+  # vFactory: vFactory! @TODO
+  # execLayerVault: MerkleVault! @TODO
+  operatorCommission: BigInt!
+  integratorCommission: BigInt!
+  integrator: Bytes!
 
   extraData: String!
   name: String!

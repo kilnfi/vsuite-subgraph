@@ -385,6 +385,12 @@ dataSources:
           handler: handlePurchasedValidator
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleTransfer
+        - event: SetOperatorCommission(uint256)
+          handler: handleSetOperatorCommission
+        - event: SetIntegratorCommission(uint256)
+          handler: handleSetIntegratorCommission
+        - event: SetIntegrator(address)
+          handler: handleSetIntegrator
       file: ./src/vNFTV1.mapping.ts
 
 templates:
