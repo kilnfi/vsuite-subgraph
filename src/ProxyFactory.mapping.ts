@@ -1,5 +1,5 @@
 import { vStakes } from '../generated/templates';
-import { DeployedProxy } from '../generated/ProxyFactory/ProxyFactory';
+import { DeployedProxy } from '../generated/templates/ProxyFactory/ProxyFactory';
 import { vStake } from '../generated/schema';
 import { Address, BigInt, Bytes } from '@graphprotocol/graph-ts';
 import { CHANNEL_NATIVE_VPOOL_BYTES32 } from './IntegrationChannel.utils';
