@@ -600,7 +600,12 @@ type OracleAggregatorReportVariantVote @entity {
 # ██ ██  ██ ██    ██    ██      ██    ██ ██   ██ ██   ██    ██    ██ ██    ██ ██  ██ ██      ██ 
 # ██ ██   ████    ██    ███████  ██████  ██   ██ ██   ██    ██    ██  ██████  ██   ████ ███████
 #
-
+# ██    ██ ███████ ████████  █████  ██   ██ ███████ ███████ 
+# ██    ██ ██         ██    ██   ██ ██  ██  ██      ██      
+# ██    ██ ███████    ██    ███████ █████   █████   ███████ 
+#  ██  ██       ██    ██    ██   ██ ██  ██  ██           ██ 
+#   ████   ███████    ██    ██   ██ ██   ██ ███████ ███████ 
+#                                                          
 
 type IntegrationChannel @entity {
   id: Bytes!
@@ -675,6 +680,65 @@ type vStakesBalance @entity {
   staker: Bytes!
   underlyingBalance: BigInt!
   sharesBalance: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+#
+# ██    ██ ███    ██ ███████ ████████ 
+# ██    ██ ████   ██ ██         ██    
+# ██    ██ ██ ██  ██ █████      ██    
+#  ██  ██  ██  ██ ██ ██         ██    
+#   ████   ██   ████ ██         ██    
+#
+
+type vNFTIntegration @entity {
+  id: Bytes!
+  # vFactory: vFactory!
+  # execLayerVault
+  # operatorCommissions
+  # integratorCommissions
+  # integrator
+
+  extraData: String!
+  name: String!
+  symbol: String!
+  uriPrefix: String!
+  supply: BigInt!
+
+  vnfts: [vNFT!]! @derivedFrom(field: "vNFTIntegration")
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vNFT @entity {
+  id: String! #{vNFTaddress}@{tokenId}
+  tokenId: BigInt!
+  vNFTIntegration: vNFTIntegration!
+
+  owner: Bytes!
+  validatorId: BigInt!
+
+  transfers: [vNFTTransfer!]! @derivedFrom(field: "vNFT")
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vNFTTransfer @entity {
+  id: String! #{vNFTaddress}@{tokenId}@{txHash}@{txLogIdx}
+  vNFT: vNFT!
+
+  from: Bytes!
+  to: Bytes!
 
   createdAt: BigInt!
   editedAt: BigInt!
