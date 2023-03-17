@@ -1,19 +1,12 @@
 import { Cub, Fix } from '../generated/schema';
 import { AppliedFixes } from '../generated/templates/Cub/Cub';
+import { eventUUID } from './utils';
 
 export function handleAppliedFixes(event: AppliedFixes): void {
   const cub = Cub.load(event.address);
 
   for (let idx = 0; idx < event.params.fixes.length; ++idx) {
-    const fixId =
-      'fix@' +
-      event.address.toHexString() +
-      '@' +
-      event.params.fixes[idx].toHexString() +
-      '@' +
-      event.transaction.hash.toHexString() +
-      '@' +
-      event.transactionLogIndex.toString();
+    const fixId = eventUUID(event, ['fix', event.params.fixes[idx].toHexString()]);
 
     const fix = new Fix(fixId);
     fix.address = event.params.fixes[idx];

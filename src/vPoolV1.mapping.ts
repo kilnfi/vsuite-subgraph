@@ -25,9 +25,10 @@ import {
 } from '../generated/schema';
 import { Bytes, BigInt, Address, store } from '@graphprotocol/graph-ts';
 import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum';
+import { entityUUID, externalEntityUUID, txUniqueUUID } from './utils';
 
 function getOrCreateBalance(pool: Bytes, account: Bytes, timestamp: BigInt, block: BigInt): PoolBalance {
-  const balanceId = account.toHexString() + '@' + pool.toHexString();
+  const balanceId = externalEntityUUID(Address.fromBytes(pool), [account.toHexString()]);
 
   let balance = PoolBalance.load(balanceId);
 
@@ -125,14 +126,13 @@ export function handlePurchasedValidators(event: PurchasedValidators): void {
   const validatorCount = pool!.purchasedValidatorCount.toI32();
 
   for (let idx = 0; idx < event.params.validators.length; ++idx) {
-    const poolPurchasedValidatorId =
-      (validatorCount + idx).toString() +
-      '@' +
-      event.params.validators[idx].toString() +
-      '@' +
-      pool!.factory.toHexString();
+    const poolPurchasedValidatorId = entityUUID(event, [
+      (validatorCount + idx).toString(),
+      pool!.factory.toHexString(),
+      event.params.validators[idx].toString()
+    ]);
     const poolPurchasedValidator = new PoolPurchasedValidator(poolPurchasedValidatorId);
-    const fundedKeyId = event.params.validators[idx].toString() + '@' + pool!.factory.toHexString();
+    const fundedKeyId = externalEntityUUID(Address.fromBytes(pool!.factory), [event.params.validators[idx].toString()]);
 
     poolPurchasedValidator.pool = event.address;
     poolPurchasedValidator.index = BigInt.fromI32(validatorCount + idx);
@@ -156,7 +156,7 @@ export function handlePurchasedValidators(event: PurchasedValidators): void {
 export function handleRevenueUpdate(event: RevenueUpdate): void {
   const pool = vPool.load(event.address);
 
-  const revenueUpdateId = event.address.toHexString() + '@' + event.params.epoch.toString();
+  const revenueUpdateId = entityUUID(event, [event.params.epoch.toString()]);
   const revenueUpdate = new RevenueUpdateEntity(revenueUpdateId);
 
   revenueUpdate.pool = event.address;
@@ -165,12 +165,9 @@ export function handleRevenueUpdate(event: RevenueUpdate): void {
   revenueUpdate.covered = event.params.covered;
   revenueUpdate.totalSupply = event.params.newTotalSupply;
   revenueUpdate.totalUnderlyingSupply = event.params.newTotalUnderlyingSupply;
-  revenueUpdate.execLayerSuppliedEther =
-    event.transaction.hash.toHexString() + '@' + pool!.execLayerRecipient.toHexString();
-  revenueUpdate.coverageSuppliedEther =
-    event.transaction.hash.toHexString() + '@' + pool!.coverageRecipient.toHexString();
-  revenueUpdate.coverageVoidedShares =
-    event.transaction.hash.toHexString() + '@' + pool!.coverageRecipient.toHexString();
+  revenueUpdate.execLayerSuppliedEther = txUniqueUUID(event, [pool!.execLayerRecipient.toHexString()]);
+  revenueUpdate.coverageSuppliedEther = txUniqueUUID(event, [pool!.coverageRecipient.toHexString()]);
+  revenueUpdate.coverageVoidedShares = txUniqueUUID(event, [pool!.coverageRecipient.toHexString()]);
 
   revenueUpdate.createdAt = event.block.timestamp;
   revenueUpdate.createdAtBlock = event.block.number;
@@ -263,7 +260,7 @@ export function handleSetReportBounds(event: SetReportBounds): void {
 }
 
 function getOrCreateApproval(balance: string, account: Bytes, timestamp: BigInt, block: BigInt): PoolBalanceApproval {
-  const approvalId = account.toHexString() + '@' + balance;
+  const approvalId = balance + '_' + account.toHexString();
 
   let approval = PoolBalanceApproval.load(approvalId);
 
@@ -305,7 +302,7 @@ export function handleApproval(event: Approval): void {
 }
 
 export function handleApproveDepositor(event: ApproveDepositor): void {
-  const depositorId = event.params.depositor.toHexString() + '@' + event.address.toHexString();
+  const depositorId = entityUUID(event, [event.params.depositor.toHexString()]);
   let depositor = PoolDepositor.load(depositorId);
 
   if (depositor == null) {

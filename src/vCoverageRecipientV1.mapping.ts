@@ -7,9 +7,10 @@ import {
 } from '../generated/templates/vCoverageRecipient/vCoverageRecipientV1';
 import { CoverageDonor, CoverageSuppliedEther, CoverageVoidedShares, vCoverageRecipient } from '../generated/schema';
 import { store } from '@graphprotocol/graph-ts';
+import { entityUUID, txUniqueUUID } from './utils';
 
 export function handleSuppliedEther(event: SuppliedEther): void {
-  const cseId = event.transaction.hash.toHexString() + '@' + event.address.toHexString();
+  const cseId = txUniqueUUID(event, [event.address.toHexString()]);
   const cse = new CoverageSuppliedEther(cseId);
   const cr = vCoverageRecipient.load(event.address);
 
@@ -31,7 +32,7 @@ export function handleSuppliedEther(event: SuppliedEther): void {
 }
 
 export function handleVoidedShares(event: VoidedShares): void {
-  const cseId = event.transaction.hash.toHexString() + '@' + event.address.toHexString();
+  const cseId = txUniqueUUID(event, [event.address.toHexString()]);
   const cvs = new CoverageVoidedShares(cseId);
   const cr = vCoverageRecipient.load(event.address);
 
@@ -75,7 +76,7 @@ export function handleUpdatedSharesForCoverage(event: UpdatedSharesForCoverage):
 }
 
 export function handleAllowedDonor(event: AllowedDonor): void {
-  const donorId = event.params.donorAddress.toHexString() + '@' + event.address.toHexString();
+  const donorId = entityUUID(event, [event.params.donorAddress.toHexString()]);
 
   let donor = CoverageDonor.load(donorId);
 

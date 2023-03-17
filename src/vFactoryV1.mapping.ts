@@ -28,13 +28,14 @@ import { Bytes } from '@graphprotocol/graph-ts';
 import { store } from '@graphprotocol/graph-ts';
 import { SetMinimalRecipientImplementation } from '../generated/NexusV1/NexusV1';
 import { SetValidatorExtraData } from '../generated/templates/vFactory/vFactoryV1';
+import { entityUUID, eventUUID } from './utils';
 
 const PUBLIC_KEY_LENGTH = 48;
 const SIGNATURE_LENGTH = 96;
 const KEY_PACK_LENGTH = PUBLIC_KEY_LENGTH + SIGNATURE_LENGTH;
 
 export function handleAddedValidators(event: AddedValidators): void {
-  const channelId = event.params.withdrawalChannel.toHexString() + '@' + event.address.toHexString();
+  const channelId = entityUUID(event, [event.params.withdrawalChannel.toHexString()]);
 
   let entity = WithdrawalChannel.load(channelId);
 
@@ -60,7 +61,7 @@ export function handleAddedValidators(event: AddedValidators): void {
     const publicKey = Bytes.fromUint8Array(
       event.params.keys.slice(idx * KEY_PACK_LENGTH + SIGNATURE_LENGTH, (idx + 1) * KEY_PACK_LENGTH)
     );
-    const keyId = event.params.withdrawalChannel.toHexString() + '@' + (keyCount + idx).toString();
+    const keyId = entityUUID(event, [event.params.withdrawalChannel.toHexString(), (keyCount + idx).toString()]);
     const keyEntity = new ValidationKey(keyId);
     keyEntity.signature = signature;
     keyEntity.publicKey = publicKey;
@@ -79,7 +80,7 @@ export function handleAddedValidators(event: AddedValidators): void {
 }
 
 export function handleValidatorRequest(event: ValidatorRequest): void {
-  const channelId = event.params.withdrawalChannel.toHexString() + '@' + event.address.toHexString();
+  const channelId = entityUUID(event, [event.params.withdrawalChannel.toHexString()]);
 
   let entity = WithdrawalChannel.load(channelId);
 
@@ -94,12 +95,7 @@ export function handleValidatorRequest(event: ValidatorRequest): void {
     entity.createdAtBlock = event.block.number;
   }
 
-  const validatorRequestId =
-    event.params.withdrawalChannel.toHexString() +
-    '@' +
-    event.transaction.hash.toHexString() +
-    '@' +
-    event.transactionLogIndex.toString();
+  const validatorRequestId = eventUUID(event, [event.params.withdrawalChannel.toHexString()]);
 
   const validatorRequest = new ValidatorRequestEntity(validatorRequestId);
 
@@ -120,11 +116,14 @@ export function handleValidatorRequest(event: ValidatorRequest): void {
 }
 
 export function handleRemovedValidator(event: RemovedValidator): void {
-  const channelId = event.params.withdrawalChannel.toHexString() + '@' + event.address.toHexString();
+  const channelId = entityUUID(event, [event.params.withdrawalChannel.toHexString()]);
 
   const channel = WithdrawalChannel.load(channelId);
 
-  const keyId = event.params.withdrawalChannel.toHexString() + '@' + event.params.validatorIndex.toString();
+  const keyId = entityUUID(event, [
+    event.params.withdrawalChannel.toHexString(),
+    event.params.validatorIndex.toString()
+  ]);
   const keyIndex = event.params.validatorIndex.toI32();
 
   const keyToDelete = ValidationKey.load(keyId);
@@ -132,7 +131,10 @@ export function handleRemovedValidator(event: RemovedValidator): void {
   if (keyIndex == channel!.total.toI32() - 1) {
     store.remove('ValidationKey', keyId);
   } else {
-    const lastKeyId = event.params.withdrawalChannel.toHexString() + '@' + (channel!.total.toI32() - 1).toString();
+    const lastKeyId = entityUUID(event, [
+      event.params.withdrawalChannel.toHexString(),
+      (channel!.total.toI32() - 1).toString()
+    ]);
     const lastKey = ValidationKey.load(lastKeyId);
     keyToDelete!.publicKey = lastKey!.publicKey;
     keyToDelete!.signature = lastKey!.signature;
@@ -147,11 +149,14 @@ export function handleRemovedValidator(event: RemovedValidator): void {
 }
 
 export function handleFundedValidator(event: FundedValidator): void {
-  const keyId = event.params.withdrawalChannel.toHexString() + '@' + event.params.validatorIndex.toString();
+  const keyId = entityUUID(event, [
+    event.params.withdrawalChannel.toHexString(),
+    event.params.validatorIndex.toString()
+  ]);
   const key = ValidationKey.load(keyId);
-  const channelId = event.params.withdrawalChannel.toHexString() + '@' + event.address.toHexString();
+  const channelId = entityUUID(event, [event.params.withdrawalChannel.toHexString()]);
   const channel = WithdrawalChannel.load(channelId);
-  const fundedKeyId = event.params.id.toString() + '@' + event.address.toHexString();
+  const fundedKeyId = entityUUID(event, [event.params.id.toString()]);
   const fundedKey = new FundedValidationKey(fundedKeyId);
 
   key!.funded = fundedKeyId;
@@ -175,15 +180,10 @@ export function handleFundedValidator(event: FundedValidator): void {
 }
 
 export function handleExitValidator(event: ExitValidator): void {
-  const fundedKeyId = event.params.id.toString() + '@' + event.address.toHexString();
+  const fundedKeyId = entityUUID(event, [event.params.id.toString()]);
   const fundedKey = FundedValidationKey.load(fundedKeyId);
 
-  const exitRequestId =
-    event.params.id.toString() +
-    '@' +
-    event.transaction.hash.toHexString() +
-    '@' +
-    event.transactionLogIndex.toHexString();
+  const exitRequestId = eventUUID(event, [event.params.id.toString()]);
   const exitRequest = new ExitRequest(exitRequestId);
 
   exitRequest.validator = fundedKeyId;
@@ -203,7 +203,7 @@ export function handleExitValidator(event: ExitValidator): void {
 }
 
 export function handleUpdatedLimit(event: UpdatedLimit): void {
-  const channelId = event.params.withdrawalChannel.toHexString() + '@' + event.address.toHexString();
+  const channelId = entityUUID(event, [event.params.withdrawalChannel.toHexString()]);
   const channel = WithdrawalChannel.load(channelId);
 
   channel!.limit = event.params.limit;
@@ -214,7 +214,7 @@ export function handleUpdatedLimit(event: UpdatedLimit): void {
 }
 
 export function handleSetValidatorOwner(event: SetValidatorOwner): void {
-  const fundedKeyId = event.params.id.toString() + '@' + event.address.toHexString();
+  const fundedKeyId = entityUUID(event, [event.params.id.toString()]);
   const fundedKey = FundedValidationKey.load(fundedKeyId);
 
   fundedKey!.owner = event.params.owner;
@@ -226,7 +226,7 @@ export function handleSetValidatorOwner(event: SetValidatorOwner): void {
 }
 
 export function handleSetValidatorFeeRecipient(event: SetValidatorFeeRecipient): void {
-  const fundedKeyId = event.params.id.toString() + '@' + event.address.toHexString();
+  const fundedKeyId = entityUUID(event, [event.params.id.toString()]);
   const fundedKey = FundedValidationKey.load(fundedKeyId);
 
   fundedKey!.feeRecipient = event.params.feeRecipient;
@@ -238,7 +238,7 @@ export function handleSetValidatorFeeRecipient(event: SetValidatorFeeRecipient):
 }
 
 export function handleSetValidatorExtraData(event: SetValidatorExtraData): void {
-  const fundedKeyId = event.params.id.toString() + '@' + event.address.toHexString();
+  const fundedKeyId = entityUUID(event, [event.params.id.toString()]);
   const fundedKey = FundedValidationKey.load(fundedKeyId);
 
   fundedKey!.extraData = event.params.extraData;
@@ -319,7 +319,7 @@ export function handleSetHatcherRegistry(event: SetHatcherRegistry): void {
 }
 
 export function handleApproveDepositor(event: ApproveDepositor): void {
-  const depositorId = event.params.depositor.toHexString() + '@' + event.address.toHexString();
+  const depositorId = entityUUID(event, [event.params.depositor.toHexString()]);
   let depositor = FactoryDepositor.load(depositorId);
 
   if (depositor == null) {
