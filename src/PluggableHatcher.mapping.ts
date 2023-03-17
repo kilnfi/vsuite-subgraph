@@ -15,6 +15,7 @@ import { SetAdmin } from '../generated/NexusV1/NexusV1';
 import { Cub, Fix, PluggableHatcher, PluggableHatcherImplementation } from '../generated/schema';
 import { Cub as CubTemplate } from '../generated/templates';
 import { getOrCreateMetaContract } from './MetaContract.utils';
+import { entityUUID, eventUUID } from './utils';
 
 function _getOrCreatePluggableHatcher(addr: Bytes, event: ethereum.Event): PluggableHatcher {
   let ph = PluggableHatcher.load(addr);
@@ -39,12 +40,7 @@ function _getOrCreatePluggableHatcher(addr: Bytes, event: ethereum.Event): Plugg
 export function handleUpgraded(event: Upgraded): void {
   const ph = _getOrCreatePluggableHatcher(event.address, event);
 
-  const implementationId =
-    event.params.implementation.toHexString() +
-    '@' +
-    event.transaction.hash.toHexString() +
-    '@' +
-    event.transactionLogIndex.toString();
+  const implementationId = eventUUID(event, [event.params.implementation.toHexString()]);
   const implementation = new PluggableHatcherImplementation(implementationId);
   implementation.address = event.params.implementation;
   implementation.pluggableHatcher = event.address;
@@ -139,7 +135,7 @@ export function handleSetInitialProgress(event: SetInitialProgress): void {
 export function handleRegisteredGlobalFix(event: RegisteredGlobalFix): void {
   const ph = _getOrCreatePluggableHatcher(event.address, event);
 
-  const globalFixId = 'globalFix' + '@' + event.address.toHexString() + '@' + event.params.index.toString();
+  const globalFixId = entityUUID(event, ['globalFix', event.params.index.toString()]);
   const globalFix = new Fix(globalFixId);
   globalFix.address = event.params.fix;
   globalFix.globalFix = event.address;
@@ -159,7 +155,7 @@ export function handleRegisteredGlobalFix(event: RegisteredGlobalFix): void {
 }
 
 export function handleDeletedGlobalFix(event: DeletedGlobalFix): void {
-  const globalFixId = 'globalFix' + '@' + event.address.toHexString() + '@' + event.params.index.toString();
+  const globalFixId = entityUUID(event, ['globalFix', event.params.index.toString()]);
   const globalFix = Fix.load(globalFixId);
   globalFix!.deleted = false;
 
@@ -171,15 +167,7 @@ export function handleDeletedGlobalFix(event: DeletedGlobalFix): void {
 export function handleAppliedFix(event: AppliedFix): void {
   const cub = Cub.load(event.params.cub);
 
-  const fixId =
-    'fix@' +
-    event.address.toHexString() +
-    '@' +
-    event.params.fix.toHexString() +
-    '@' +
-    event.transaction.hash.toHexString() +
-    '@' +
-    event.transactionLogIndex.toString();
+  const fixId = eventUUID(event, ['fix', event.params.fix.toHexString()]);
 
   const fix = new Fix(fixId);
   fix.address = event.params.fix;

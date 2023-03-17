@@ -15,6 +15,7 @@ import {
   Nexus
 } from '../generated/schema';
 import { BigInt, Bytes, ethereum, store } from '@graphprotocol/graph-ts';
+import { entityUUID } from './utils';
 
 function getQuorum(memberCount: BigInt): BigInt {
   return ((memberCount + BigInt.fromI32(1)) * BigInt.fromI32(3)) / BigInt.fromI32(4) + BigInt.fromI32(1);
@@ -25,7 +26,7 @@ export function handleAddedOracleAggregatorMember(event: AddedOracleAggregatorMe
 
   const memberCount = oa!.memberCount.toI32();
 
-  const oaMemberId = memberCount.toString() + '@' + event.address.toHexString();
+  const oaMemberId = entityUUID(event, [memberCount.toString()]);
 
   const oaMember = new OracleAggregatorMember(oaMemberId);
 
@@ -54,7 +55,7 @@ export function handleRemovedOracleAggregatorMember(event: RemovedOracleAggregat
   let removedMemberIndex = -1;
 
   for (let idx = 0; idx < oa!.memberCount.toI32(); ++idx) {
-    const oaMemberId = idx.toString() + '@' + event.address.toHexString();
+    const oaMemberId = entityUUID(event, [idx.toString()]);
 
     const oaMember = OracleAggregatorMember.load(oaMemberId);
 
@@ -69,11 +70,11 @@ export function handleRemovedOracleAggregatorMember(event: RemovedOracleAggregat
   }
 
   if (removedMemberIndex == memberCount - 1) {
-    const oaMemberId = removedMemberIndex.toString() + '@' + event.address.toHexString();
+    const oaMemberId = entityUUID(event, [removedMemberIndex.toString()]);
     store.remove('OracleAggregatorMember', oaMemberId);
   } else {
-    const removedOaMemberId = (memberCount - 1).toString() + '@' + event.address.toHexString();
-    const swapOaMemberId = removedMemberIndex.toString() + '@' + event.address.toHexString();
+    const removedOaMemberId = entityUUID(event, [(memberCount - 1).toString()]);
+    const swapOaMemberId = entityUUID(event, [removedMemberIndex.toString()]);
 
     const removedOaMember = OracleAggregatorMember.load(removedOaMemberId);
     const swapOaMember = OracleAggregatorMember.load(swapOaMemberId);
@@ -130,16 +131,12 @@ export function handleVote(
 ): void {
   const oa = vOracleAggregator.load(event.address);
 
-  const variantId =
-    epoch.toString() +
-    '@' +
-    validatorCount.toString() +
-    '@' +
-    balanceSum.toString() +
-    '@' +
-    slashedBalanceSum.toString() +
-    '@' +
-    event.address.toHexString();
+  const variantId = entityUUID(event, [
+    epoch.toString(),
+    validatorCount.toString(),
+    balanceSum.toString(),
+    slashedBalanceSum.toString()
+  ]);
 
   let variant = OracleAggregatorReportVariant.load(variantId);
 
@@ -157,20 +154,14 @@ export function handleVote(
     variant.createdAtBlock = event.block.number;
   }
 
-  const voteId =
-    voter.toHexString() +
-    '@' +
-    (globalMember ? 'globalMember' : 'member') +
-    '@' +
-    epoch.toString() +
-    '@' +
-    validatorCount.toString() +
-    '@' +
-    balanceSum.toString() +
-    '@' +
-    slashedBalanceSum.toString() +
-    '@' +
-    event.address.toHexString();
+  const voteId = entityUUID(event, [
+    epoch.toString(),
+    validatorCount.toString(),
+    balanceSum.toString(),
+    slashedBalanceSum.toString(),
+    globalMember ? 'globalMember' : 'member',
+    voter.toHexString()
+  ]);
   const vote = new OracleAggregatorReportVariantVote(voteId);
   vote.member = voter;
   vote.globalMember = globalMember;
@@ -218,16 +209,12 @@ export function handlerGlobalMemberVoted(event: GlobalMemberVoted): void {
 
 export function handleSubmittedReport(event: SubmittedReport): void {
   const oa = vOracleAggregator.load(event.address);
-  const variantId =
-    event.params.epoch.toString() +
-    '@' +
-    event.params.validatorCount.toString() +
-    '@' +
-    event.params.balanceSum.toString() +
-    '@' +
-    event.params.slashedBalanceSum.toString() +
-    '@' +
-    event.address.toHexString();
+  const variantId = entityUUID(event, [
+    event.params.epoch.toString(),
+    event.params.validatorCount.toString(),
+    event.params.balanceSum.toString(),
+    event.params.slashedBalanceSum.toString()
+  ]);
 
   const variant = OracleAggregatorReportVariant.load(variantId);
 
