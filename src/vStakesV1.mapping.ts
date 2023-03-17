@@ -11,6 +11,7 @@ import {
   Stake,
   VPoolSharesReceived
 } from '../generated/templates/vStakes/vStakesV1';
+import { entityUUID, eventUUID, externalEntityUUID } from './utils';
 
 export function handleSetPool(event: SetPool): void {
   const vstake = vStake.load(event.address);
@@ -63,7 +64,7 @@ export function handleNewCommissionSplit(event: NewCommissionSplit): void {
     const recipient = recipients[i];
     const split = splits[i];
 
-    const id = `${vstake!.id.toHexString()}@${recipient.toHexString()}`;
+    const id = entityUUID(event, [recipient.toHexString()])
     let commission = OperatorCommission.load(id);
 
     if (!commission) {
@@ -92,9 +93,9 @@ export function handleNewCommissionWithdrawn(event: CommissionWithdrawn): void {
   const ts = event.block.timestamp;
   const blockId = event.block.number;
 
-  const id = `${vstake!.id.toHexString()}@${event.params.withdrawer.toHexString()}`;
+  const id = entityUUID(event, [event.params.withdrawer.toHexString()])
   const commission = OperatorCommission.load(id);
-  commission!.withdrawnCommission = commission!.withdrawnCommission.minus(event.params.amountWithdrawn);
+  commission!.withdrawnCommission = commission!.withdrawnCommission.plus(event.params.amountWithdrawn);
   commission!.editedAt = ts;
   commission!.editedAtBlock = blockId;
   commission!.save();
@@ -111,8 +112,8 @@ export function handleStake(event: Stake): void {
   const txHash = event.transaction.hash.toHexString();
   const staker = event.params.staker;
 
-  const depositId = `${vstake!.id.toHexString()}@${staker.toHexString()}@${txHash}`;
-  const balanceId = `${vstake!.id.toHexString()}@${staker.toHexString()}`;
+  const depositId = eventUUID(event, [staker.toHexString()]);
+  const balanceId = entityUUID(event, [staker.toHexString()]);
 
   let balance = vStakesBalance.load(balanceId);
   if (!balance) {
