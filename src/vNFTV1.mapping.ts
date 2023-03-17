@@ -1,7 +1,7 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts";
 import { vNFT, vNFTIntegration, vNFTTransfer, vNFTUser } from "../generated/schema";
 import { Approval, PurchasedValidator, SetExtraData, SetIntegrator, SetIntegratorCommission, SetName, SetOperatorCommission, SetSymbol, SetURIPrefix, Transfer, UpdateUser } from "../generated/vNFT/vNFTV1";
-import { uid } from "./utils";
+import { entityUUID, eventUUID } from "./utils";
 
 export function handleSetName(event: SetName): void {
     const e = new vNFTIntegration(event.address); // TEST ONLY
@@ -95,7 +95,7 @@ export function handlePurchasedValidator(event: PurchasedValidator): void {
     const ts = event.block.timestamp;
     const blockId = event.block.number;
 
-    const id = `${vnftIntegrationAddress.toHexString()}@${tokenId}`;
+    const id = entityUUID(event, [tokenId.toString()]);
     const vnft = new vNFT(id);
     vnft.tokenId = tokenId;
     vnft.vNFTIntegration = vnftIntegrationAddress;
@@ -120,7 +120,7 @@ export function handleTransfer(event: Transfer): void {
     const ts = event.block.timestamp;
     const blockId = event.block.number;
 
-    const id = uid(event, [vnftIntegration.toHexString(), tokenId.toString()]);
+    const id = eventUUID(event, [tokenId.toString()]);
     const transfer = new vNFTTransfer(id);
     transfer.from = event.params.from;
     transfer.to = event.params.to;
@@ -130,7 +130,7 @@ export function handleTransfer(event: Transfer): void {
     transfer.createdAt = ts;
     transfer.createdAtBlock = blockId;
 
-    const vnft = vNFT.load(`${vnftIntegration.toHexString()}@${tokenId}`);
+    const vnft = vNFT.load(entityUUID(event, [tokenId.toString()]));
     vnft!.owner = event.params.to;
     vnft!.editedAt = ts;
     vnft!.editedAtBlock = blockId;
@@ -144,7 +144,7 @@ export function handleTransfer(event: Transfer): void {
 
 export function handleUpdateUser(event: UpdateUser): void {
     const tokenId = event.params.tokenId;
-    const id = `${event.address}@${tokenId}`;
+    const id = entityUUID(event, [tokenId.toString()]);
     const ts = event.block.timestamp;
     const blockId = event.block.number;
 
@@ -167,7 +167,7 @@ export function handleApproval(event: Approval): void {
     const ts = event.block.timestamp;
     const blockId = event.block.number;
 
-    const vnft = vNFT.load(`${event.address.toHexString()}@${event.params.tokenId}`);
+    const vnft = vNFT.load(entityUUID(event, [event.params.tokenId.toString()]));
     vnft!.editedAt = ts;
     vnft!.editedAtBlock = blockId;
     vnft!.approval = event.params.approved;
