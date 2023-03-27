@@ -262,6 +262,91 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "proxyOwner",
+        "type": "address"
+      },
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "uriPrefix",
+            "type": "string"
+          },
+          {
+            "internalType": "address[4]",
+            "name": "actors",
+            "type": "address[4]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "operatorCommission",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "integratorCommission",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "extraData",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct IIntegrationRouterV1.VNFTConfiguration",
+        "name": "config",
+        "type": "tuple"
+      }
+    ],
+    "name": "deployVNFTIntegration",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "proxyOwner",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "cdata",
+        "type": "bytes"
+      }
+    ],
+    "name": "deployVNFTIntegration",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "channel",
         "type": "bytes32"
@@ -363,7 +448,7 @@
       },
       {
         "internalType": "address",
-        "name": "implementation_",
+        "name": "implem",
         "type": "address"
       },
       {

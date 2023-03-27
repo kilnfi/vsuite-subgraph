@@ -1,7 +1,7 @@
 import { ChannelImplementationUpdated, ProxyFactoryDeployed } from '../generated/IntegrationRouter/IntegrationRouterV1';
 import { IntegrationChannel } from '../generated/schema';
 import { ProxyFactory } from '../generated/templates';
-import { existsChannel, getChannelName } from './IntegrationChannel.utils';
+import { existsChannel, getChannelName, getMetaContractForChannel } from './IntegrationChannel.utils';
 import { getOrCreateMetaContract } from './MetaContract.utils';
 
 export function handleChannelImplementationUpdated(event: ChannelImplementationUpdated): void {
@@ -19,7 +19,7 @@ export function handleChannelImplementationUpdated(event: ChannelImplementationU
 
     implem.name = getChannelName(channel);
     implem.implementation = event.params.implem;
-    implem.contract = getOrCreateMetaContract('vStakesV1');
+    implem.contract = getMetaContractForChannel(channel);
 
     implem.editedAt = ts;
     implem.editedAtBlock = blockId;

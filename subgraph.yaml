@@ -336,7 +336,7 @@ dataSources:
     name: IntegrationRouter
     network: goerli
     source:
-      address: "0x3D5628b1431706201C39c3E821646952992eE205"
+      address: "0x8B8d617e0C1146304d10DC5963fA7B540BD4E17C"
       abi: IntegrationRouterV1
       startBlock: 8409500
     mapping:
@@ -354,48 +354,6 @@ dataSources:
         - event: ProxyFactoryDeployed(indexed bytes32,address)
           handler: handleProxyFactoryDeployed
       file: ./src/IntegrationRouterV1.mapping.ts
-  - kind: ethereum
-    name: vNFT
-    network: goerli
-    source:
-      address: "0x6a385e78b817684613cb7b45fab6a2d04873cfae"
-      abi: vNFTV1
-      startBlock: 8409500
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - vNFT
-        - vNFTIntegration
-        - vNFTTransfer
-      abis:
-        - name: vNFTV1
-          file: ./abis/vNFTV1.json
-      eventHandlers:
-        - event: SetName(string)
-          handler: handleSetName
-        - event: SetSymbol(string)
-          handler: handleSetSymbol
-        - event: SetExtraData(string)
-          handler: handleSetExtraData
-        - event: SetURIPrefix(string)
-          handler: handleSetURIPrefix
-        - event: PurchasedValidator(address,uint256,uint256)
-          handler: handlePurchasedValidator
-        - event: Transfer(indexed address,indexed address,indexed uint256)
-          handler: handleTransfer
-        - event: SetOperatorCommission(uint256)
-          handler: handleSetOperatorCommission
-        - event: SetIntegratorCommission(uint256)
-          handler: handleSetIntegratorCommission
-        - event: SetIntegrator(address)
-          handler: handleSetIntegrator
-        - event: UpdateUser(indexed uint256,indexed address,uint64)
-          handler: handleUpdateUser
-        - event: Approval(indexed address,indexed address,indexed uint256)
-          handler: handleApproval
-      file: ./src/vNFTV1.mapping.ts
 
 templates:
   - name: Cub
@@ -646,5 +604,45 @@ templates:
         - event: DeployedProxy(bytes32,address,address,bytes,address)
           handler: handleDeployedProxy
       file: ./src/ProxyFactory.mapping.ts
+  - kind: ethereum
+    name: vNFT
+    network: goerli
+    source:
+      abi: vNFTV1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vNFT
+        - vNFTIntegration
+        - vNFTTransfer
+      abis:
+        - name: vNFTV1
+          file: ./abis/vNFTV1.json
+      eventHandlers:
+        - event: SetName(string)
+          handler: handleSetName
+        - event: SetSymbol(string)
+          handler: handleSetSymbol
+        - event: SetExtraData(string)
+          handler: handleSetExtraData
+        - event: SetURIPrefix(string)
+          handler: handleSetURIPrefix
+        - event: PurchasedValidator(indexed address,uint256,uint256)
+          handler: handlePurchasedValidator
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: SetOperatorCommission(uint256)
+          handler: handleSetOperatorCommission
+        - event: SetIntegratorCommission(uint256)
+          handler: handleSetIntegratorCommission
+        - event: SetIntegrator(address)
+          handler: handleSetIntegrator
+        - event: UpdateUser(indexed uint256,indexed address,uint64)
+          handler: handleUpdateUser
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
+      file: ./src/vNFTV1.mapping.ts
         
 

@@ -9,6 +9,7 @@ import vFactoryV1Abi from '../abis_ts/vFactoryV1';
 import vOracleAggregatorV1Abi from '../abis_ts/vOracleAggregatorV1';
 import vPoolV1Abi from '../abis_ts/vPoolV1';
 import vStakesV1Abi from '../abis_ts/vStakesV1';
+import vNFTV1Abi from '../abis_ts/vNFTV1';
 import { CHANNEL_NATIVE_VPOOL_BYTES32 } from './IntegrationChannel.utils';
 
 const m = new Map<string, string>();
@@ -22,6 +23,7 @@ m.set('vFactoryV1', vFactoryV1Abi);
 m.set('vOracleAggregatorV1', vOracleAggregatorV1Abi);
 m.set('vPoolV1', vPoolV1Abi);
 m.set('vStakesV1', vStakesV1Abi);
+m.set('vNFTV1', vNFTV1Abi);
 
 export const getOrCreateMetaContract = (name: string): string => {
   let metaContract = MetaContract.load(name);
