@@ -4,7 +4,6 @@ import {
   Transfer,
   Deposit,
   PurchasedValidators,
-  RevenueUpdate,
   SetOracleAggregator,
   SetCoverageRecipient,
   SetExecLayerRecipient,
@@ -13,19 +12,22 @@ import {
   SetEpochsPerFrame,
   SetReportBounds,
   Approval,
-  ApproveDepositor
+  ApproveDepositor,
+  ProcessedReport,
+  SetCommittedEthers,
+  SetDepositedEthers
 } from '../generated/templates/vPool/vPoolV1';
 import {
   PoolBalance,
   PoolPurchasedValidator,
   vPool,
-  RevenueUpdate as RevenueUpdateEntity,
   PoolBalanceApproval,
-  PoolDepositor
+  PoolDepositor,
+  Report
 } from '../generated/schema';
 import { Bytes, BigInt, Address, store } from '@graphprotocol/graph-ts';
 import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum';
-import { entityUUID, externalEntityUUID, txUniqueUUID } from './utils';
+import { entityUUID, externalEntityUUID } from './utils';
 
 function getOrCreateBalance(pool: Bytes, account: Bytes, timestamp: BigInt, block: BigInt): PoolBalance {
   const balanceId = externalEntityUUID(Address.fromBytes(pool), [account.toHexString()]);
@@ -53,6 +55,26 @@ function saveOrEraseBalance(balance: PoolBalance, event: ethereum.Event): void {
     balance.editedAtBlock = event.block.number;
     balance.save();
   }
+}
+
+export function handleSetCommittedEthers(event: SetCommittedEthers): void {
+  const pool = vPool.load(event.address);
+
+  pool!.editedAt = event.block.timestamp;
+  pool!.editedAtBlock = event.block.number;
+  pool!.committed = event.params.committedEthers;
+
+  pool!.save();
+}
+
+export function handleSetDepositedEthers(event: SetDepositedEthers): void {
+  const pool = vPool.load(event.address);
+
+  pool!.editedAt = event.block.timestamp;
+  pool!.editedAtBlock = event.block.number;
+  pool!.deposited = event.params.depositedEthers;
+
+  pool!.save();
 }
 
 export function handleDeposit(event: Deposit): void {
@@ -153,31 +175,45 @@ export function handlePurchasedValidators(event: PurchasedValidators): void {
   pool!.save();
 }
 
-export function handleRevenueUpdate(event: RevenueUpdate): void {
+export function handleProcessedReport(event: ProcessedReport): void {
   const pool = vPool.load(event.address);
 
-  const revenueUpdateId = entityUUID(event, [event.params.epoch.toString()]);
-  const revenueUpdate = new RevenueUpdateEntity(revenueUpdateId);
+  const reportId = entityUUID(event, [event.params.epoch.toString()]);
+  const report = new Report(reportId);
 
-  revenueUpdate.pool = event.address;
-  revenueUpdate.epoch = event.params.epoch;
-  revenueUpdate.delta = event.params.delta;
-  revenueUpdate.covered = event.params.covered;
-  revenueUpdate.totalSupply = event.params.newTotalSupply;
-  revenueUpdate.totalUnderlyingSupply = event.params.newTotalUnderlyingSupply;
-  revenueUpdate.execLayerSuppliedEther = txUniqueUUID(event, [pool!.execLayerRecipient.toHexString()]);
-  revenueUpdate.coverageSuppliedEther = txUniqueUUID(event, [pool!.coverageRecipient.toHexString()]);
-  revenueUpdate.coverageVoidedShares = txUniqueUUID(event, [pool!.coverageRecipient.toHexString()]);
+  report.pool = event.address;
+  report.epoch = event.params.epoch;
+  report.balanceSum = event.params.report.balanceSum;
+  report.exitedSum = event.params.report.exitedSum;
+  report.skimmedSum = event.params.report.skimmedSum;
+  report.slashedSum = event.params.report.slashedSum;
+  report.exiting = event.params.report.exiting;
+  report.maxExitable = event.params.report.maxExitable;
+  report.maxCommittable = event.params.report.maxCommittable;
+  report.activatedCount = event.params.report.activatedCount;
+  report.stoppedCount = event.params.report.stoppedCount;
+  report.preUnderlyingSupply = event.params.traces.preUnderlyingSupply;
+  report.postUnderlyingSupply = event.params.traces.postUnderlyingSupply;
+  report.preSupply = event.params.traces.preSupply;
+  report.postSupply = event.params.traces.postSupply;
+  report.newExitedEthers = event.params.traces.newExitedEthers;
+  report.exitBoostEthers = event.params.traces.exitBoostEthers;
+  report.exitFedEthers = event.params.traces.exitFedEthers;
+  report.exitBurnedShares = event.params.traces.exitBurnedShares;
+  report.newSkimmedEthers = event.params.traces.newSkimmedEthers;
+  report.revenue = event.params.traces.revenue;
+  report.pulledCoverageFunds = event.params.traces.pulledCoverageFunds;
+  report.earnedConsensusLayerRewards = event.params.traces.earnedConsensusLayerRewards;
+  report.pulledExecutionLayerRewards = event.params.traces.pulledExecutionLayerRewards;
+  report.pulledExitQueueUnclaimedFunds = event.params.traces.pulledExitQueueUnclaimedFunds;
+  report.createdAt = event.block.timestamp;
+  report.editedAt = event.block.timestamp;
+  report.createdAtBlock = event.block.number;
+  report.editedAtBlock = event.block.number;
+  report.save();
 
-  revenueUpdate.createdAt = event.block.timestamp;
-  revenueUpdate.createdAtBlock = event.block.number;
-  revenueUpdate.editedAt = event.block.timestamp;
-  revenueUpdate.editedAtBlock = event.block.number;
-
-  revenueUpdate.save();
-
-  pool!.totalSupply = event.params.newTotalSupply;
-  pool!.totalUnderlyingSupply = event.params.newTotalUnderlyingSupply;
+  pool!.totalSupply = event.params.traces.postSupply;
+  pool!.totalUnderlyingSupply = event.params.traces.postUnderlyingSupply;
   pool!.lastEpoch = event.params.epoch;
   pool!.expectedEpoch = event.params.epoch + pool!.epochsPerFrame;
 

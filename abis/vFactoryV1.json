@@ -55,6 +55,27 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "withdrawalChannel",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "requestedTotal",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "maxFundedCount",
+        "type": "uint32"
+      }
+    ],
+    "name": "ExitTotalTooHigh",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "index",
         "type": "uint256"
@@ -108,6 +129,11 @@
       }
     ],
     "name": "InvalidMessageValue",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidNullValue",
     "type": "error"
   },
   {
@@ -406,6 +432,25 @@
       }
     ],
     "name": "SetAdmin",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "withdrawalChannel",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "totalExited",
+        "type": "uint32"
+      }
+    ],
+    "name": "SetExitTotal",
     "type": "event"
   },
   {
@@ -794,6 +839,19 @@
       }
     ],
     "name": "exit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "totalExited",
+        "type": "uint32"
+      }
+    ],
+    "name": "exitTotal",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

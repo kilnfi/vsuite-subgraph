@@ -139,34 +139,68 @@
         "type": "address"
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "epoch",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "validatorCount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "balanceSum",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "slashedBalanceSum",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
+        "indexed": true,
         "internalType": "bytes32",
         "name": "variant",
         "type": "bytes32"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint128",
+            "name": "balanceSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exitedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "skimmedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "slashedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exiting",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "maxExitable",
+            "type": "uint128"
+          },
+          {
+            "internalType": "int256",
+            "name": "maxCommittable",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint64",
+            "name": "epoch",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint32",
+            "name": "activatedCount",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "stoppedCount",
+            "type": "uint32"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct ctypes.ValidatorsReport",
+        "name": "report",
+        "type": "tuple"
       }
     ],
     "name": "GlobalMemberVoted",
@@ -201,34 +235,68 @@
         "type": "address"
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "epoch",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "validatorCount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "balanceSum",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "slashedBalanceSum",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
+        "indexed": true,
         "internalType": "bytes32",
         "name": "variant",
         "type": "bytes32"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint128",
+            "name": "balanceSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exitedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "skimmedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "slashedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exiting",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "maxExitable",
+            "type": "uint128"
+          },
+          {
+            "internalType": "int256",
+            "name": "maxCommittable",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint64",
+            "name": "epoch",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint32",
+            "name": "activatedCount",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "stoppedCount",
+            "type": "uint32"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct ctypes.ValidatorsReport",
+        "name": "report",
+        "type": "tuple"
       }
     ],
     "name": "MemberVoted",
@@ -309,28 +377,68 @@
     "anonymous": false,
     "inputs": [
       {
+        "components": [
+          {
+            "internalType": "uint128",
+            "name": "balanceSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exitedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "skimmedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "slashedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exiting",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "maxExitable",
+            "type": "uint128"
+          },
+          {
+            "internalType": "int256",
+            "name": "maxCommittable",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint64",
+            "name": "epoch",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint32",
+            "name": "activatedCount",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "stoppedCount",
+            "type": "uint32"
+          }
+        ],
         "indexed": false,
-        "internalType": "uint256",
-        "name": "epoch",
-        "type": "uint256"
+        "internalType": "struct ctypes.ValidatorsReport",
+        "name": "report",
+        "type": "tuple"
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "validatorCount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "balanceSum",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "slashedBalanceSum",
-        "type": "uint256"
+        "internalType": "bytes32",
+        "name": "variant",
+        "type": "bytes32"
       },
       {
         "indexed": false,
@@ -341,7 +449,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "variants",
+        "name": "variantCount",
         "type": "uint256"
       }
     ],
@@ -514,17 +622,17 @@
     "outputs": [
       {
         "internalType": "bytes32[]",
-        "name": "",
+        "name": "reportVariants",
         "type": "bytes32[]"
       },
       {
         "internalType": "uint256[]",
-        "name": "",
+        "name": "reportVoteCount",
         "type": "uint256[]"
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "reportVoteTracker",
         "type": "uint256"
       }
     ],
@@ -534,24 +642,61 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "epoch",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "validatorCount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "balanceSum",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "slashedBalanceSum",
-        "type": "uint256"
+        "components": [
+          {
+            "internalType": "uint128",
+            "name": "balanceSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exitedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "skimmedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "slashedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exiting",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "maxExitable",
+            "type": "uint128"
+          },
+          {
+            "internalType": "int256",
+            "name": "maxCommittable",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint64",
+            "name": "epoch",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint32",
+            "name": "activatedCount",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "stoppedCount",
+            "type": "uint32"
+          }
+        ],
+        "internalType": "struct ctypes.ValidatorsReport",
+        "name": "report",
+        "type": "tuple"
       }
     ],
     "name": "submitReport",

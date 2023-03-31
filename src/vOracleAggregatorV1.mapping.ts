@@ -2,6 +2,8 @@ import {
   AddedOracleAggregatorMember,
   GlobalMemberVoted,
   MemberVoted,
+  MemberVotedReportStruct,
+  GlobalMemberVotedReportStruct,
   RemovedOracleAggregatorMember,
   SetHighestReportedEpoch,
   SubmittedReport
@@ -120,51 +122,45 @@ function timeSinceLastVariant(epoch: BigInt, oracleAggregatorAddress: Bytes): Bi
   return BigInt.zero();
 }
 
-export function handleVote(
+export function handleGlobalVote(
   event: ethereum.Event,
-  globalMember: boolean,
   voter: Bytes,
-  epoch: BigInt,
-  validatorCount: BigInt,
-  balanceSum: BigInt,
-  slashedBalanceSum: BigInt
+  variant: Bytes,
+  report: GlobalMemberVotedReportStruct
 ): void {
   const oa = vOracleAggregator.load(event.address);
 
-  const variantId = entityUUID(event, [
-    epoch.toString(),
-    validatorCount.toString(),
-    balanceSum.toString(),
-    slashedBalanceSum.toString()
-  ]);
+  const variantId = entityUUID(event, [variant.toString()]);
 
-  let variant = OracleAggregatorReportVariant.load(variantId);
+  let _variant = OracleAggregatorReportVariant.load(variantId);
 
-  if (variant === null) {
-    variant = new OracleAggregatorReportVariant(variantId);
-    variant.epoch = epoch;
-    variant.validatorCount = validatorCount;
-    variant.validatorBalanceSum = balanceSum;
-    variant.validatorSlashedBalanceSum = slashedBalanceSum;
-    variant.submitted = false;
-    variant.voteCount = BigInt.zero();
-    variant.period = timeSinceLastVariant(epoch, event.address);
-    variant.oracleAggregator = event.address;
-    variant.createdAt = event.block.timestamp;
-    variant.createdAtBlock = event.block.number;
+  if (_variant === null) {
+    _variant = new OracleAggregatorReportVariant(variantId);
+
+    _variant.epoch = report.epoch;
+    _variant.balanceSum = report.balanceSum;
+    _variant.exitedSum = report.exitedSum;
+    _variant.skimmedSum = report.skimmedSum;
+    _variant.slashedSum = report.slashedSum;
+    _variant.exiting = report.exiting;
+    _variant.maxExitable = report.maxExitable;
+    _variant.maxCommittable = report.maxCommittable;
+    _variant.activatedCount = report.activatedCount;
+    _variant.stoppedCount = report.stoppedCount;
+
+    _variant.oracleAggregator = event.address;
+    _variant.createdAt = event.block.timestamp;
+    _variant.createdAtBlock = event.block.number;
+
+    _variant.submitted = false;
+    _variant.voteCount = BigInt.zero();
+    _variant.period = timeSinceLastVariant(report.epoch, event.address);
   }
 
-  const voteId = entityUUID(event, [
-    epoch.toString(),
-    validatorCount.toString(),
-    balanceSum.toString(),
-    slashedBalanceSum.toString(),
-    globalMember ? 'globalMember' : 'member',
-    voter.toHexString()
-  ]);
+  const voteId = entityUUID(event, [variant.toString(), 'globalMember', voter.toHexString()]);
   const vote = new OracleAggregatorReportVariantVote(voteId);
   vote.member = voter;
-  vote.globalMember = globalMember;
+  vote.globalMember = true;
   vote.variant = variantId;
   vote.createdAt = event.block.timestamp;
   vote.createdAtBlock = event.block.number;
@@ -172,55 +168,85 @@ export function handleVote(
   vote.editedAtBlock = event.block.number;
   vote.save();
 
-  variant.voteCount = variant.voteCount + BigInt.fromI32(1);
-  variant.editedAt = event.block.timestamp;
-  variant.editedAtBlock = event.block.number;
-  variant.save();
+  _variant.voteCount = _variant.voteCount + BigInt.fromI32(1);
+  _variant.editedAt = event.block.timestamp;
+  _variant.editedAtBlock = event.block.number;
+  _variant.save();
 
-  oa!.lastVariant = variantId;
+  oa!.editedAt = event.block.timestamp;
+  oa!.editedAtBlock = event.block.number;
+  oa!.save();
+}
+
+export function handleVote(event: ethereum.Event, voter: Bytes, variant: Bytes, report: MemberVotedReportStruct): void {
+  const oa = vOracleAggregator.load(event.address);
+
+  const variantId = entityUUID(event, [variant.toString()]);
+
+  let _variant = OracleAggregatorReportVariant.load(variantId);
+
+  if (_variant === null) {
+    _variant = new OracleAggregatorReportVariant(variantId);
+
+    _variant.epoch = report.epoch;
+    _variant.balanceSum = report.balanceSum;
+    _variant.exitedSum = report.exitedSum;
+    _variant.skimmedSum = report.skimmedSum;
+    _variant.slashedSum = report.slashedSum;
+    _variant.exiting = report.exiting;
+    _variant.maxExitable = report.maxExitable;
+    _variant.maxCommittable = report.maxCommittable;
+    _variant.activatedCount = report.activatedCount;
+    _variant.stoppedCount = report.stoppedCount;
+
+    _variant.oracleAggregator = event.address;
+    _variant.createdAt = event.block.timestamp;
+    _variant.createdAtBlock = event.block.number;
+
+    _variant.submitted = false;
+    _variant.voteCount = BigInt.zero();
+    _variant.period = timeSinceLastVariant(report.epoch, event.address);
+  }
+
+  const voteId = entityUUID(event, [variant.toString(), 'member', voter.toHexString()]);
+  const vote = new OracleAggregatorReportVariantVote(voteId);
+  vote.member = voter;
+  vote.globalMember = false;
+  vote.variant = variantId;
+  vote.createdAt = event.block.timestamp;
+  vote.createdAtBlock = event.block.number;
+  vote.editedAt = event.block.timestamp;
+  vote.editedAtBlock = event.block.number;
+  vote.save();
+
+  _variant.voteCount = _variant.voteCount + BigInt.fromI32(1);
+  _variant.editedAt = event.block.timestamp;
+  _variant.editedAtBlock = event.block.number;
+  _variant.save();
+
   oa!.editedAt = event.block.timestamp;
   oa!.editedAtBlock = event.block.number;
   oa!.save();
 }
 
 export function handleMemberVoted(event: MemberVoted): void {
-  handleVote(
-    event,
-    false,
-    event.params.member,
-    event.params.epoch,
-    event.params.validatorCount,
-    event.params.balanceSum,
-    event.params.slashedBalanceSum
-  );
+  handleVote(event, event.params.member, event.params.variant, event.params.report);
 }
 
 export function handlerGlobalMemberVoted(event: GlobalMemberVoted): void {
-  handleVote(
-    event,
-    true,
-    event.params.globalMember,
-    event.params.epoch,
-    event.params.validatorCount,
-    event.params.balanceSum,
-    event.params.slashedBalanceSum
-  );
+  handleGlobalVote(event, event.params.globalMember, event.params.variant, event.params.report);
 }
 
 export function handleSubmittedReport(event: SubmittedReport): void {
   const oa = vOracleAggregator.load(event.address);
-  const variantId = entityUUID(event, [
-    event.params.epoch.toString(),
-    event.params.validatorCount.toString(),
-    event.params.balanceSum.toString(),
-    event.params.slashedBalanceSum.toString()
-  ]);
+  const variantId = entityUUID(event, [event.params.variant.toString()]);
 
   const variant = OracleAggregatorReportVariant.load(variantId);
 
   variant!.submitted = true;
-
   variant!.save();
+
+  oa!.lastVariant = variantId;
   oa!.editedAt = event.block.timestamp;
   oa!.editedAtBlock = event.block.number;
   oa!.save();

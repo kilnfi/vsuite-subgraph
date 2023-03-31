@@ -6,9 +6,9 @@ dataSources:
     name: NexusV1
     network: goerli
     source:
-      address: "0x29a36f91780bddb12db4d0075af47f2915dad351"
+      address: "0xda4f98eb24b8491fae974487aa4bd8804e0aed96"
       abi: NexusV1
-      startBlock: 8409500
+      startBlock: 8732600
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -22,13 +22,13 @@ dataSources:
       eventHandlers:
         - event: SpawnedFactory(indexed address,address)
           handler: handleSpawnedFactory
-        - event: SpawnedPool(indexed address,address,address,address,address,address)
+        - event: SpawnedPool(indexed address,address,address,address,address,address,address)
           handler: handleSpawnedPool
         - event: Initialized(uint256,bytes)
           handler: handleInitialized
         - event: SetPluggableHatcher(indexed address,bool)
           handler: handleSetPluggableHatcher
-        - event: SetCoreHatchers(address,address,address,address,address,address,address)
+        - event: SetCoreHatchers(address,address,address,address,address,address,address,address)
           handler: handleSetCoreHatchers
         - event: SetGlobalRecipient(address)
           handler: handleSetGlobalRecipient
@@ -48,9 +48,9 @@ dataSources:
     name: FactoryHatcher
     network: goerli
     source:
-      address: "0xc9fd2C3C520A9FE2E36cB9d5bcaD128580fb701d"
+      address: "0x07C70229d2915497F1b989a66b5C7ba3949CDE9e"
       abi: PluggableHatcher
-      startBlock: 8409500
+      startBlock: 8732600
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -89,9 +89,9 @@ dataSources:
     name: TreasuryHatcher
     network: goerli
     source:
-      address: "0xC579101cac0508053aFDA11e6e85e8cE86F88c1f"
+      address: "0x39648ADB0EcBD5c4A6146706f7493CB8C94Bd986"
       abi: PluggableHatcher
-      startBlock: 8409500
+      startBlock: 8732600
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -130,9 +130,9 @@ dataSources:
     name: PoolHatcher
     network: goerli
     source:
-      address: "0x38DB5e973371bAd1E9e4C8C28be64A29E899a9Fe"
+      address: "0x1343cBc0d14d738690FB9573251D5cC6A3AF23C0"
       abi: PluggableHatcher
-      startBlock: 8409500
+      startBlock: 8732600
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -171,9 +171,9 @@ dataSources:
     name: WithdrawalRecipientHatcher
     network: goerli
     source:
-      address: "0x79C9F548ccF4b24971E106B75f87C42543B1d43B"
+      address: "0xf3f5730A18fca1d521Dc3F2B413Ba379ef4F0352"
       abi: PluggableHatcher
-      startBlock: 8409500
+      startBlock: 8732600
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -212,9 +212,9 @@ dataSources:
     name: ExecLayerRecipientHatcher
     network: goerli
     source:
-      address: "0x584DC0107ae8eDB0C8Bc7BD5Cac96EbBAA1c1D1f"
+      address: "0xB7bc23606E9aA7FA1ee9c59485e8051b60a79b21"
       abi: PluggableHatcher
-      startBlock: 8409500
+      startBlock: 8732600
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -253,9 +253,9 @@ dataSources:
     name: CoverageRecipientHatcher
     network: goerli
     source:
-      address: "0xF2C5847430A247e962C1F4bC3AE6dcF9311b6546"
+      address: "0x69949b545749b12dB29D357f465058A728c5fFe3"
       abi: PluggableHatcher
-      startBlock: 8409500
+      startBlock: 8732600
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -294,9 +294,9 @@ dataSources:
     name: OracleAggregatorHatcher
     network: goerli
     source:
-      address: "0xCB61FCfAE0a22855fb55A557c1fC76fc1E7008A3"
+      address: "0x4C59E2356cD08e3b731e02Dc9b3Edd4a675e7A81"
       abi: PluggableHatcher
-      startBlock: 8409500
+      startBlock: 8732600
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -331,29 +331,29 @@ dataSources:
         - event: AppliedFix(address,address)
           handler: handleAppliedFix
       file: ./src/PluggableHatcher.mapping.ts
-
-  - kind: ethereum
-    name: IntegrationRouter
-    network: goerli
-    source:
-      address: "0x3D5628b1431706201C39c3E821646952992eE205"
-      abi: IntegrationRouterV1
-      startBlock: 8409500
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - IntegrationChannel
-      abis:
-        - name: IntegrationRouterV1
-          file: ./abis/IntegrationRouterV1.json
-      eventHandlers:
-        - event: ChannelImplementationUpdated(indexed bytes32,address)
-          handler: handleChannelImplementationUpdated
-        - event: ProxyFactoryDeployed(indexed bytes32,address)
-          handler: handleProxyFactoryDeployed
-      file: ./src/IntegrationRouterV1.mapping.ts
+  
+  # - kind: ethereum
+  #   name: IntegrationRouter
+  #   network: goerli
+  #   source:
+  #     address: "0x3D5628b1431706201C39c3E821646952992eE205"
+  #     abi: IntegrationRouterV1
+  #     startBlock: 8409500
+  #   mapping:
+  #     kind: ethereum/events
+  #     apiVersion: 0.0.7
+  #     language: wasm/assemblyscript
+  #     entities:
+  #       - IntegrationChannel
+  #     abis:
+  #       - name: IntegrationRouterV1
+  #         file: ./abis/IntegrationRouterV1.json
+  #     eventHandlers:
+  #       - event: ChannelImplementationUpdated(indexed bytes32,address)
+  #         handler: handleChannelImplementationUpdated
+  #       - event: ProxyFactoryDeployed(indexed bytes32,address)
+  #         handler: handleProxyFactoryDeployed
+  #     file: ./src/IntegrationRouterV1.mapping.ts
 
 templates:
   - name: Cub
@@ -452,8 +452,6 @@ templates:
           handler: handleApproval
         - event: PurchasedValidators(uint256[])
           handler: handlePurchasedValidators
-        - event: RevenueUpdate(uint256,int256,uint256,uint256,uint256)
-          handler: handleRevenueUpdate
         - event: SetReportBounds(uint64,uint64,uint64)
           handler: handleSetReportBounds
         - event: SetEpochsPerFrame(uint256)
@@ -470,6 +468,12 @@ templates:
           handler: handleSetOracleAggregator
         - event: ApproveDepositor(address,bool)
           handler: handleApproveDepositor
+        - event: ProcessedReport(indexed uint256,(uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32),(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,int256,uint256,uint256,uint256,uint256))
+          handler: handleProcessedReport
+        - event: SetCommittedEthers(uint256)
+          handler: handleSetCommittedEthers
+        - event: SetDepositedEthers(uint256)
+          handler: handleSetDepositedEthers
 
 
   - name: vExecLayerRecipient
@@ -540,11 +544,11 @@ templates:
           handler: handleAddedOracleAggregatorMember
         - event: RemovedOracleAggregatorMember(address)
           handler: handleRemovedOracleAggregatorMember
-        - event: MemberVoted(indexed address,uint256,uint256,uint256,uint256,bytes32)
+        - event: MemberVoted(indexed address,indexed bytes32,(uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32))
           handler: handleMemberVoted
-        - event: GlobalMemberVoted(indexed address,uint256,uint256,uint256,uint256,bytes32)
+        - event: GlobalMemberVoted(indexed address,indexed bytes32,(uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32))
           handler: handlerGlobalMemberVoted
-        - event: SubmittedReport(uint256,uint256,uint256,uint256,uint256,uint256)
+        - event: SubmittedReport((uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32),bytes32,uint256,uint256)
           handler: handleSubmittedReport
         - event: SetHighestReportedEpoch(uint256)
           handler: handleSetHighestReportedEpoch

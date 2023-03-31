@@ -280,6 +280,8 @@ type vPool @entity {
   address: Bytes!
   contract: MetaContract!
 
+  deposited: BigInt!
+  committed: BigInt!
   purchasedValidatorCount: BigInt!
   totalSupply: BigInt!
   totalUnderlyingSupply: BigInt!
@@ -297,7 +299,7 @@ type vPool @entity {
   depositors: [PoolDepositor!]! @derivedFrom(field: "pool")
   balances: [PoolBalance!]! @derivedFrom(field: "pool")
   purchasedValidators: [PoolPurchasedValidator!]! @derivedFrom(field: "pool")
-  revenueUpdates: [RevenueUpdate!]! @derivedFrom(field: "pool")
+  reports: [Report!]! @derivedFrom(field: "pool")
   oracleAggregator: vOracleAggregator!
   coverageRecipient: vCoverageRecipient!
   execLayerRecipient: vExecLayerRecipient!
@@ -353,17 +355,34 @@ type PoolPurchasedValidator @entity {
   editedAtBlock: BigInt!
 }
 
-type RevenueUpdate @entity {
+type Report @entity {
   id: String!
 
   epoch: BigInt!
-  delta: BigInt!
-  covered: BigInt!
-  totalSupply: BigInt!
-  totalUnderlyingSupply: BigInt!
-  execLayerSuppliedEther: ExecLayerSuppliedEther
-  coverageSuppliedEther: CoverageSuppliedEther
-  coverageVoidedShares: CoverageVoidedShares
+  balanceSum: BigInt!
+  exitedSum: BigInt!
+  skimmedSum: BigInt!
+  slashedSum: BigInt!
+  exiting: BigInt!
+  maxExitable: BigInt!
+  maxCommittable: BigInt!
+  activatedCount: BigInt!
+  stoppedCount: BigInt!
+
+   preUnderlyingSupply: BigInt!
+   postUnderlyingSupply: BigInt!
+   preSupply: BigInt!
+   postSupply: BigInt!
+   newExitedEthers: BigInt!
+   exitBoostEthers: BigInt!
+   exitFedEthers: BigInt!
+   exitBurnedShares: BigInt!
+   newSkimmedEthers: BigInt!
+   revenue: BigInt!
+   pulledCoverageFunds: BigInt!
+   earnedConsensusLayerRewards: BigInt!
+   pulledExecutionLayerRewards: BigInt!
+   pulledExitQueueUnclaimedFunds: BigInt!
 
   pool: vPool!
 
@@ -562,12 +581,20 @@ type OracleAggregatorReportVariant @entity {
   id: String!
 
   voteCount: BigInt!
-  epoch: BigInt!
-  validatorCount: BigInt!
-  validatorBalanceSum: BigInt!
-  validatorSlashedBalanceSum: BigInt!
-  period: BigInt!
   submitted: Boolean!
+  period: BigInt!
+
+  balanceSum: BigInt!
+  exitedSum: BigInt!
+  skimmedSum: BigInt!
+  slashedSum: BigInt!
+  exiting: BigInt!
+  maxExitable: BigInt!
+  maxCommittable: BigInt!
+  epoch: BigInt!
+  activatedCount: BigInt!
+  stoppedCount: BigInt!
+
 
   oracleAggregator: vOracleAggregator!
   votes: [OracleAggregatorReportVariantVote!]! @derivedFrom(field: "variant")

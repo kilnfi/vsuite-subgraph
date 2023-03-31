@@ -38,6 +38,7 @@ function _getOrCreateNexus(addr: Bytes, event: ethereum.Event): Nexus {
     nexus = new Nexus(event.address);
 
     nexus.address = event.address;
+    nexus.admin = Address.zero();
     nexus.contract = getOrCreateMetaContract('NexusV1');
     nexus.globalOracle = Address.zero();
     nexus.globalRecipient = Address.zero();
@@ -106,6 +107,8 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     pool.totalSupply = BigInt.zero();
     pool.totalUnderlyingSupply = BigInt.zero();
     pool.purchasedValidatorCount = BigInt.zero();
+    pool.committed = BigInt.zero();
+    pool.deposited = BigInt.zero();
     pool.lastEpoch = BigInt.zero();
     pool.expectedEpoch = BigInt.zero();
 

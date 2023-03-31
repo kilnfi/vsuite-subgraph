@@ -139,6 +139,12 @@
         "internalType": "address",
         "name": "oracleAggregator",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "exitQueue",
+        "type": "address"
       }
     ],
     "name": "SetCoreHatchers",
@@ -341,6 +347,12 @@
         "internalType": "address",
         "name": "oracleAggregator",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "exitQueue",
+        "type": "address"
       }
     ],
     "name": "SpawnedPool",
@@ -461,9 +473,9 @@
         "type": "address"
       },
       {
-        "internalType": "address[7]",
+        "internalType": "address[8]",
         "name": "pluggableHatcherList",
-        "type": "address[7]"
+        "type": "address[8]"
       },
       {
         "internalType": "address",
@@ -601,9 +613,9 @@
   {
     "inputs": [
       {
-        "internalType": "address[7]",
+        "internalType": "address[8]",
         "name": "coreHatchers_",
-        "type": "address[7]"
+        "type": "address[8]"
       }
     ],
     "name": "replaceCoreHatchers",
@@ -734,6 +746,11 @@
             "internalType": "string",
             "name": "initialExtraData",
             "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "exitQueueImageUrl",
+            "type": "string"
           }
         ],
         "internalType": "struct INexusV1.PoolConstructionArguments",
@@ -744,9 +761,9 @@
     "name": "spawnPool",
     "outputs": [
       {
-        "internalType": "address[5]",
+        "internalType": "address[6]",
         "name": "spawned",
-        "type": "address[5]"
+        "type": "address[6]"
       }
     ],
     "stateMutability": "nonpayable",
