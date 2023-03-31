@@ -107,6 +107,7 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     pool.totalSupply = BigInt.zero();
     pool.totalUnderlyingSupply = BigInt.zero();
     pool.purchasedValidatorCount = BigInt.zero();
+    pool.requestedExits = BigInt.zero();
     pool.committed = BigInt.zero();
     pool.deposited = BigInt.zero();
     pool.lastEpoch = BigInt.zero();

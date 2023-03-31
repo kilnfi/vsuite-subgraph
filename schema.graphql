@@ -283,6 +283,7 @@ type vPool @entity {
   deposited: BigInt!
   committed: BigInt!
   purchasedValidatorCount: BigInt!
+  requestedExits: BigInt!
   totalSupply: BigInt!
   totalUnderlyingSupply: BigInt!
   operatorFee: BigInt!

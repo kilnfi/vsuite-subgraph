@@ -15,7 +15,8 @@ import {
   ApproveDepositor,
   ProcessedReport,
   SetCommittedEthers,
-  SetDepositedEthers
+  SetDepositedEthers,
+  SetRequestedExits
 } from '../generated/templates/vPool/vPoolV1';
 import {
   PoolBalance,
@@ -73,6 +74,16 @@ export function handleSetDepositedEthers(event: SetDepositedEthers): void {
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
   pool!.deposited = event.params.depositedEthers;
+
+  pool!.save();
+}
+
+export function handleSetRequestedExits(event: SetRequestedExits): void {
+  const pool = vPool.load(event.address);
+
+  pool!.editedAt = event.block.timestamp;
+  pool!.editedAtBlock = event.block.number;
+  pool!.requestedExits = event.params.newRequestedExits;
 
   pool!.save();
 }

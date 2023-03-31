@@ -474,6 +474,8 @@ templates:
           handler: handleSetCommittedEthers
         - event: SetDepositedEthers(uint256)
           handler: handleSetDepositedEthers
+        - event: SetRequestedExits(uint32)
+          handler: handleSetRequestedExits
 
 
   - name: vExecLayerRecipient
