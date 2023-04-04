@@ -130,7 +130,7 @@ export function handleGlobalVote(
 ): void {
   const oa = vOracleAggregator.load(event.address);
 
-  const variantId = entityUUID(event, [variant.toString()]);
+  const variantId = entityUUID(event, [variant.toHexString()]);
 
   let _variant = OracleAggregatorReportVariant.load(variantId);
 
@@ -157,7 +157,7 @@ export function handleGlobalVote(
     _variant.period = timeSinceLastVariant(report.epoch, event.address);
   }
 
-  const voteId = entityUUID(event, [variant.toString(), 'globalMember', voter.toHexString()]);
+  const voteId = entityUUID(event, [variant.toHexString(), 'globalMember', voter.toHexString()]);
   const vote = new OracleAggregatorReportVariantVote(voteId);
   vote.member = voter;
   vote.globalMember = true;
@@ -181,7 +181,7 @@ export function handleGlobalVote(
 export function handleVote(event: ethereum.Event, voter: Bytes, variant: Bytes, report: MemberVotedReportStruct): void {
   const oa = vOracleAggregator.load(event.address);
 
-  const variantId = entityUUID(event, [variant.toString()]);
+  const variantId = entityUUID(event, [variant.toHexString()]);
 
   let _variant = OracleAggregatorReportVariant.load(variantId);
 
@@ -208,7 +208,7 @@ export function handleVote(event: ethereum.Event, voter: Bytes, variant: Bytes, 
     _variant.period = timeSinceLastVariant(report.epoch, event.address);
   }
 
-  const voteId = entityUUID(event, [variant.toString(), 'member', voter.toHexString()]);
+  const voteId = entityUUID(event, [variant.toHexString(), 'member', voter.toHexString()]);
   const vote = new OracleAggregatorReportVariantVote(voteId);
   vote.member = voter;
   vote.globalMember = false;
@@ -239,7 +239,7 @@ export function handlerGlobalMemberVoted(event: GlobalMemberVoted): void {
 
 export function handleSubmittedReport(event: SubmittedReport): void {
   const oa = vOracleAggregator.load(event.address);
-  const variantId = entityUUID(event, [event.params.variant.toString()]);
+  const variantId = entityUUID(event, [event.params.variant.toHexString()]);
 
   const variant = OracleAggregatorReportVariant.load(variantId);
 

@@ -16,7 +16,8 @@ import {
   ProcessedReport,
   SetCommittedEthers,
   SetDepositedEthers,
-  SetRequestedExits
+  SetRequestedExits,
+  SetExitQueue
 } from '../generated/templates/vPool/vPoolV1';
 import {
   PoolBalance,
@@ -257,6 +258,16 @@ export function handleSetExecLayerRecipient(event: SetExecLayerRecipient): void 
   const pool = vPool.load(event.address);
 
   pool!.execLayerRecipient = event.params.execLayerRecipient;
+
+  pool!.editedAt = event.block.timestamp;
+  pool!.editedAtBlock = event.block.number;
+  pool!.save();
+}
+
+export function handleSetExitQueue(event: SetExitQueue): void {
+  const pool = vPool.load(event.address);
+
+  pool!.exitQueue = event.params.exitQueue;
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;

@@ -17,7 +17,8 @@ import {
   vCoverageRecipient as vCoverageRecipientTemplate,
   vExecLayerRecipient as vExecLayerRecipientTemplate,
   vFactory as vFactoryTemplate,
-  vPool as vPoolTemplate
+  vPool as vPoolTemplate,
+  vExitQueue as vExitQueueTemplate
 } from '../generated/templates';
 import {
   Nexus,
@@ -28,7 +29,8 @@ import {
   vCoverageRecipient,
   vWithdrawalRecipient,
   vOracleAggregator,
-  PluggableHatcher
+  PluggableHatcher,
+  vExitQueue
 } from '../generated/schema';
 import { Address, BigInt, Bytes, ethereum } from '@graphprotocol/graph-ts';
 
@@ -117,6 +119,7 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     pool.coverageRecipient = Address.zero();
     pool.execLayerRecipient = Address.zero();
     pool.withdrawalRecipient = Address.zero();
+    pool.exitQueue = Address.zero();
     pool.operatorFee = BigInt.zero();
     pool.epochsPerFrame = BigInt.zero();
     pool.maxAPRUpperBound = BigInt.zero();
@@ -130,6 +133,24 @@ export function handleSpawnedPool(event: SpawnedPool): void {
 
     pool.save();
     vPoolTemplate.create(event.params.pool);
+  }
+  {
+    const eq = new vExitQueue(event.params.exitQueue);
+
+    eq.address = event.params.exitQueue;
+    eq.contract = getOrCreateMetaContract('vExitQueueV1');
+    eq.pool = event.params.pool;
+
+    eq.createdAt = event.block.timestamp;
+    eq.editedAt = event.block.timestamp;
+    eq.createdAtBlock = event.block.number;
+    eq.editedAtBlock = event.block.number;
+    eq.ticketCount = BigInt.zero();
+    eq.caskCount = BigInt.zero();
+    eq.unclaimedFunds = BigInt.zero();
+
+    eq.save();
+    vExitQueueTemplate.create(event.params.exitQueue);
   }
   {
     const elr = new vExecLayerRecipient(event.params.execLayerRecipient);
