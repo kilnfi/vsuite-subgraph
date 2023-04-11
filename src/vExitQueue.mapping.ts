@@ -6,7 +6,7 @@ import {
   SetPool,
   SuppliedEther,
   Payment
-} from '../generated/templates/vExitQueue/vExitQueueV1';
+} from '../generated/templates/vExitQueue/vExitQueue';
 import { entityUUID, eventUUID, txUniqueUUID } from './utils';
 import { BigInt } from '@graphprotocol/graph-ts';
 

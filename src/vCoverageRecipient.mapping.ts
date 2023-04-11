@@ -4,7 +4,7 @@ import {
   UpdatedEtherForCoverage,
   UpdatedSharesForCoverage,
   VoidedShares
-} from '../generated/templates/vCoverageRecipient/vCoverageRecipientV1';
+} from '../generated/templates/vCoverageRecipient/vCoverageRecipient';
 import { CoverageDonor, CoverageSuppliedEther, CoverageVoidedShares, vCoverageRecipient } from '../generated/schema';
 import { store } from '@graphprotocol/graph-ts';
 import { entityUUID, txUniqueUUID } from './utils';

@@ -23,11 +23,11 @@ import {
   SetHatcherRegistry,
   ChangedTreasury,
   ApproveDepositor
-} from '../generated/templates/vFactory/vFactoryV1';
+} from '../generated/templates/vFactory/vFactory';
 import { Bytes } from '@graphprotocol/graph-ts';
 import { store } from '@graphprotocol/graph-ts';
-import { SetMinimalRecipientImplementation } from '../generated/NexusV1/NexusV1';
-import { SetValidatorExtraData } from '../generated/templates/vFactory/vFactoryV1';
+import { SetMinimalRecipientImplementation } from '../generated/Nexus/Nexus';
+import { SetValidatorExtraData } from '../generated/templates/vFactory/vFactory';
 import { entityUUID, eventUUID } from './utils';
 
 const PUBLIC_KEY_LENGTH = 48;

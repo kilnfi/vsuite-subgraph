@@ -7,7 +7,7 @@ import {
   RemovedOracleAggregatorMember,
   SetHighestReportedEpoch,
   SubmittedReport
-} from '../generated/templates/vOracleAggregator/vOracleAggregatorV1';
+} from '../generated/templates/vOracleAggregator/vOracleAggregator';
 import {
   vOracleAggregator,
   OracleAggregatorMember,

@@ -18,7 +18,7 @@ import {
   SetDepositedEthers,
   SetRequestedExits,
   SetExitQueue
-} from '../generated/templates/vPool/vPoolV1';
+} from '../generated/templates/vPool/vPool';
 import {
   PoolBalance,
   PoolPurchasedValidator,

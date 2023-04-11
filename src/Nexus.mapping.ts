@@ -11,7 +11,7 @@ import {
   SpawnedFactory,
   SpawnedPool,
   SetAdmin
-} from '../generated/NexusV1/NexusV1';
+} from '../generated/Nexus/Nexus';
 import {
   vOracleAggregator as vOracleAggregatorTemplate,
   vCoverageRecipient as vCoverageRecipientTemplate,
@@ -41,7 +41,7 @@ function _getOrCreateNexus(addr: Bytes, event: ethereum.Event): Nexus {
 
     nexus.address = event.address;
     nexus.admin = Address.zero();
-    nexus.contract = getOrCreateMetaContract('NexusV1');
+    nexus.contract = getOrCreateMetaContract('Nexus');
     nexus.globalOracle = Address.zero();
     nexus.globalRecipient = Address.zero();
     nexus.depositContract = Address.zero();
@@ -80,7 +80,7 @@ export function handleSpawnedFactory(event: SpawnedFactory): void {
   const factory = new vFactory(event.params.factory);
   factory.version = BigInt.fromI32(1);
   factory.address = event.params.factory;
-  factory.contract = getOrCreateMetaContract('vFactoryV1');
+  factory.contract = getOrCreateMetaContract('vFactory');
   factory.cub = event.params.factory;
   factory.treasury = event.params.treasury;
   // @TODO OPERATOR NAME
@@ -102,7 +102,7 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     const pool = new vPool(event.params.pool);
 
     pool.address = event.params.pool;
-    pool.contract = getOrCreateMetaContract('vPoolV1');
+    pool.contract = getOrCreateMetaContract('vPool');
     pool.cub = event.params.pool;
     pool.factory = event.params.factory;
     pool.nexus = event.address;
@@ -138,7 +138,7 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     const eq = new vExitQueue(event.params.exitQueue);
 
     eq.address = event.params.exitQueue;
-    eq.contract = getOrCreateMetaContract('vExitQueueV1');
+    eq.contract = getOrCreateMetaContract('vExitQueue');
     eq.pool = event.params.pool;
 
     eq.createdAt = event.block.timestamp;
@@ -157,7 +157,7 @@ export function handleSpawnedPool(event: SpawnedPool): void {
 
     elr.totalSuppliedEther = BigInt.zero();
     elr.address = event.params.execLayerRecipient;
-    elr.contract = getOrCreateMetaContract('vExecLayerRecipientV1');
+    elr.contract = getOrCreateMetaContract('vExecLayerRecipient');
     elr.cub = event.params.execLayerRecipient;
     elr.pool = event.params.pool;
 
@@ -177,7 +177,7 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     cr.totalAvailableEther = BigInt.zero();
     cr.totalAvailableShares = BigInt.zero();
     cr.address = event.params.coverageRecipient;
-    cr.contract = getOrCreateMetaContract('vCoverageRecipientV1');
+    cr.contract = getOrCreateMetaContract('vCoverageRecipient');
     cr.cub = event.params.coverageRecipient;
     cr.pool = event.params.pool;
 
@@ -212,7 +212,7 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     const oa = new vOracleAggregator(event.params.oracleAggregator);
 
     oa.address = event.params.oracleAggregator;
-    oa.contract = getOrCreateMetaContract('vOracleAggregatorV1');
+    oa.contract = getOrCreateMetaContract('vOracleAggregator');
     oa.cub = event.params.oracleAggregator;
     oa.pool = event.params.pool;
     oa.memberCount = BigInt.zero();

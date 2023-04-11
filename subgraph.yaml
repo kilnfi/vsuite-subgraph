@@ -3,12 +3,12 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum
-    name: NexusV1
+    name: Nexus
     network: goerli
     source:
-      address: "0xda4f98eb24b8491fae974487aa4bd8804e0aed96"
-      abi: NexusV1
-      startBlock: 8732600
+      address: "0x82189d36bfab15875473cf2b4ede8151aa126bb1"
+      abi: Nexus
+      startBlock: 8812000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -17,8 +17,8 @@ dataSources:
         - vFactory
         - vTreasury
       abis:
-        - name: NexusV1
-          file: ./abis/NexusV1.json
+        - name: Nexus
+          file: ./abis/Nexus.json
       eventHandlers:
         - event: SpawnedFactory(indexed address,address)
           handler: handleSpawnedFactory
@@ -42,15 +42,15 @@ dataSources:
           handler: handlerSetGlobalConsensusLayerSpec
         - event: SetAdmin(address)
           handler: handleSetAdmin
-      file: ./src/NexusV1.mapping.ts
+      file: ./src/Nexus.mapping.ts
 
   - kind: ethereum
     name: FactoryHatcher
     network: goerli
     source:
-      address: "0x07C70229d2915497F1b989a66b5C7ba3949CDE9e"
+      address: "0xd3D0f642252050314b9efC244bAD616244436bBb"
       abi: PluggableHatcher
-      startBlock: 8732600
+      startBlock: 8812000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -89,9 +89,9 @@ dataSources:
     name: TreasuryHatcher
     network: goerli
     source:
-      address: "0x39648ADB0EcBD5c4A6146706f7493CB8C94Bd986"
+      address: "0x4810cCb6b9C98B62FbD9FEfB6BDd615720AD37D4"
       abi: PluggableHatcher
-      startBlock: 8732600
+      startBlock: 8812000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -130,9 +130,9 @@ dataSources:
     name: PoolHatcher
     network: goerli
     source:
-      address: "0x1343cBc0d14d738690FB9573251D5cC6A3AF23C0"
+      address: "0x086d311Fc872a005ad930a141BF8a2BB9EC4b95f"
       abi: PluggableHatcher
-      startBlock: 8732600
+      startBlock: 8812000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -171,9 +171,9 @@ dataSources:
     name: WithdrawalRecipientHatcher
     network: goerli
     source:
-      address: "0xf3f5730A18fca1d521Dc3F2B413Ba379ef4F0352"
+      address: "0x71a0739590565D8A144e340BbDF8e6c25C35BA73"
       abi: PluggableHatcher
-      startBlock: 8732600
+      startBlock: 8812000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -212,9 +212,9 @@ dataSources:
     name: ExecLayerRecipientHatcher
     network: goerli
     source:
-      address: "0xB7bc23606E9aA7FA1ee9c59485e8051b60a79b21"
+      address: "0x0d3e33f625703C6083E4d69d561C26b164998842"
       abi: PluggableHatcher
-      startBlock: 8732600
+      startBlock: 8812000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -253,9 +253,9 @@ dataSources:
     name: CoverageRecipientHatcher
     network: goerli
     source:
-      address: "0x69949b545749b12dB29D357f465058A728c5fFe3"
+      address: "0x0EEDf066C26D39835a8a645B8A092f52a3CA3C2F"
       abi: PluggableHatcher
-      startBlock: 8732600
+      startBlock: 8812000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -294,9 +294,9 @@ dataSources:
     name: OracleAggregatorHatcher
     network: goerli
     source:
-      address: "0x4C59E2356cD08e3b731e02Dc9b3Edd4a675e7A81"
+      address: "0xd0722178D5C472fbf6271EC0B6f5784011d0D059"
       abi: PluggableHatcher
-      startBlock: 8732600
+      startBlock: 8812000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -337,7 +337,7 @@ dataSources:
   #   network: goerli
   #   source:
   #     address: "0x3D5628b1431706201C39c3E821646952992eE205"
-  #     abi: IntegrationRouterV1
+  #     abi: IntegrationRouter
   #     startBlock: 8409500
   #   mapping:
   #     kind: ethereum/events
@@ -346,14 +346,14 @@ dataSources:
   #     entities:
   #       - IntegrationChannel
   #     abis:
-  #       - name: IntegrationRouterV1
-  #         file: ./abis/IntegrationRouterV1.json
+  #       - name: IntegrationRouter
+  #         file: ./abis/IntegrationRouter.json
   #     eventHandlers:
   #       - event: ChannelImplementationUpdated(indexed bytes32,address)
   #         handler: handleChannelImplementationUpdated
   #       - event: ProxyFactoryDeployed(indexed bytes32,address)
   #         handler: handleProxyFactoryDeployed
-  #     file: ./src/IntegrationRouterV1.mapping.ts
+  #     file: ./src/IntegrationRouter.mapping.ts
 
 templates:
   - name: Cub
@@ -378,17 +378,17 @@ templates:
     kind: ethereum/contract
     network: goerli
     source:
-      abi: vFactoryV1
+      abi: vFactory
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
-      file: ./src/vFactoryV1.mapping.ts
+      file: ./src/vFactory.mapping.ts
       entities:
         - vFactory
       abis:
-        - name: vFactoryV1
-          file: ./abis/vFactoryV1.json
+        - name: vFactory
+          file: ./abis/vFactory.json
       eventHandlers:
         - event: AddedValidators(indexed bytes32,bytes)
           handler: handleAddedValidators
@@ -428,17 +428,17 @@ templates:
     kind: ethereum/contract
     network: goerli
     source:
-      abi: vPoolV1
+      abi: vPool
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
-      file: ./src/vPoolV1.mapping.ts
+      file: ./src/vPool.mapping.ts
       entities:
         - vPool
       abis:
-        - name: vPoolV1
-          file: ./abis/vPoolV1.json
+        - name: vPool
+          file: ./abis/vPool.json
       eventHandlers:
         - event: Deposit(indexed address,uint256)
           handler: handleDeposit
@@ -483,17 +483,17 @@ templates:
     kind: ethereum/contract
     network: goerli
     source:
-      abi: vExitQueueV1
+      abi: vExitQueue
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
-      file: ./src/vExitQueueV1.mapping.ts
+      file: ./src/vExitQueue.mapping.ts
       entities:
         - vPool
       abis:
-        - name: vExitQueueV1 
-          file: ./abis/vExitQueueV1.json
+        - name: vExitQueue 
+          file: ./abis/vExitQueue.json
       eventHandlers:
         - event: PrintedTicket(indexed address,uint32,(uint128,uint128,uint128,address))
           handler: handlePrintedTicket
@@ -512,17 +512,17 @@ templates:
     kind: ethereum/contract
     network: goerli
     source:
-      abi: vExecLayerRecipientV1
+      abi: vExecLayerRecipient
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
-      file: ./src/vExecLayerRecipientV1.mapping.ts
+      file: ./src/vExecLayerRecipient.mapping.ts
       entities:
         - vExecLayerRecipient
       abis:
-        - name: vExecLayerRecipientV1
-          file: ./abis/vExecLayerRecipientV1.json
+        - name: vExecLayerRecipient
+          file: ./abis/vExecLayerRecipient.json
       eventHandlers:
         - event: SuppliedEther(uint256)
           handler: handleSuppliedEther
@@ -531,17 +531,17 @@ templates:
     kind: ethereum/contract
     network: goerli
     source:
-      abi: vCoverageRecipientV1
+      abi: vCoverageRecipient
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
-      file: ./src/vCoverageRecipientV1.mapping.ts
+      file: ./src/vCoverageRecipient.mapping.ts
       entities:
         - vCoverageRecipient
       abis:
-        - name: vCoverageRecipientV1
-          file: ./abis/vCoverageRecipientV1.json
+        - name: vCoverageRecipient
+          file: ./abis/vCoverageRecipient.json
       eventHandlers:
         - event: SuppliedEther(uint256)
           handler: handleSuppliedEther
@@ -558,17 +558,17 @@ templates:
     kind: ethereum/contract
     network: goerli
     source:
-      abi: vOracleAggregatorV1
+      abi: vOracleAggregator
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
-      file: ./src/vOracleAggregatorV1.mapping.ts
+      file: ./src/vOracleAggregator.mapping.ts
       entities:
         - vOracleAggregator
       abis:
-        - name: vOracleAggregatorV1
-          file: ./abis/vOracleAggregatorV1.json
+        - name: vOracleAggregator
+          file: ./abis/vOracleAggregator.json
       eventHandlers:
         - event: AddedOracleAggregatorMember(address)
           handler: handleAddedOracleAggregatorMember
@@ -587,20 +587,20 @@ templates:
     kind: ethereum/contract
     network: goerli
     source:
-      abi: vStakesV1
+      abi: vStakes
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
-      file: ./src/vStakesV1.mapping.ts
+      file: ./src/vStakes.mapping.ts
       entities:
         - vStake
         - OperatorCommission
         - vStakesDeposit
         - vStakesBalance
       abis:
-        - name: vStakesV1
-          file: ./abis/vStakesV1.json
+        - name: vStakes
+          file: ./abis/vStakes.json
       eventHandlers:
         - event: SetPool(address)
           handler: handleSetPool

@@ -11,7 +11,7 @@ import {
   Unpause,
   Upgraded
 } from '../generated/FactoryHatcher/PluggableHatcher';
-import { SetAdmin } from '../generated/NexusV1/NexusV1';
+import { SetAdmin } from '../generated/Nexus/Nexus';
 import { Cub, Fix, PluggableHatcher, PluggableHatcherImplementation } from '../generated/schema';
 import { Cub as CubTemplate } from '../generated/templates';
 import { getOrCreateMetaContract } from './MetaContract.utils';

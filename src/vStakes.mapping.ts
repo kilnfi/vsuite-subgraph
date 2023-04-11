@@ -10,7 +10,7 @@ import {
   SetSymbol,
   Stake,
   VPoolSharesReceived
-} from '../generated/templates/vStakes/vStakesV1';
+} from '../generated/templates/vStakes/vStakes';
 
 export function handleSetPool(event: SetPool): void {
   const vstake = vStake.load(event.address);
