@@ -76,6 +76,8 @@ dataSources:
           handler: handleGlobalUnpause
         - event: SetAdmin(address)
           handler: handleSetAdmin
+        - event: SetPauser(address)
+          handler: handleSetPauser
         - event: SetInitialProgress(uint256)
           handler: handleSetInitialProgress
         - event: RegisteredGlobalFix(address,uint256)
@@ -117,6 +119,8 @@ dataSources:
           handler: handleGlobalUnpause
         - event: SetAdmin(address)
           handler: handleSetAdmin
+        - event: SetPauser(address)
+          handler: handleSetPauser
         - event: SetInitialProgress(uint256)
           handler: handleSetInitialProgress
         - event: RegisteredGlobalFix(address,uint256)
@@ -158,6 +162,8 @@ dataSources:
           handler: handleGlobalUnpause
         - event: SetAdmin(address)
           handler: handleSetAdmin
+        - event: SetPauser(address)
+          handler: handleSetPauser
         - event: SetInitialProgress(uint256)
           handler: handleSetInitialProgress
         - event: RegisteredGlobalFix(address,uint256)
@@ -199,6 +205,8 @@ dataSources:
           handler: handleGlobalUnpause
         - event: SetAdmin(address)
           handler: handleSetAdmin
+        - event: SetPauser(address)
+          handler: handleSetPauser
         - event: SetInitialProgress(uint256)
           handler: handleSetInitialProgress
         - event: RegisteredGlobalFix(address,uint256)
@@ -240,6 +248,8 @@ dataSources:
           handler: handleGlobalUnpause
         - event: SetAdmin(address)
           handler: handleSetAdmin
+        - event: SetPauser(address)
+          handler: handleSetPauser
         - event: SetInitialProgress(uint256)
           handler: handleSetInitialProgress
         - event: RegisteredGlobalFix(address,uint256)
@@ -281,6 +291,8 @@ dataSources:
           handler: handleGlobalUnpause
         - event: SetAdmin(address)
           handler: handleSetAdmin
+        - event: SetPauser(address)
+          handler: handleSetPauser
         - event: SetInitialProgress(uint256)
           handler: handleSetInitialProgress
         - event: RegisteredGlobalFix(address,uint256)
@@ -322,6 +334,8 @@ dataSources:
           handler: handleGlobalUnpause
         - event: SetAdmin(address)
           handler: handleSetAdmin
+        - event: SetPauser(address)
+          handler: handleSetPauser
         - event: SetInitialProgress(uint256)
           handler: handleSetInitialProgress
         - event: RegisteredGlobalFix(address,uint256)
@@ -423,6 +437,32 @@ templates:
           handler: handleSetHatcherRegistry
         - event: ApproveDepositor(address,bool)
           handler: handleApproveDepositor
+  - name: vTreasury
+    kind: ethereum/contract
+    network: goerli
+    source:
+      abi: vTreasury
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/vTreasury.mapping.ts
+      entities:
+        - vTreasury
+      abis:
+        - name: vTreasury
+          file: ./abis/vTreasury.json
+      eventHandlers:
+        - event: SetOperator(address)
+          handler: handleSetOperator
+        - event: SetFee(uint256)
+          handler: handleSetFee
+        - event: SetAutoCover(indexed address,uint256)
+          handler: handleSetAutoCover
+        - event: Withdraw(indexed address,indexed address,uint256,uint256)
+          handler: handleWithdraw
+        - event: VoteChanged(address,uint256,uint256)
+          handler: handleVoteChanged
 
   - name: vPool
     kind: ethereum/contract

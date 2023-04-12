@@ -8,6 +8,7 @@ import {
   Pause,
   RegisteredGlobalFix,
   SetInitialProgress,
+  SetPauser,
   Unpause,
   Upgraded
 } from '../generated/FactoryHatcher/PluggableHatcher';
@@ -24,6 +25,7 @@ function _getOrCreatePluggableHatcher(addr: Bytes, event: ethereum.Event): Plugg
     ph = new PluggableHatcher(addr);
     ph.address = addr;
     ph.contract = getOrCreateMetaContract('PluggableHatcher');
+    ph.pauser = Address.zero();
     ph.admin = Address.zero();
     ph.initialProgress = BigInt.zero();
     ph.globalPaused = false;
@@ -119,6 +121,14 @@ export function handleGlobalUnpause(event: GlobalUnpause): void {
 export function handleSetAdmin(event: SetAdmin): void {
   const ph = _getOrCreatePluggableHatcher(event.address, event);
   ph.admin = event.params.admin;
+  ph.editedAt = event.block.timestamp;
+  ph.editedAtBlock = event.block.number;
+  ph.save();
+}
+
+export function handleSetPauser(event: SetPauser): void {
+  const ph = _getOrCreatePluggableHatcher(event.address, event);
+  ph.pauser = event.params.pauser;
   ph.editedAt = event.block.timestamp;
   ph.editedAtBlock = event.block.number;
   ph.save();

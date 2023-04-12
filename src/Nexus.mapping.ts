@@ -18,7 +18,8 @@ import {
   vExecLayerRecipient as vExecLayerRecipientTemplate,
   vFactory as vFactoryTemplate,
   vPool as vPoolTemplate,
-  vExitQueue as vExitQueueTemplate
+  vExitQueue as vExitQueueTemplate,
+  vTreasury as vTreasuryTemplate
 } from '../generated/templates';
 import {
   Nexus,
@@ -69,11 +70,15 @@ export function handleSpawnedFactory(event: SpawnedFactory): void {
   const treasury = new vTreasury(event.params.treasury);
   treasury.address = event.params.treasury;
   treasury.cub = event.params.treasury;
+  treasury.operator = Address.zero();
+  treasury.fee = BigInt.zero();
   treasury.factory = event.params.factory;
   treasury.createdAt = event.block.timestamp;
   treasury.editedAt = event.block.timestamp;
   treasury.createdAtBlock = event.block.number;
   treasury.editedAtBlock = event.block.number;
+
+  vTreasuryTemplate.create(event.params.treasury);
 
   treasury.save();
 

@@ -17,6 +17,7 @@ type PluggableHatcher @entity {
   contract: MetaContract!
 
   admin: Bytes!
+  pauser: Bytes!
   cubCount: BigInt!
   upgradeCount: BigInt!
   globalPaused: Boolean!
@@ -260,6 +261,53 @@ type vTreasury @entity {
 
   cub: Cub!
   factory: vFactory!
+  operator: Bytes!
+  fee: BigInt!
+
+  feeVotes: [TreasuryFeeVote!]! @derivedFrom(field: "treasury")
+  autoCover: [AutoCover!]! @derivedFrom(field: "treasury")
+  withdrawals: [TreasuryWithdrawal!]! @derivedFrom(field: "treasury")
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type TreasuryWithdrawal @entity {
+  id: String!
+  treasury: vTreasury!
+
+  operator: Bytes!
+  globalRecipient: Bytes!
+  revenue: BigInt!
+  commission: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type AutoCover @entity {
+  id: String!
+  treasury: vTreasury!
+
+  autoCoverBps: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type TreasuryFeeVote @entity {
+  id: String!
+  treasury: vTreasury!
+
+  voter: Bytes!
+  operatorFeeVote: BigInt!
+  globalRecipientFeeVote: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!

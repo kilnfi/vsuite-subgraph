@@ -245,6 +245,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "pauser",
+        "type": "address"
+      }
+    ],
+    "name": "SetPauser",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "pendingAdmin",
         "type": "address"
       }
@@ -429,7 +442,7 @@
         "type": "address[]"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -564,6 +577,19 @@
   },
   {
     "inputs": [],
+    "name": "pauser",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "pendingAdmin",
     "outputs": [
       {
@@ -635,6 +661,19 @@
       }
     ],
     "name": "setInitialProgress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newPauser",
+        "type": "address"
+      }
+    ],
+    "name": "setPauser",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
