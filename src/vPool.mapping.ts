@@ -25,11 +25,12 @@ import {
   vPool,
   PoolBalanceApproval,
   PoolDepositor,
-  Report
+  Report,
+  PoolDeposit
 } from '../generated/schema';
 import { Bytes, BigInt, Address, store } from '@graphprotocol/graph-ts';
 import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum';
-import { entityUUID, externalEntityUUID } from './utils';
+import { entityUUID, eventUUID, externalEntityUUID } from './utils';
 
 function getOrCreateBalance(pool: Bytes, account: Bytes, timestamp: BigInt, block: BigInt): PoolBalance {
   const balanceId = externalEntityUUID(Address.fromBytes(pool), [account.toHexString()]);
@@ -91,6 +92,22 @@ export function handleSetRequestedExits(event: SetRequestedExits): void {
 
 export function handleDeposit(event: Deposit): void {
   const pool = vPool.load(event.address);
+
+  const poolDeposit = new PoolDeposit(eventUUID(event, ['deposit']));
+
+  poolDeposit.pool = event.address;
+
+  poolDeposit.from = event.params.sender;
+  poolDeposit.amount = event.params.amount;
+  // TODO update when event is updated
+  poolDeposit.mintedShares = BigInt.zero();
+
+  poolDeposit.createdAt = event.block.timestamp;
+  poolDeposit.editedAt = event.block.timestamp;
+  poolDeposit.createdAtBlock = event.block.number;
+  poolDeposit.editedAtBlock = event.block.number;
+
+  poolDeposit.save();
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;

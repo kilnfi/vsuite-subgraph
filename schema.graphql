@@ -347,6 +347,7 @@ type vPool @entity {
   nexus: Nexus!
   depositors: [PoolDepositor!]! @derivedFrom(field: "pool")
   balances: [PoolBalance!]! @derivedFrom(field: "pool")
+  deposits: [PoolDeposit!]! @derivedFrom(field: "pool")
   purchasedValidators: [PoolPurchasedValidator!]! @derivedFrom(field: "pool")
   reports: [Report!]! @derivedFrom(field: "pool")
   oracleAggregator: vOracleAggregator!
@@ -354,6 +355,20 @@ type vPool @entity {
   execLayerRecipient: vExecLayerRecipient!
   withdrawalRecipient: vWithdrawalRecipient!
   exitQueue: vExitQueue!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type PoolDeposit @entity {
+  id: String!
+  pool: vPool!
+
+  from: Bytes!
+  amount: BigInt!
+  mintedShares: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!
