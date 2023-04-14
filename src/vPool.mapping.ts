@@ -221,20 +221,26 @@ export function handleProcessedReport(event: ProcessedReport): void {
   report.maxCommittable = event.params.report.maxCommittable;
   report.activatedCount = event.params.report.activatedCount;
   report.stoppedCount = event.params.report.stoppedCount;
+
   report.preUnderlyingSupply = event.params.traces.preUnderlyingSupply;
   report.postUnderlyingSupply = event.params.traces.postUnderlyingSupply;
   report.preSupply = event.params.traces.preSupply;
   report.postSupply = event.params.traces.postSupply;
   report.newExitedEthers = event.params.traces.newExitedEthers;
+  report.newSkimmedEthers = event.params.traces.newSkimmedEthers;
   report.exitBoostEthers = event.params.traces.exitBoostEthers;
   report.exitFedEthers = event.params.traces.exitFedEthers;
   report.exitBurnedShares = event.params.traces.exitBurnedShares;
-  report.newSkimmedEthers = event.params.traces.newSkimmedEthers;
   report.revenue = event.params.traces.revenue;
+  report.delta = event.params.traces.delta;
+  report.increaseLimit = event.params.traces.increaseLimit;
+  report.coverageIncreaseLimit = event.params.traces.coverageIncreaseLimit;
+  report.decreaseLimit = event.params.traces.decreaseLimit;
+  report.consensusLayerDelta = event.params.traces.consensusLayerDelta;
   report.pulledCoverageFunds = event.params.traces.pulledCoverageFunds;
-  report.earnedConsensusLayerRewards = event.params.traces.earnedConsensusLayerRewards;
   report.pulledExecutionLayerRewards = event.params.traces.pulledExecutionLayerRewards;
   report.pulledExitQueueUnclaimedFunds = event.params.traces.pulledExitQueueUnclaimedFunds;
+
   report.createdAt = event.block.timestamp;
   report.editedAt = event.block.timestamp;
   report.createdAtBlock = event.block.number;

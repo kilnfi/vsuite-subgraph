@@ -510,7 +510,7 @@ templates:
           handler: handleSetOracleAggregator
         - event: ApproveDepositor(address,bool)
           handler: handleApproveDepositor
-        - event: ProcessedReport(indexed uint256,(uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32),(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,int256,uint256,uint256,uint256,uint256))
+        - event: ProcessedReport(indexed uint256,(uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32),(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,int256,int256,uint256,uint256,uint256,int256,uint256,uint256,uint256))
           handler: handleProcessedReport
         - event: SetCommittedEthers(uint256)
           handler: handleSetCommittedEthers

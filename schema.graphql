@@ -434,20 +434,24 @@ type Report @entity {
   activatedCount: BigInt!
   stoppedCount: BigInt!
 
-   preUnderlyingSupply: BigInt!
-   postUnderlyingSupply: BigInt!
-   preSupply: BigInt!
-   postSupply: BigInt!
-   newExitedEthers: BigInt!
-   exitBoostEthers: BigInt!
-   exitFedEthers: BigInt!
-   exitBurnedShares: BigInt!
-   newSkimmedEthers: BigInt!
-   revenue: BigInt!
-   pulledCoverageFunds: BigInt!
-   earnedConsensusLayerRewards: BigInt!
-   pulledExecutionLayerRewards: BigInt!
-   pulledExitQueueUnclaimedFunds: BigInt!
+  preUnderlyingSupply: BigInt!
+  postUnderlyingSupply: BigInt!
+  preSupply: BigInt!
+  postSupply: BigInt!
+  newExitedEthers: BigInt!
+  newSkimmedEthers: BigInt!
+  exitBoostEthers: BigInt!
+  exitFedEthers: BigInt!
+  exitBurnedShares: BigInt!
+  revenue: BigInt!
+  delta: BigInt!
+  increaseLimit: BigInt!
+  coverageIncreaseLimit: BigInt!
+  decreaseLimit: BigInt!
+  consensusLayerDelta: BigInt!
+  pulledCoverageFunds: BigInt!
+  pulledExecutionLayerRewards: BigInt!
+  pulledExitQueueUnclaimedFunds: BigInt!
 
   pool: vPool!
 
