@@ -410,7 +410,7 @@ templates:
           handler: handleRemovedValidator
         - event: UpdatedLimit(indexed bytes32,uint256)
           handler: handleUpdatedLimit
-        - event: FundedValidator(indexed bytes32,bytes,uint256,uint256)
+        - event: FundedValidator(indexed bytes32,indexed address,bytes,uint256,uint256)
           handler: handleFundedValidator
         - event: ExitValidator(indexed uint256)
           handler: handleExitValidator
@@ -510,7 +510,7 @@ templates:
           handler: handleSetOracleAggregator
         - event: ApproveDepositor(address,bool)
           handler: handleApproveDepositor
-        - event: ProcessedReport(indexed uint256,(uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32),(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,int256,int256,uint256,uint256,uint256,int256,uint256,uint256,uint256))
+        - event: ProcessedReport(indexed uint256,(uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32),(uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,int128,int128,uint128,uint128,uint128,int128,uint128,uint128,uint128))
           handler: handleProcessedReport
         - event: SetCommittedEthers(uint256)
           handler: handleSetCommittedEthers
