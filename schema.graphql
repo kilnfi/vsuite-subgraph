@@ -17,6 +17,7 @@ type PluggableHatcher @entity {
   contract: MetaContract!
 
   admin: Bytes!
+  pauser: Bytes!
   cubCount: BigInt!
   upgradeCount: BigInt!
   globalPaused: Boolean!
@@ -209,6 +210,7 @@ type FundedValidationKey @entity {
 
   validatorId: BigInt!
   owner: Bytes
+  withdrawalAddress: Bytes
   feeRecipient: Bytes
   extraData: String
 
@@ -260,6 +262,53 @@ type vTreasury @entity {
 
   cub: Cub!
   factory: vFactory!
+  operator: Bytes!
+  fee: BigInt!
+
+  feeVotes: [TreasuryFeeVote!]! @derivedFrom(field: "treasury")
+  autoCover: [AutoCover!]! @derivedFrom(field: "treasury")
+  withdrawals: [TreasuryWithdrawal!]! @derivedFrom(field: "treasury")
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type TreasuryWithdrawal @entity {
+  id: String!
+  treasury: vTreasury!
+
+  operator: Bytes!
+  globalRecipient: Bytes!
+  revenue: BigInt!
+  commission: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type AutoCover @entity {
+  id: String!
+  treasury: vTreasury!
+
+  autoCoverBps: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type TreasuryFeeVote @entity {
+  id: String!
+  treasury: vTreasury!
+
+  voter: Bytes!
+  operatorFeeVote: BigInt!
+  globalRecipientFeeVote: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -280,7 +329,10 @@ type vPool @entity {
   address: Bytes!
   contract: MetaContract!
 
+  deposited: BigInt!
+  committed: BigInt!
   purchasedValidatorCount: BigInt!
+  requestedExits: BigInt!
   totalSupply: BigInt!
   totalUnderlyingSupply: BigInt!
   operatorFee: BigInt!
@@ -296,12 +348,28 @@ type vPool @entity {
   nexus: Nexus!
   depositors: [PoolDepositor!]! @derivedFrom(field: "pool")
   balances: [PoolBalance!]! @derivedFrom(field: "pool")
+  deposits: [PoolDeposit!]! @derivedFrom(field: "pool")
   purchasedValidators: [PoolPurchasedValidator!]! @derivedFrom(field: "pool")
-  revenueUpdates: [RevenueUpdate!]! @derivedFrom(field: "pool")
+  reports: [Report!]! @derivedFrom(field: "pool")
   oracleAggregator: vOracleAggregator!
   coverageRecipient: vCoverageRecipient!
   execLayerRecipient: vExecLayerRecipient!
   withdrawalRecipient: vWithdrawalRecipient!
+  exitQueue: vExitQueue!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type PoolDeposit @entity {
+  id: String!
+  pool: vPool!
+
+  from: Bytes!
+  amount: BigInt!
+  mintedShares: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -353,17 +421,38 @@ type PoolPurchasedValidator @entity {
   editedAtBlock: BigInt!
 }
 
-type RevenueUpdate @entity {
+type Report @entity {
   id: String!
 
   epoch: BigInt!
+  balanceSum: BigInt!
+  exitedSum: BigInt!
+  skimmedSum: BigInt!
+  slashedSum: BigInt!
+  exiting: BigInt!
+  maxExitable: BigInt!
+  maxCommittable: BigInt!
+  activatedCount: BigInt!
+  stoppedCount: BigInt!
+
+  preUnderlyingSupply: BigInt!
+  postUnderlyingSupply: BigInt!
+  preSupply: BigInt!
+  postSupply: BigInt!
+  newExitedEthers: BigInt!
+  newSkimmedEthers: BigInt!
+  exitBoostEthers: BigInt!
+  exitFedEthers: BigInt!
+  exitBurnedShares: BigInt!
+  revenue: BigInt!
   delta: BigInt!
-  covered: BigInt!
-  totalSupply: BigInt!
-  totalUnderlyingSupply: BigInt!
-  execLayerSuppliedEther: ExecLayerSuppliedEther
-  coverageSuppliedEther: CoverageSuppliedEther
-  coverageVoidedShares: CoverageVoidedShares
+  increaseLimit: BigInt!
+  coverageIncreaseLimit: BigInt!
+  decreaseLimit: BigInt!
+  consensusLayerDelta: BigInt!
+  pulledCoverageFunds: BigInt!
+  pulledExecutionLayerRewards: BigInt!
+  pulledExitQueueUnclaimedFunds: BigInt!
 
   pool: vPool!
 
@@ -384,6 +473,107 @@ type PoolDepositor @entity {
   createdAtBlock: BigInt!
   editedAtBlock: BigInt!
 }
+
+# 
+# ███████ ██   ██ ██ ████████      ██████  ██    ██ ███████ ██    ██ ███████ 
+# ██       ██ ██  ██    ██        ██    ██ ██    ██ ██      ██    ██ ██      
+# █████     ███   ██    ██        ██    ██ ██    ██ █████   ██    ██ █████   
+# ██       ██ ██  ██    ██        ██ ▄▄ ██ ██    ██ ██      ██    ██ ██      
+# ███████ ██   ██ ██    ██         ██████   ██████  ███████  ██████  ███████ 
+#                                     ▀▀                                     
+
+type vExitQueue @entity {
+  id: Bytes!
+  address: Bytes!
+  contract: MetaContract!
+
+  pool: vPool!
+  tickets: [Ticket!]! @derivedFrom(field: "exitQueue")
+  ticketCount: BigInt!
+  casks: [Cask!]! @derivedFrom(field: "exitQueue")
+  caskCount: BigInt!
+  payments: [Payment!]! @derivedFrom(field: "exitQueue")
+  unclaimedFunds: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type Payment @entity {
+  id: String!
+
+  exitQueue: vExitQueue!
+
+  amount: BigInt!
+  recipient: Bytes!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type FillTrace @entity {
+  id: String!
+
+  ticket: Ticket!
+  cask: Cask!
+
+  amount: BigInt!
+  amountEth: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type Ticket @entity {
+  id: String!
+
+  exitQueue: vExitQueue!
+
+  ticketId: BigInt!
+
+  owner: Bytes!
+  size: BigInt!
+  position: BigInt!
+  maxExitable: BigInt!
+  exited: BigInt!
+  exitedEth: BigInt!
+
+  fillTraces: [FillTrace!]! @derivedFrom(field: "ticket")
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type Cask @entity {
+  id: String!
+
+  exitQueue: vExitQueue!
+
+  caskId: BigInt!
+
+  size: BigInt!
+  position: BigInt!
+  value: BigInt!
+  provided: BigInt!
+  providedEth: BigInt!
+  unclaimedEth: BigInt!
+
+  fillTraces: [FillTrace!]! @derivedFrom(field: "cask")
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
 
 # 
 # ███████ ██   ██ ███████  ██████     ██       █████  ██    ██ ███████ ██████      ██████  ███████  ██████ ██ ██████  ██ ███████ ███    ██ ████████ 
@@ -562,12 +752,20 @@ type OracleAggregatorReportVariant @entity {
   id: String!
 
   voteCount: BigInt!
-  epoch: BigInt!
-  validatorCount: BigInt!
-  validatorBalanceSum: BigInt!
-  validatorSlashedBalanceSum: BigInt!
-  period: BigInt!
   submitted: Boolean!
+  period: BigInt!
+
+  balanceSum: BigInt!
+  exitedSum: BigInt!
+  skimmedSum: BigInt!
+  slashedSum: BigInt!
+  exiting: BigInt!
+  maxExitable: BigInt!
+  maxCommittable: BigInt!
+  epoch: BigInt!
+  activatedCount: BigInt!
+  stoppedCount: BigInt!
+
 
   oracleAggregator: vOracleAggregator!
   votes: [OracleAggregatorReportVariantVote!]! @derivedFrom(field: "variant")

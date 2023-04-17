@@ -34,6 +34,10 @@ jobs:
         run: |
           $(yarn global bin)/graph codegen
 
+      - name: 'graph:create'
+        run: |
+          $(yarn global bin)/graph create vsuite-goerli-audit --node http://graph-node-query.thegraph:8020
+
       - name: 'graph:deploy'
         run: |
-          $(yarn global bin)/graph deploy vsuite-goerli --version-label ${{ github.ref_name }} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001
+          $(yarn global bin)/graph deploy vsuite-goerli-audit --version-label ${{ github.ref_name }} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001

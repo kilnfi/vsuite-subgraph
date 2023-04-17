@@ -139,6 +139,12 @@
         "internalType": "address",
         "name": "oracleAggregator",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "exitQueue",
+        "type": "address"
       }
     ],
     "name": "SetCoreHatchers",
@@ -341,6 +347,12 @@
         "internalType": "address",
         "name": "oracleAggregator",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "exitQueue",
+        "type": "address"
       }
     ],
     "name": "SpawnedPool",
@@ -376,7 +388,7 @@
         "type": "address[]"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -424,7 +436,7 @@
         "type": "tuple"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -461,9 +473,9 @@
         "type": "address"
       },
       {
-        "internalType": "address[7]",
+        "internalType": "address[8]",
         "name": "pluggableHatcherList",
-        "type": "address[7]"
+        "type": "address[8]"
       },
       {
         "internalType": "address",
@@ -506,7 +518,7 @@
         "type": "uint64"
       }
     ],
-    "name": "initializeV1",
+    "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -601,9 +613,9 @@
   {
     "inputs": [
       {
-        "internalType": "address[7]",
+        "internalType": "address[8]",
         "name": "coreHatchers_",
-        "type": "address[7]"
+        "type": "address[8]"
       }
     ],
     "name": "replaceCoreHatchers",
@@ -690,7 +702,7 @@
             "type": "string"
           }
         ],
-        "internalType": "struct INexusV1.FactoryConstructionArguments",
+        "internalType": "struct INexus.FactoryConstructionArguments",
         "name": "fca",
         "type": "tuple"
       }
@@ -734,9 +746,14 @@
             "internalType": "string",
             "name": "initialExtraData",
             "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "exitQueueImageUrl",
+            "type": "string"
           }
         ],
-        "internalType": "struct INexusV1.PoolConstructionArguments",
+        "internalType": "struct INexus.PoolConstructionArguments",
         "name": "pca",
         "type": "tuple"
       }
@@ -744,9 +761,9 @@
     "name": "spawnPool",
     "outputs": [
       {
-        "internalType": "address[5]",
+        "internalType": "address[6]",
         "name": "spawned",
-        "type": "address[5]"
+        "type": "address[6]"
       }
     ],
     "stateMutability": "nonpayable",

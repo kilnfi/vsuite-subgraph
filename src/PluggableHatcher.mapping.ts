@@ -8,10 +8,11 @@ import {
   Pause,
   RegisteredGlobalFix,
   SetInitialProgress,
+  SetPauser,
   Unpause,
   Upgraded
 } from '../generated/FactoryHatcher/PluggableHatcher';
-import { SetAdmin } from '../generated/NexusV1/NexusV1';
+import { SetAdmin } from '../generated/Nexus/Nexus';
 import { Cub, Fix, PluggableHatcher, PluggableHatcherImplementation } from '../generated/schema';
 import { Cub as CubTemplate } from '../generated/templates';
 import { getOrCreateMetaContract } from './MetaContract.utils';
@@ -24,6 +25,7 @@ function _getOrCreatePluggableHatcher(addr: Bytes, event: ethereum.Event): Plugg
     ph = new PluggableHatcher(addr);
     ph.address = addr;
     ph.contract = getOrCreateMetaContract('PluggableHatcher');
+    ph.pauser = Address.zero();
     ph.admin = Address.zero();
     ph.initialProgress = BigInt.zero();
     ph.globalPaused = false;
@@ -119,6 +121,14 @@ export function handleGlobalUnpause(event: GlobalUnpause): void {
 export function handleSetAdmin(event: SetAdmin): void {
   const ph = _getOrCreatePluggableHatcher(event.address, event);
   ph.admin = event.params.admin;
+  ph.editedAt = event.block.timestamp;
+  ph.editedAtBlock = event.block.number;
+  ph.save();
+}
+
+export function handleSetPauser(event: SetPauser): void {
+  const ph = _getOrCreatePluggableHatcher(event.address, event);
+  ph.pauser = event.params.pauser;
   ph.editedAt = event.block.timestamp;
   ph.editedAtBlock = event.block.number;
   ph.save();

@@ -55,6 +55,27 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "withdrawalChannel",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "requestedTotal",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "maxFundedCount",
+        "type": "uint32"
+      }
+    ],
+    "name": "ExitTotalTooHigh",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "index",
         "type": "uint256"
@@ -108,6 +129,11 @@
       }
     ],
     "name": "InvalidMessageValue",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidNullValue",
     "type": "error"
   },
   {
@@ -311,6 +337,25 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "funded",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "requestedTotal",
+        "type": "uint32"
+      }
+    ],
+    "name": "ExitRequestAboveFunded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "uint256",
         "name": "id",
@@ -328,6 +373,12 @@
         "internalType": "bytes32",
         "name": "withdrawalChannel",
         "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "withdrawalAddress",
+        "type": "address"
       },
       {
         "indexed": false,
@@ -406,6 +457,25 @@
       }
     ],
     "name": "SetAdmin",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "withdrawalChannel",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "totalExited",
+        "type": "uint32"
+      }
+    ],
+    "name": "SetExitTotal",
     "type": "event"
   },
   {
@@ -799,6 +869,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "totalExited",
+        "type": "uint32"
+      }
+    ],
+    "name": "exitTotal",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "fix",
     "outputs": [],
@@ -843,7 +932,7 @@
         "type": "address"
       }
     ],
-    "name": "initializeV1",
+    "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -907,7 +996,7 @@
         "type": "string"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {

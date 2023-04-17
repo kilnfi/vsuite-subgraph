@@ -23,11 +23,11 @@ import {
   SetHatcherRegistry,
   ChangedTreasury,
   ApproveDepositor
-} from '../generated/templates/vFactory/vFactoryV1';
+} from '../generated/templates/vFactory/vFactory';
 import { Bytes } from '@graphprotocol/graph-ts';
 import { store } from '@graphprotocol/graph-ts';
-import { SetMinimalRecipientImplementation } from '../generated/NexusV1/NexusV1';
-import { SetValidatorExtraData } from '../generated/templates/vFactory/vFactoryV1';
+import { SetMinimalRecipientImplementation } from '../generated/Nexus/Nexus';
+import { SetValidatorExtraData } from '../generated/templates/vFactory/vFactory';
 import { entityUUID, eventUUID } from './utils';
 
 const PUBLIC_KEY_LENGTH = 48;
@@ -165,6 +165,7 @@ export function handleFundedValidator(event: FundedValidator): void {
 
   fundedKey.validationKey = keyId;
   fundedKey.validatorId = event.params.id;
+  fundedKey.withdrawalAddress = event.params.withdrawalAddress;
   fundedKey.createdAt = event.block.timestamp;
   fundedKey.createdAtBlock = event.block.number;
   fundedKey.editedAt = event.block.timestamp;
@@ -183,23 +184,25 @@ export function handleExitValidator(event: ExitValidator): void {
   const fundedKeyId = entityUUID(event, [event.params.id.toString()]);
   const fundedKey = FundedValidationKey.load(fundedKeyId);
 
-  const exitRequestId = eventUUID(event, [event.params.id.toString()]);
-  const exitRequest = new ExitRequest(exitRequestId);
+  if (fundedKey != null) {
+    const exitRequestId = eventUUID(event, [event.params.id.toString()]);
+    const exitRequest = new ExitRequest(exitRequestId);
 
-  exitRequest.validator = fundedKeyId;
-  exitRequest.emitter = fundedKey!.owner as Bytes;
-  exitRequest.createdAt = event.block.timestamp;
-  exitRequest.createdAtBlock = event.block.number;
-  exitRequest.editedAt = event.block.timestamp;
-  exitRequest.editedAtBlock = event.block.number;
+    exitRequest.validator = fundedKeyId;
+    exitRequest.emitter = fundedKey!.owner as Bytes;
+    exitRequest.createdAt = event.block.timestamp;
+    exitRequest.createdAtBlock = event.block.number;
+    exitRequest.editedAt = event.block.timestamp;
+    exitRequest.editedAtBlock = event.block.number;
 
-  exitRequest.save();
+    exitRequest.save();
 
-  fundedKey!.lastExitRequest = exitRequestId;
-  fundedKey!.editedAt = event.block.timestamp;
-  fundedKey!.editedAtBlock = event.block.number;
+    fundedKey.lastExitRequest = exitRequestId;
+    fundedKey.editedAt = event.block.timestamp;
+    fundedKey.editedAtBlock = event.block.number;
 
-  fundedKey!.save();
+    fundedKey.save();
+  }
 }
 
 export function handleUpdatedLimit(event: UpdatedLimit): void {
@@ -217,36 +220,42 @@ export function handleSetValidatorOwner(event: SetValidatorOwner): void {
   const fundedKeyId = entityUUID(event, [event.params.id.toString()]);
   const fundedKey = FundedValidationKey.load(fundedKeyId);
 
-  fundedKey!.owner = event.params.owner;
+  if (fundedKey != null) {
+    fundedKey.owner = event.params.owner;
 
-  fundedKey!.editedAt = event.block.timestamp;
-  fundedKey!.editedAtBlock = event.block.number;
+    fundedKey.editedAt = event.block.timestamp;
+    fundedKey.editedAtBlock = event.block.number;
 
-  fundedKey!.save();
+    fundedKey.save();
+  }
 }
 
 export function handleSetValidatorFeeRecipient(event: SetValidatorFeeRecipient): void {
   const fundedKeyId = entityUUID(event, [event.params.id.toString()]);
   const fundedKey = FundedValidationKey.load(fundedKeyId);
 
-  fundedKey!.feeRecipient = event.params.feeRecipient;
+  if (fundedKey != null) {
+    fundedKey.feeRecipient = event.params.feeRecipient;
 
-  fundedKey!.editedAt = event.block.timestamp;
-  fundedKey!.editedAtBlock = event.block.number;
+    fundedKey.editedAt = event.block.timestamp;
+    fundedKey.editedAtBlock = event.block.number;
 
-  fundedKey!.save();
+    fundedKey.save();
+  }
 }
 
 export function handleSetValidatorExtraData(event: SetValidatorExtraData): void {
   const fundedKeyId = entityUUID(event, [event.params.id.toString()]);
   const fundedKey = FundedValidationKey.load(fundedKeyId);
 
-  fundedKey!.extraData = event.params.extraData;
+  if (fundedKey != null) {
+    fundedKey.extraData = event.params.extraData;
 
-  fundedKey!.editedAt = event.block.timestamp;
-  fundedKey!.editedAtBlock = event.block.number;
+    fundedKey.editedAt = event.block.timestamp;
+    fundedKey.editedAtBlock = event.block.number;
 
-  fundedKey!.save();
+    fundedKey.save();
+  }
 }
 
 export function handleSetMetadata(event: SetMetadata): void {

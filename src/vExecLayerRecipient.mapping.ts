@@ -1,4 +1,4 @@
-import { SuppliedEther } from '../generated/templates/vExecLayerRecipient/vExecLayerRecipientV1';
+import { SuppliedEther } from '../generated/templates/vExecLayerRecipient/vExecLayerRecipient';
 import { vExecLayerRecipient, ExecLayerSuppliedEther } from '../generated/schema';
 import { txUniqueUUID } from './utils';
 

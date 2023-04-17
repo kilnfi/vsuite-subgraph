@@ -119,6 +119,38 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "reportedExitedBalanceSum",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lastReportedExitedBalanceSum",
+        "type": "uint256"
+      }
+    ],
+    "name": "DecreasingExitedBalanceSum",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "reportedSkimmedBalanceSum",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lastReportedSkimmedBalanceSum",
+        "type": "uint256"
+      }
+    ],
+    "name": "DecreasingSkimmedBalanceSum",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "reportedSlashedBalanceSum",
         "type": "uint256"
       },
@@ -129,6 +161,22 @@
       }
     ],
     "name": "DecreasingSlashedBalanceSum",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "previousStoppedValidatorCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "stoppedValidatorCount",
+        "type": "uint256"
+      }
+    ],
+    "name": "DecreasingStoppedValidatorCount",
     "type": "error"
   },
   {
@@ -196,6 +244,22 @@
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "exiting",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "balance",
+        "type": "uint256"
+      }
+    ],
+    "name": "ExitingBalanceTooHigh",
+    "type": "error"
+  },
+  {
     "inputs": [],
     "name": "InvalidBPSValue",
     "type": "error"
@@ -256,6 +320,22 @@
       }
     ],
     "name": "ShareReceiverError",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "stoppedValidatorsCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maxStoppedValidatorsCount",
+        "type": "uint256"
+      }
+    ],
+    "name": "StoppedValidatorCountTooHigh",
     "type": "error"
   },
   {
@@ -498,6 +578,190 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "epoch",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint128",
+            "name": "balanceSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exitedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "skimmedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "slashedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exiting",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "maxExitable",
+            "type": "uint128"
+          },
+          {
+            "internalType": "int256",
+            "name": "maxCommittable",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint64",
+            "name": "epoch",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint32",
+            "name": "activatedCount",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "stoppedCount",
+            "type": "uint32"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct ctypes.ValidatorsReport",
+        "name": "report",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint128",
+            "name": "preUnderlyingSupply",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "postUnderlyingSupply",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "preSupply",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "postSupply",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "newExitedEthers",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "newSkimmedEthers",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exitBoostEthers",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exitFedEthers",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exitBurnedShares",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exitingProjection",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "baseFulfillableDemand",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "extraFulfillableDemand",
+            "type": "uint128"
+          },
+          {
+            "internalType": "int128",
+            "name": "revenue",
+            "type": "int128"
+          },
+          {
+            "internalType": "int128",
+            "name": "delta",
+            "type": "int128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "increaseLimit",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "coverageIncreaseLimit",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "decreaseLimit",
+            "type": "uint128"
+          },
+          {
+            "internalType": "int128",
+            "name": "consensusLayerDelta",
+            "type": "int128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "pulledCoverageFunds",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "pulledExecutionLayerRewards",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "pulledExitQueueUnclaimedFunds",
+            "type": "uint128"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct IvPool.ReportTraces",
+        "name": "traces",
+        "type": "tuple"
+      }
+    ],
+    "name": "ProcessedReport",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": false,
         "internalType": "uint256[]",
         "name": "validators",
@@ -513,35 +777,11 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "epoch",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "int256",
-        "name": "delta",
-        "type": "int256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "covered",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newTotalSupply",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newTotalUnderlyingSupply",
+        "name": "committedEthers",
         "type": "uint256"
       }
     ],
-    "name": "RevenueUpdate",
+    "name": "SetCommittedEthers",
     "type": "event"
   },
   {
@@ -555,6 +795,19 @@
       }
     ],
     "name": "SetCoverageRecipient",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "depositedEthers",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetDepositedEthers",
     "type": "event"
   },
   {
@@ -581,6 +834,19 @@
       }
     ],
     "name": "SetExecLayerRecipient",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "exitQueue",
+        "type": "address"
+      }
+    ],
+    "name": "SetExitQueue",
     "type": "event"
   },
   {
@@ -658,6 +924,19 @@
       }
     ],
     "name": "SetReportBounds",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "newRequestedExits",
+        "type": "uint32"
+      }
+    ],
+    "name": "SetRequestedExits",
     "type": "event"
   },
   {
@@ -805,6 +1084,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "decimals",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -875,12 +1167,37 @@
   },
   {
     "inputs": [],
-    "name": "etherToDeposit",
+    "name": "ethers",
     "outputs": [
       {
-        "internalType": "uint256",
+        "components": [
+          {
+            "internalType": "uint128",
+            "name": "deposited",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "committed",
+            "type": "uint128"
+          }
+        ],
+        "internalType": "struct ctypes.Ethers",
         "name": "",
-        "type": "uint256"
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "execLayerRecipient",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -888,7 +1205,7 @@
   },
   {
     "inputs": [],
-    "name": "execLayerRecipient",
+    "name": "exitQueue",
     "outputs": [
       {
         "internalType": "address",
@@ -946,34 +1263,9 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "factory_",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "nexus_",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "withdrawalRecipient_",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "execLayerRecipient_",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "coverageRecipient_",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "oracleAggregator_",
-        "type": "address"
+        "internalType": "address[7]",
+        "name": "addrs",
+        "type": "address[7]"
       },
       {
         "internalType": "uint256",
@@ -996,7 +1288,7 @@
         "type": "string"
       }
     ],
-    "name": "initializeV1",
+    "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1035,6 +1327,84 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "lastReport",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint128",
+            "name": "balanceSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exitedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "skimmedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "slashedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exiting",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "maxExitable",
+            "type": "uint128"
+          },
+          {
+            "internalType": "int256",
+            "name": "maxCommittable",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint64",
+            "name": "epoch",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint32",
+            "name": "activatedCount",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "stoppedCount",
+            "type": "uint32"
+          }
+        ],
+        "internalType": "struct ctypes.ValidatorsReport",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "name",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -1147,7 +1517,7 @@
         "type": "uint256[]"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -1166,24 +1536,61 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "epoch",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "validatorCount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "validatorBalanceSum",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "slashedValidatorBalanceSum",
-        "type": "uint256"
+        "components": [
+          {
+            "internalType": "uint128",
+            "name": "balanceSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exitedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "skimmedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "slashedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exiting",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "maxExitable",
+            "type": "uint128"
+          },
+          {
+            "internalType": "int256",
+            "name": "maxCommittable",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint64",
+            "name": "epoch",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint32",
+            "name": "activatedCount",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "stoppedCount",
+            "type": "uint32"
+          }
+        ],
+        "internalType": "struct ctypes.ValidatorsReport",
+        "name": "rprt",
+        "type": "tuple"
       }
     ],
     "name": "report",
@@ -1216,22 +1623,12 @@
   },
   {
     "inputs": [],
-    "name": "reportedData",
+    "name": "requestedExits",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "validatorCount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "validatorBalanceSum",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "slashedValidatorBalanceSum",
-        "type": "uint256"
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
       }
     ],
     "stateMutability": "view",
@@ -1297,6 +1694,19 @@
     "name": "setValidatorGlobalExtraData",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "symbol",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

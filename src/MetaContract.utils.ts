@@ -1,27 +1,28 @@
 import { MetaContract } from '../generated/schema';
 
 import CubAbi from '../abis_ts/Cub';
-import NexusV1Abi from '../abis_ts/NexusV1';
+import NexusAbi from '../abis_ts/Nexus';
 import PluggableHatcherAbi from '../abis_ts/PluggableHatcher';
-import vCoverageRecipientV1Abi from '../abis_ts/vCoverageRecipientV1';
-import vExecLayerRecipientV1Abi from '../abis_ts/vExecLayerRecipientV1';
-import vFactoryV1Abi from '../abis_ts/vFactoryV1';
-import vOracleAggregatorV1Abi from '../abis_ts/vOracleAggregatorV1';
-import vPoolV1Abi from '../abis_ts/vPoolV1';
-import vStakesV1Abi from '../abis_ts/vStakesV1';
-import { CHANNEL_NATIVE_VPOOL_BYTES32 } from './IntegrationChannel.utils';
+import vCoverageRecipientAbi from '../abis_ts/vCoverageRecipient';
+import vExecLayerRecipientAbi from '../abis_ts/vExecLayerRecipient';
+import vFactoryAbi from '../abis_ts/vFactory';
+import vOracleAggregatorAbi from '../abis_ts/vOracleAggregator';
+import vPoolAbi from '../abis_ts/vPool';
+import vStakesAbi from '../abis_ts/vStakes';
+import vExitQueueAbi from '../abis_ts/vExitQueue';
 
 const m = new Map<string, string>();
 
 m.set('Cub', CubAbi);
-m.set('NexusV1', NexusV1Abi);
+m.set('Nexus', NexusAbi);
 m.set('PluggableHatcher', PluggableHatcherAbi);
-m.set('vCoverageRecipientV1', vCoverageRecipientV1Abi);
-m.set('vExecLayerRecipientV1', vExecLayerRecipientV1Abi);
-m.set('vFactoryV1', vFactoryV1Abi);
-m.set('vOracleAggregatorV1', vOracleAggregatorV1Abi);
-m.set('vPoolV1', vPoolV1Abi);
-m.set('vStakesV1', vStakesV1Abi);
+m.set('vCoverageRecipient', vCoverageRecipientAbi);
+m.set('vExecLayerRecipient', vExecLayerRecipientAbi);
+m.set('vFactory', vFactoryAbi);
+m.set('vOracleAggregator', vOracleAggregatorAbi);
+m.set('vPool', vPoolAbi);
+m.set('vStakes', vStakesAbi);
+m.set('vExitQueue', vExitQueueAbi);
 
 export const getOrCreateMetaContract = (name: string): string => {
   let metaContract = MetaContract.load(name);

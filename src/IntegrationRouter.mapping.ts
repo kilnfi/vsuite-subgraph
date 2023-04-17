@@ -1,4 +1,4 @@
-import { ChannelImplementationUpdated, ProxyFactoryDeployed } from '../generated/IntegrationRouter/IntegrationRouterV1';
+import { ChannelImplementationUpdated, ProxyFactoryDeployed } from '../generated/IntegrationRouter/IntegrationRouter';
 import { IntegrationChannel } from '../generated/schema';
 import { ProxyFactory } from '../generated/templates';
 import { existsChannel, getChannelName } from './IntegrationChannel.utils';
@@ -19,7 +19,7 @@ export function handleChannelImplementationUpdated(event: ChannelImplementationU
 
     implem.name = getChannelName(channel);
     implem.implementation = event.params.implem;
-    implem.contract = getOrCreateMetaContract('vStakesV1');
+    implem.contract = getOrCreateMetaContract('vStakes');
 
     implem.editedAt = ts;
     implem.editedAtBlock = blockId;
