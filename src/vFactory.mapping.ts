@@ -189,7 +189,7 @@ export function handleExitValidator(event: ExitValidator): void {
     const exitRequest = new ExitRequest(exitRequestId);
 
     exitRequest.validator = fundedKeyId;
-    exitRequest.emitter = fundedKey!.owner as Bytes;
+    exitRequest.emitter = fundedKey.owner as Bytes;
     exitRequest.createdAt = event.block.timestamp;
     exitRequest.createdAtBlock = event.block.number;
     exitRequest.editedAt = event.block.timestamp;
