@@ -357,6 +357,18 @@
     "inputs": [
       {
         "indexed": true,
+        "internalType": "bytes32",
+        "name": "withdrawalChannel",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "publicKey",
+        "type": "bytes"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "id",
         "type": "uint256"

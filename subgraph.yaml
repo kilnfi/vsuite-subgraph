@@ -412,7 +412,7 @@ templates:
           handler: handleUpdatedLimit
         - event: FundedValidator(indexed bytes32,indexed address,bytes,uint256,uint256)
           handler: handleFundedValidator
-        - event: ExitValidator(indexed uint256)
+        - event: ExitValidator(indexed bytes32,bytes,uint256)
           handler: handleExitValidator
         - event: ValidatorRequest(indexed bytes32,uint256)
           handler: handleValidatorRequest
