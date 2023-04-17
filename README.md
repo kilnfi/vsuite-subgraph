@@ -58,7 +58,6 @@ Test the following GraphQL request to ensure everything works well
 {
   nexuses {
     factories {
-      operatorName
       address
       pools {
         address

@@ -21,23 +21,14 @@ jobs:
       - name: 'asdf:install'
         uses: asdf-vm/actions/install@v1.1.0
 
-      - name: 'graph:install'
-        run: |
-          yarn global add @graphprotocol/graph-cli@0.46.1
-
-      - name: 'yarn-npm:init'
-        run: |
-          yarn
-          npm install
+      - name: 'yarn:init'
+        run: yarn
 
       - name: 'graph:codgen'
-        run: |
-          $(yarn global bin)/graph codegen
+        run: $(yarn bin)/graph codegen
 
       - name: 'graph:create'
-        run: |
-          $(yarn global bin)/graph create vsuite-goerli-audit --node http://graph-node-query.thegraph:8020
+        run: $(yarn bin)/graph create vsuite-goerli-audit --node http://graph-node-query.thegraph:8020
 
       - name: 'graph:deploy'
-        run: |
-          $(yarn global bin)/graph deploy vsuite-goerli-audit --version-label ${{ github.ref_name }} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001
+        run: $(yarn bin)/graph deploy vsuite-goerli-audit --version-label ${{ github.ref_name }} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001
