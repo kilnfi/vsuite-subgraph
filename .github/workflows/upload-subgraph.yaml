@@ -23,7 +23,7 @@ jobs:
 
       - name: 'graph:install'
         run: |
-          yarn global add @graphprotocol/graph-cli@0.40.0
+          yarn global add @graphprotocol/graph-cli@0.46.1
 
       - name: 'yarn-npm:init'
         run: |
