@@ -1,5 +1,5 @@
 import { AutoCover, Cub, Fix, TreasuryFeeVote, vTreasury, TreasuryWithdrawal } from '../generated/schema';
-import { entityUUID, eventUUID } from './utils';
+import { entityUUID, eventUUID } from './utils/utils';
 import { SetAutoCover, SetFee, SetOperator, VoteChanged, Withdraw } from '../generated/templates/vTreasury/vTreasury';
 
 export function handleSetOperator(event: SetOperator): void {

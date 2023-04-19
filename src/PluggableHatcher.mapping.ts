@@ -15,8 +15,8 @@ import {
 import { SetAdmin } from '../generated/Nexus/Nexus';
 import { Cub, Fix, PluggableHatcher, PluggableHatcherImplementation } from '../generated/schema';
 import { Cub as CubTemplate } from '../generated/templates';
-import { getOrCreateMetaContract } from './MetaContract.utils';
-import { entityUUID, eventUUID } from './utils';
+import { getOrCreateMetaContract } from './utils/MetaContract.utils';
+import { entityUUID, eventUUID } from './utils/utils';
 
 function _getOrCreatePluggableHatcher(addr: Bytes, event: ethereum.Event): PluggableHatcher {
   let ph = PluggableHatcher.load(addr);

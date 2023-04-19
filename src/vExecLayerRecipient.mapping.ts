@@ -1,6 +1,6 @@
 import { SuppliedEther } from '../generated/templates/vExecLayerRecipient/vExecLayerRecipient';
 import { vExecLayerRecipient, ExecLayerSuppliedEther } from '../generated/schema';
-import { txUniqueUUID } from './utils';
+import { txUniqueUUID } from './utils/utils';
 
 export function handleSuppliedEther(event: SuppliedEther): void {
   const elseId = txUniqueUUID(event, [event.address.toHexString()]);

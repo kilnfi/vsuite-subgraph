@@ -9,7 +9,7 @@
     "remove-local": "graph remove --node http://localhost:8020/ vsuite-goerli",
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 vsuite-goerli",
     "test": "graph test",
-    "format": "prettier --config .prettierrc 'src/**/*.ts' --write"
+    "format": "prettier --config .prettierrc 'abis_ts/**/*.ts' 'src/**/*.ts' --write"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.46.1",

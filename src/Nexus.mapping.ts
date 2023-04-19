@@ -1,4 +1,4 @@
-import { getOrCreateMetaContract } from './MetaContract.utils';
+import { getOrCreateMetaContract } from './utils/MetaContract.utils';
 import {
   Initialized,
   SetCoreHatchers,

@@ -1092,5 +1092,5 @@ const abi = `
 		"type": "function"
 	}
 ]
-`
-export default abi
+`;
+export default abi;

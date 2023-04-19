@@ -154,6 +154,6 @@ const abi = `
     "type": "receive"
   }
 ]
-`
+`;
 
-export default abi
+export default abi;
