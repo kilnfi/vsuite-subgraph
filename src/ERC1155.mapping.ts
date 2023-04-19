@@ -276,7 +276,7 @@ function _transfer(
     balanceTo.save();
   }
 
-  const transferId = eventUUID(event, [event.address.toHexString(), tokenId.toString()]);
+  const transferId = eventUUID(event, [tokenId.toString()]);
   const transfer = new ERC1155Transfer(transferId);
   transfer.token = erc1155!.id;
   transfer.by = operator;
@@ -307,7 +307,6 @@ export function handleTransferBatch(event: TransferBatch): void {
     );
   }
 }
-
 
 export function handleApprovalForAll(event: ApprovalForAll): void {
   const ts = event.block.timestamp;

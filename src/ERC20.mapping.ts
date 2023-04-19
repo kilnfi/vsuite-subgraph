@@ -245,7 +245,7 @@ export function handleTransfer(event: Transfer): void {
     balanceTo.save();
   }
 
-  const transferId = eventUUID(event, [event.address.toHexString()]);
+  const transferId = eventUUID(event, []);
   const transfer = new ERC20Transfer(transferId);
   transfer.from = from;
   transfer.integration = event.address;

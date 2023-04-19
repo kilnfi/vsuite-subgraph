@@ -1111,6 +1111,126 @@ type ERC1155Integration implements vPoolIntegration & Integration @entity {
 #   ████   ██   ████ ██         ██ 
 # 
 
+type VaultClaim @entity {
+  id: ID! # logIndex+vaultAddress
+  execLayerVault: MerkleVault!
+  
+  hash: Bytes!
+  
+  account: Bytes!
+  amount: BigInt!
+  totalClaimed: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type MerkleVault @entity {
+  id: Bytes!
+
+  root: Bytes!
+  frameSize: BigInt!
+  ipfsHash: String!
+
+  integrations: [vNFTIntegration!]! @derivedFrom(field: "execLayerVault")
+  claims: [VaultClaim!]! @derivedFrom(field: "execLayerVault")
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vNFTApprovals @entity {
+  id: String! # integrationAddress+owner+operator
+  integration: vNFTIntegration!
+    
+  owner: Bytes!
+  operator: Bytes!
+  approval: Boolean!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vNFTIntegration implements Integration @entity {
+  vFactory: vFactory!
+  execLayerVault: MerkleVault!
+  operatorCommission: BigInt!
+  integratorCommission: BigInt!
+  integrator: Bytes!
+
+  extraData: String!
+  uriPrefix: String!
+  supply: BigInt!
+  timeout: BigInt!
+
+  vnfts: [vNFT!]! @derivedFrom(field: "integration")
+  approvals: [vNFTApprovals!]! @derivedFrom(field: "integration")
+
+  # Integration
+  id: Bytes!
+  address: Bytes!
+  channel: IntegrationChannel!
+  name: String!
+  symbol: String!
+
+  paused: Boolean!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vNFT @entity {
+  id: ID! # integrationAddress+tokenId
+  tokenId: BigInt!
+  integration: vNFTIntegration!
+
+  owner: Bytes!
+  validatorId: BigInt!
+  freezeTimestamp: BigInt!
+
+  transfers: [vNFTTransfer!]! @derivedFrom(field: "vNFT")
+  user: vNFTUser @derivedFrom(field: "vNFT")
+  approval: Bytes
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vNFTTransfer @entity {
+  id: ID! # eventLog+integrationAddress+tokenId
+  vNFT: vNFT!
+
+  from: Bytes!
+  to: Bytes!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vNFTUser @entity {
+  id: ID! # integrationAddress+tokenId
+
+  vNFT: vNFT!
+  user: Bytes!
+  expiry: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
 
 type ExternalDepositLink @entity {
   id: String!
