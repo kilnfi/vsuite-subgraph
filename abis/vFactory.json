@@ -389,6 +389,12 @@
       {
         "indexed": true,
         "internalType": "address",
+        "name": "depositor",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "withdrawalAddress",
         "type": "address"
       },

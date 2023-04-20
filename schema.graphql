@@ -210,6 +210,7 @@ type FundedValidationKey @entity {
 
   validatorId: BigInt!
   owner: Bytes
+  depositor: FactoryDepositor!
   withdrawalAddress: Bytes
   feeRecipient: Bytes
   extraData: String
@@ -241,6 +242,7 @@ type FactoryDepositor @entity {
   address: Bytes!
 
   factory: vFactory!
+  fundedValidationKeys: [FundedValidationKey!]! @derivedFrom(field: "depositor")
 
   createdAt: BigInt!
   editedAt: BigInt!
