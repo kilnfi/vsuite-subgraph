@@ -878,7 +878,7 @@ type MultiPool @entity {
   pool: vPool!
   active: Boolean!
   fees: BigInt!
-  shares: BigInt!
+  shares: PoolBalance
   poolAllocation: BigInt!
 
   integration: vPoolIntegration!
@@ -1193,7 +1193,7 @@ type vNFT @entity {
   integration: vNFTIntegration!
 
   owner: Bytes!
-  validatorId: BigInt!
+  validator: FundedValidationKey!
   freezeTimestamp: BigInt!
 
   transfers: [vNFTTransfer!]! @derivedFrom(field: "vNFT")

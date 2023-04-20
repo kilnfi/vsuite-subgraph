@@ -25,7 +25,7 @@ import {
   TransferSingle,
   VPoolSharesReceived
 } from '../generated/templates/ERC1155/Liquid1155';
-import { eventUUID, txUniqueUUID, entityUUID } from './utils/utils';
+import { eventUUID, txUniqueUUID, entityUUID, externalEntityUUID } from './utils/utils';
 
 export function handleSetName(event: SetName): void {
   const erc1155 = ERC1155Integration.load(event.address);
@@ -82,7 +82,6 @@ export function handlePoolAdded(event: PoolAdded): void {
   multiPool.pool = vPool;
   multiPool.active = true;
   multiPool.fees = BigInt.zero();
-  multiPool.shares = BigInt.zero();
   multiPool.integration = event.address;
   multiPool.poolAllocation = BigInt.zero();
 
@@ -130,15 +129,6 @@ export function handlePoolActivation(event: PoolActivation): void {
   multiPool!.editedAtBlock = event.block.number;
 
   multiPool!.save();
-}
-
-export function handleVPoolSharesReceived(event: VPoolSharesReceived): void {
-  //   // const poolId = event.params.id;
-  //   // const multiPool = MultiPool.load(externalEntityUUID(event.address, [poolId.toString()]));
-  //   // multiPool!.shares = multiPool!.shares.plus(event.params.amount);
-  //   // multiPool!.editedAt = event.block.timestamp;
-  //   // multiPool!.editedAtBlock = event.block.number;
-  //   // multiPool!.save();
 }
 
 export function handleNewCommissionSplit(event: NewCommissionSplit): void {
@@ -327,3 +317,5 @@ export function handleApprovalForAll(event: ApprovalForAll): void {
   approval.editedAtBlock = blockId;
   approval.save();
 }
+
+export function handleVPoolSharesReceived(event: VPoolSharesReceived): void {}

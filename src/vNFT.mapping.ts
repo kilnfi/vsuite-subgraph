@@ -21,7 +21,7 @@ import {
   UsershipCleared
 } from '../generated/templates/vNFT/vNFT';
 import { MerkleVault as MerkleVaultTemplate } from '../generated/templates';
-import { entityUUID, eventUUID } from './utils/utils';
+import { entityUUID, eventUUID, externalEntityUUID } from './utils/utils';
 
 export function handleSetName(event: SetName): void {
   const vnftIntegration = vNFTIntegration.load(event.address);
@@ -129,12 +129,14 @@ export function handlePurchasedValidator(event: PurchasedValidator): void {
   const ts = event.block.timestamp;
   const blockId = event.block.number;
 
+  const vFactoryAddres = vNFTIntegration.load(vnftIntegrationAddress)!.vFactory;
+
   const id = entityUUID(event, [tokenId.toString()]);
   const vnft = new vNFT(id);
   vnft.tokenId = tokenId;
   vnft.integration = vnftIntegrationAddress;
   vnft.owner = event.params.owner;
-  vnft.validatorId = event.params.validatorId;
+  vnft.validator = externalEntityUUID(Address.fromBytes(vFactoryAddres), [event.params.validatorId.toString()]);
   vnft.freezeTimestamp = BigInt.zero();
 
   vnft.editedAt = ts;

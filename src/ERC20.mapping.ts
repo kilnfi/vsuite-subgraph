@@ -22,7 +22,7 @@ import {
   Transfer,
   VPoolSharesReceived
 } from '../generated/templates/ERC20/Native20';
-import { eventUUID, txUniqueUUID, entityUUID } from './utils/utils';
+import { eventUUID, txUniqueUUID, entityUUID, externalEntityUUID } from './utils/utils';
 
 export function handleSetName(event: SetName): void {
   const erc20 = ERC20.load(event.address);
@@ -64,7 +64,6 @@ export function handlePoolAdded(event: PoolAdded): void {
   multiPool.pool = vPool;
   multiPool.active = true;
   multiPool.fees = BigInt.zero();
-  multiPool.shares = BigInt.zero();
   multiPool.integration = event.address;
   multiPool.poolAllocation = BigInt.zero();
 
@@ -75,6 +74,8 @@ export function handlePoolAdded(event: PoolAdded): void {
 
   multiPool.save();
 }
+
+export function handleVPoolSharesReceived(event: VPoolSharesReceived): void {}
 
 export function handleSetFee(event: SetFee): void {
   const poolId = event.params.poolId;
@@ -98,15 +99,6 @@ export function handlePoolActivation(event: PoolActivation): void {
   multiPool!.editedAtBlock = event.block.number;
 
   multiPool!.save();
-}
-
-export function handleVPoolSharesReceived(event: VPoolSharesReceived): void {
-  // const poolId = event.params.id;
-  // const multiPool = MultiPool.load(externalEntityUUID(event.address, [poolId.toString()]));
-  // multiPool!.shares = multiPool!.shares.plus(event.params.amount);
-  // multiPool!.editedAt = event.block.timestamp;
-  // multiPool!.editedAtBlock = event.block.number;
-  // multiPool!.save();
 }
 
 export function handleNewCommissionSplit(event: NewCommissionSplit): void {
