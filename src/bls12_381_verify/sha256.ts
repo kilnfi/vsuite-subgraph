@@ -1,3 +1,4 @@
+// source: https://github.com/jedisct1/as-hmac-sha2
 type aisize = i32;
 
 function setU8(t: Uint8Array, s: Uint8Array, o: isize = 0): void {
