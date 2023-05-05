@@ -29,6 +29,7 @@ import { store } from '@graphprotocol/graph-ts';
 import { SetMinimalRecipientImplementation } from '../generated/Nexus/Nexus';
 import { SetValidatorExtraData } from '../generated/templates/vFactory/vFactory';
 import { entityUUID, eventUUID } from './utils';
+import { verify } from './bls12_381_verify/verify';
 
 const PUBLIC_KEY_LENGTH = 48;
 const SIGNATURE_LENGTH = 96;
@@ -148,6 +149,23 @@ export function handleRemovedValidator(event: RemovedValidator): void {
   channel!.save();
 }
 
+function hexStringToUint8Array(hexString: string): Uint8Array {
+  if (hexString.length % 2 !== 0) {
+    throw 'Invalid hexString';
+  } /*from  w w w.  j  av a 2s  . c  o  m*/
+  var arrayBuffer = new Uint8Array(hexString.length / 2);
+
+  for (var i = 0; i < hexString.length; i += 2) {
+    var byteValue = parseInt(hexString.substr(i, 2), 16);
+    if (isNaN(byteValue)) {
+      throw 'Invalid hexString';
+    }
+    arrayBuffer[i / 2] = u8(byteValue);
+  }
+
+  return arrayBuffer;
+}
+
 export function handleFundedValidator(event: FundedValidator): void {
   const keyId = entityUUID(event, [
     event.params.withdrawalChannel.toHexString(),
@@ -172,6 +190,17 @@ export function handleFundedValidator(event: FundedValidator): void {
   fundedKey.createdAtBlock = event.block.number;
   fundedKey.editedAt = event.block.timestamp;
   fundedKey.editedAtBlock = event.block.number;
+
+  // fake verification to test perfs
+  verify(
+    hexStringToUint8Array(
+      '953B41C57CD30A4082659A12CB07E5678F8C1C42CFD0D7ED3CD36B1AD7D6A640ECDF44CD6EE36C68F4E180131BF3CD0906C4006EAA2452B7A5C507D497E1B5A0958BF92EC25F1AACDC7D19CA351F49B4034406D690930D6915800C792C629D33'
+    ),
+    hexStringToUint8Array('dc12dabb7c0618f8bfe7fadb294ddfd9eedf012b8b714ab62f8195b31728d13c'),
+    hexStringToUint8Array(
+      'B2BED4B86FE2BD9231B1EA1ACD1EE705BDC2C9702D9B33FFB8B82BD7AE1755A28314351E2AD46FF56184D2F21E348D88'
+    )
+  );
 
   channel!.funded = BigInt.fromI32(channel!.funded.toI32() + 1);
   channel!.editedAt = event.block.timestamp;
