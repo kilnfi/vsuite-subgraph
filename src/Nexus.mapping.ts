@@ -87,11 +87,10 @@ export function handleSpawnedFactory(event: SpawnedFactory): void {
   factory.address = event.params.factory;
   factory.contract = getOrCreateMetaContract('vFactory');
   factory.cub = event.params.factory;
-  factory.treasury = event.params.treasury;
-  // @TODO OPERATOR NAME
-  // factory.operatorName = '';
-  // factory.operatorUrl = '';
-  // factory.operatorIconUrl = '';
+  factory.treasury = Address.zero();
+  factory.operatorName = '';
+  factory.operatorUrl = '';
+  factory.operatorIconUrl = '';
   factory.createdAt = event.block.timestamp;
   factory.editedAt = event.block.timestamp;
   factory.createdAtBlock = event.block.number;

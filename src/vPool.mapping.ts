@@ -30,7 +30,15 @@ import {
 } from '../generated/schema';
 import { Bytes, BigInt, Address, store } from '@graphprotocol/graph-ts';
 import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum';
-import { entityUUID, eventUUID, externalEntityUUID } from './utils';
+import {
+  createChangedPoolParameterSystemEvent,
+  createPoolDepositSystemEvent,
+  createPoolValidatorPurchaseSystemEvent,
+  createReportProcessedSystemEvent,
+  entityUUID,
+  eventUUID,
+  externalEntityUUID
+} from './utils';
 
 function getOrCreateBalance(pool: Bytes, account: Bytes, timestamp: BigInt, block: BigInt): PoolBalance {
   const balanceId = externalEntityUUID(Address.fromBytes(pool), [account.toHexString()]);
@@ -100,7 +108,15 @@ export function handleDeposit(event: Deposit): void {
   poolDeposit.from = event.params.sender;
   poolDeposit.amount = event.params.amount;
   // TODO update when event is updated
-  poolDeposit.mintedShares = BigInt.zero();
+
+  const totalUnderlyingSupply = pool!.totalUnderlyingSupply;
+  const totalSupply = pool!.totalSupply;
+
+  if (totalUnderlyingSupply.lt(BigInt.fromString('32000000000000000000'))) {
+    poolDeposit.mintedShares = event.params.amount;
+  } else {
+    poolDeposit.mintedShares = event.params.amount.times(totalSupply).div(totalUnderlyingSupply);
+  }
 
   poolDeposit.createdAt = event.block.timestamp;
   poolDeposit.editedAt = event.block.timestamp;
@@ -111,9 +127,15 @@ export function handleDeposit(event: Deposit): void {
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
-  pool!.totalUnderlyingSupply = pool!.totalUnderlyingSupply + event.params.amount;
+  pool!.totalUnderlyingSupply = pool!.totalUnderlyingSupply.plus(event.params.amount);
 
   pool!.save();
+
+  const se = createPoolDepositSystemEvent(event, Address.fromBytes(pool!.factory), event.address, event.params.sender);
+  se.amountEth = se.amountEth.plus(event.params.amount);
+  se.amountShares = se.amountShares.plus(poolDeposit.mintedShares);
+  se.depositor = entityUUID(event, [event.params.sender.toHexString()]);
+  se.save();
 }
 
 export function handleMint(event: Mint): void {
@@ -126,7 +148,7 @@ export function handleMint(event: Mint): void {
     event.block.number
   );
 
-  balance.amount = balance.amount + event.params.amount;
+  balance.amount = balance.amount.plus(event.params.amount);
 
   saveOrEraseBalance(balance, event);
 
@@ -142,7 +164,7 @@ export function handleBurn(event: Burn): void {
 
   const balance = getOrCreateBalance(event.address, event.params.burner, event.block.timestamp, event.block.number);
 
-  balance.amount = balance.amount - event.params.amount;
+  balance.amount = balance.amount.minus(event.params.amount);
 
   saveOrEraseBalance(balance, event);
 
@@ -160,8 +182,8 @@ export function handleTransfer(event: Transfer): void {
 
   const toBalance = getOrCreateBalance(event.address, event.params.to, event.block.timestamp, event.block.number);
 
-  fromBalance.amount = fromBalance.amount - event.params.value;
-  toBalance.amount = toBalance.amount + event.params.value;
+  fromBalance.amount = fromBalance.amount.minus(event.params.value);
+  toBalance.amount = toBalance.amount.plus(event.params.value);
 
   saveOrEraseBalance(fromBalance, event);
   saveOrEraseBalance(toBalance, event);
@@ -175,6 +197,7 @@ export function handlePurchasedValidators(event: PurchasedValidators): void {
   const pool = vPool.load(event.address);
 
   const validatorCount = pool!.purchasedValidatorCount.toI32();
+  const validators: string[] = [];
 
   for (let idx = 0; idx < event.params.validators.length; ++idx) {
     const poolPurchasedValidatorId = entityUUID(event, [
@@ -182,6 +205,7 @@ export function handlePurchasedValidators(event: PurchasedValidators): void {
       pool!.factory.toHexString(),
       event.params.validators[idx].toString()
     ]);
+    validators.push(poolPurchasedValidatorId);
     const poolPurchasedValidator = new PoolPurchasedValidator(poolPurchasedValidatorId);
     const fundedKeyId = externalEntityUUID(Address.fromBytes(pool!.factory), [event.params.validators[idx].toString()]);
 
@@ -202,6 +226,15 @@ export function handlePurchasedValidators(event: PurchasedValidators): void {
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
   pool!.save();
+
+  const se = createPoolValidatorPurchaseSystemEvent(event, Address.fromBytes(pool!.factory), event.address);
+  se.validatorCount = se.validatorCount.plus(BigInt.fromI32(event.params.validators.length));
+  const currentValidators = se.validators;
+  for (let idx = 0; idx < validators.length; ++idx) {
+    currentValidators.push(validators[idx]);
+  }
+  se.validators = currentValidators;
+  se.save();
 }
 
 export function handleProcessedReport(event: ProcessedReport): void {
@@ -250,82 +283,182 @@ export function handleProcessedReport(event: ProcessedReport): void {
   pool!.totalSupply = event.params.traces.postSupply;
   pool!.totalUnderlyingSupply = event.params.traces.postUnderlyingSupply;
   pool!.lastEpoch = event.params.epoch;
-  pool!.expectedEpoch = event.params.epoch + pool!.epochsPerFrame;
+  pool!.expectedEpoch = event.params.epoch.plus(pool!.epochsPerFrame);
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
   pool!.save();
+
+  const systemEvent = createReportProcessedSystemEvent(event, Address.fromBytes(pool!.factory), event.address);
+  systemEvent.report = reportId;
+  systemEvent.save();
 }
 
 export function handleSetOracleAggregator(event: SetOracleAggregator): void {
   const pool = vPool.load(event.address);
+
+  let oldValue = pool!.oracleAggregator;
 
   pool!.oracleAggregator = event.params.oracleAggregator;
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
   pool!.save();
+
+  if (oldValue.notEqual(event.params.oracleAggregator)) {
+    const systemEvent = createChangedPoolParameterSystemEvent(
+      event,
+      pool!.factory,
+      event.address,
+      `oracleAggregator`,
+      oldValue.toHexString()
+    );
+    systemEvent.newValue = event.params.oracleAggregator.toHexString();
+    systemEvent.save();
+  }
 }
 
 export function handleSetCoverageRecipient(event: SetCoverageRecipient): void {
   const pool = vPool.load(event.address);
+
+  let oldValue = pool!.coverageRecipient;
 
   pool!.coverageRecipient = event.params.coverageRecipient;
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
   pool!.save();
+
+  if (oldValue.notEqual(event.params.coverageRecipient)) {
+    const systemEvent = createChangedPoolParameterSystemEvent(
+      event,
+      pool!.factory,
+      event.address,
+      `coverageRecipient`,
+      oldValue.toHexString()
+    );
+    systemEvent.newValue = event.params.coverageRecipient.toHexString();
+    systemEvent.save();
+  }
 }
 
 export function handleSetExecLayerRecipient(event: SetExecLayerRecipient): void {
   const pool = vPool.load(event.address);
+
+  let oldValue = pool!.execLayerRecipient;
 
   pool!.execLayerRecipient = event.params.execLayerRecipient;
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
   pool!.save();
+
+  if (oldValue.notEqual(event.params.execLayerRecipient)) {
+    const systemEvent = createChangedPoolParameterSystemEvent(
+      event,
+      pool!.factory,
+      event.address,
+      `execLayerRecipient`,
+      oldValue.toHexString()
+    );
+    systemEvent.newValue = event.params.execLayerRecipient.toHexString();
+    systemEvent.save();
+  }
 }
 
 export function handleSetExitQueue(event: SetExitQueue): void {
   const pool = vPool.load(event.address);
 
+  let oldValue = pool!.exitQueue;
   pool!.exitQueue = event.params.exitQueue;
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
   pool!.save();
+
+  if (oldValue.notEqual(event.params.exitQueue)) {
+    const systemEvent = createChangedPoolParameterSystemEvent(
+      event,
+      pool!.factory,
+      event.address,
+      `exitQueue`,
+      oldValue.toHexString()
+    );
+    systemEvent.newValue = event.params.exitQueue.toHexString();
+    systemEvent.save();
+  }
 }
 
 export function handleSetWithdrawalRecipient(event: SetWithdrawalRecipient): void {
   const pool = vPool.load(event.address);
+
+  let oldValue = pool!.withdrawalRecipient;
 
   pool!.withdrawalRecipient = event.params.withdrawalRecipient;
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
   pool!.save();
+
+  if (oldValue.notEqual(event.params.withdrawalRecipient)) {
+    const systemEvent = createChangedPoolParameterSystemEvent(
+      event,
+      pool!.factory,
+      event.address,
+      `withdrawalRecipient`,
+      oldValue.toHexString()
+    );
+    systemEvent.newValue = event.params.withdrawalRecipient.toHexString();
+    systemEvent.save();
+  }
 }
 
 export function handleSetOperatorFee(event: SetOperatorFee): void {
   const pool = vPool.load(event.address);
 
+  let oldValue = pool!.operatorFee;
   pool!.operatorFee = event.params.operatorFeeBps;
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
   pool!.save();
+
+  if (oldValue.notEqual(event.params.operatorFeeBps)) {
+    const systemEvent = createChangedPoolParameterSystemEvent(
+      event,
+      pool!.factory,
+      event.address,
+      `operatorFee`,
+      oldValue.toString()
+    );
+    systemEvent.newValue = event.params.operatorFeeBps.toString();
+    systemEvent.save();
+  }
 }
 
 export function handleSetEpochsPerFrame(event: SetEpochsPerFrame): void {
   const pool = vPool.load(event.address);
 
+  let oldValue = pool!.epochsPerFrame;
+
   pool!.epochsPerFrame = event.params.epochsPerFrame;
-  pool!.expectedEpoch = pool!.lastEpoch + pool!.epochsPerFrame;
+  pool!.expectedEpoch = pool!.lastEpoch.plus(pool!.epochsPerFrame);
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
   pool!.save();
+
+  if (oldValue.notEqual(event.params.epochsPerFrame)) {
+    const systemEvent = createChangedPoolParameterSystemEvent(
+      event,
+      pool!.factory,
+      event.address,
+      `epochsPerFrame`,
+      oldValue.toString()
+    );
+    systemEvent.newValue = event.params.epochsPerFrame.toString();
+    systemEvent.save();
+  }
 }
 
 export function handleSetReportBounds(event: SetReportBounds): void {
@@ -372,9 +505,9 @@ export function handleApproval(event: Approval): void {
   const approval = getOrCreateApproval(balance.id, event.params.spender, event.block.timestamp, event.block.number);
 
   if (approval.amount >= event.params.value) {
-    balance.totalApproval = balance.totalApproval - (approval.amount - event.params.value);
+    balance.totalApproval = balance.totalApproval.minus(approval.amount.minus(event.params.value));
   } else {
-    balance.totalApproval = balance.totalApproval + (event.params.value - approval.amount);
+    balance.totalApproval = balance.totalApproval.plus(event.params.value.minus(approval.amount));
   }
   approval.amount = event.params.value;
 
@@ -385,6 +518,8 @@ export function handleApproval(event: Approval): void {
 export function handleApproveDepositor(event: ApproveDepositor): void {
   const depositorId = entityUUID(event, [event.params.depositor.toHexString()]);
   let depositor = PoolDepositor.load(depositorId);
+
+  let oldValue = false;
 
   if (depositor == null) {
     if (event.params.allowed) {
@@ -400,6 +535,7 @@ export function handleApproveDepositor(event: ApproveDepositor): void {
       depositor.save();
     }
   } else {
+    oldValue = true;
     if (!event.params.allowed) {
       store.remove('PoolDepositor', depositorId);
     } else {
@@ -407,5 +543,19 @@ export function handleApproveDepositor(event: ApproveDepositor): void {
       depositor.editedAtBlock = event.block.number;
       depositor.save();
     }
+  }
+
+  const pool = vPool.load(event.address);
+
+  if (oldValue != event.params.allowed) {
+    const systemEvent = createChangedPoolParameterSystemEvent(
+      event,
+      pool!.factory,
+      event.address,
+      `depositor[${event.params.depositor.toHexString()}]`,
+      oldValue.toString()
+    );
+    systemEvent.newValue = event.params.allowed.toString();
+    systemEvent.save();
   }
 }

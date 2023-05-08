@@ -138,10 +138,9 @@ type vFactory @entity {
   operator: Bytes
   admin: Bytes
   minimalRecipientImplementation: Bytes
-  # @TODO OPERATOR NAME
-  # operatorName: String!
-  # operatorUrl: String!
-  # operatorIconUrl: String!
+  operatorName: String!
+  operatorUrl: String!
+  operatorIconUrl: String!
 
   cub: Cub!
   withdrawalChannels: [WithdrawalChannel!]! @derivedFrom(field: "factory")
@@ -188,6 +187,22 @@ type ValidatorRequest @entity {
   editedAtBlock: BigInt!
 }
 
+type CommonValidationKeyEntry @entity {
+  id: Bytes!
+
+  publicKey: Bytes!
+
+  validationKeyCount: BigInt!
+  validationKeys: [ValidationKey!]! @derivedFrom(field: "commonValidationKeyEntry")
+
+  depositEventCount: BigInt!
+  depositEvents: [DepositEvent!]! @derivedFrom(field: "commonValidationKeyEntry")
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
 
 type ValidationKey @entity {
   id: String!
@@ -195,6 +210,11 @@ type ValidationKey @entity {
   publicKey: Bytes!
   signature: Bytes!
   index: BigInt!
+
+  validSignature: Boolean!
+  validationError: String
+
+  commonValidationKeyEntry: CommonValidationKeyEntry!
 
   funded: FundedValidationKey
   withdrawalChannel: WithdrawalChannel!
@@ -209,6 +229,7 @@ type FundedValidationKey @entity {
   id: String!
 
   validatorId: BigInt!
+  depositEvent: DepositEvent!
   owner: Bytes
   depositor: FactoryDepositor!
   withdrawalAddress: Bytes
@@ -880,4 +901,615 @@ type vStakesBalance @entity {
   editedAt: BigInt!
   createdAtBlock: BigInt!
   editedAtBlock: BigInt!
+}
+
+type ExternalDepositLink @entity {
+  id: String!
+
+  validationKey: ValidationKey!
+  depositEvent: DepositEvent!
+}
+
+type DepositEvent @entity {
+  id: String!
+
+  pubkey: Bytes!
+  withdrawalCredentials: Bytes!
+  amount: BigInt!
+  signature: Bytes!
+  index: BigInt!
+
+  amountRaw: Bytes!
+  indexRaw: Bytes!
+
+  validatorDepositIndex: BigInt!
+
+  validationKeyActivation: [FundedValidationKey!]! @derivedFrom(field: "depositEvent")
+  commonValidationKeyEntry: CommonValidationKeyEntry!
+
+  tx: Bytes!
+  logIndex: BigInt!
+
+  validSignature: Boolean
+  validationError: String
+  verified: Boolean!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type G @entity {
+  id: String!
+
+  systemLogIndex: BigInt!
+}
+
+interface SystemEvent {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type AddedValidationKeysSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  count: BigInt!
+  newTotal: BigInt!
+  withdrawalChannel: WithdrawalChannel!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type RemovedValidationKeysSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  count: BigInt!
+  newTotal: BigInt!
+  withdrawalChannel: WithdrawalChannel!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type FundedValidationKeySystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  depositor: FactoryDepositor!
+  count: BigInt!
+  newTotal: BigInt!
+  withdrawalChannel: WithdrawalChannel!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type UpdatedLimitSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  oldLimit: BigInt!
+  newLimit: BigInt!
+  withdrawalChannel: WithdrawalChannel!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type ValidatorOwnerChangedSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  validator: FundedValidationKey!
+  oldOwner: Bytes!
+  newOwner: Bytes!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type ValidatorFeeRecipientChangedSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  validator: FundedValidationKey!
+  oldFeeRecipient: Bytes!
+  newFeeRecipient: Bytes!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type ValidatorExtraDataChangedSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  validator: FundedValidationKey!
+  oldExtraData: String!
+  newExtraData: String!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type DuplicateKeySystemAlert implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  key: CommonValidationKeyEntry!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type ExternalFundingSystemAlert implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  key: CommonValidationKeyEntry!
+  logIndex: BigInt
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type ChangedFactoryParameterSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  parameter: String!
+  newValue: String!
+  oldValue: String!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type OracleMemberVotedSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  vote: OracleAggregatorReportVariantVote!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type ReportProcessedSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  report: Report!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+
+type ChangedPoolParameterSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  parameter: String!
+  newValue: String!
+  oldValue: String!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type ChangedOracleAggregatorParameterSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  parameter: String!
+  newValue: String!
+  oldValue: String!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type ChangedCoverageRecipientParameterSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  parameter: String!
+  newValue: String!
+  oldValue: String!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type CoverageRecipientUpdatedEthSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  delta: BigInt!
+  total: BigInt!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type CoverageRecipientUpdatedSharesSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  delta: BigInt!
+  total: BigInt!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type PoolDepositSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  amountEth: BigInt!
+  amountShares: BigInt!
+  depositor: PoolDepositor!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type PoolValidatorPurchaseSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool #!
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  validatorCount: BigInt!
+  validators: [PoolPurchasedValidator!]!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type NewExitQueueTicketSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient 
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  owner: Bytes!
+  size: BigInt!
+  maxExitable: BigInt!
+  ticket: Ticket!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type NewExitQueueCaskSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient 
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  size: BigInt!
+  value: BigInt!
+  cask: Cask!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type ClaimedExitQueueTicketSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient 
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  ticket: Ticket!
+  remainingAmount: BigInt!
+  remainingEthAmount: BigInt!
+  claimedAmount: BigInt!
+  receivedEth: BigInt!
+  usedCaskCount: BigInt!
+  usedCasks: [Cask!]!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
 }

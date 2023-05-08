@@ -53,7 +53,7 @@ export function handleUpgraded(event: Upgraded): void {
   implementation.save();
 
   ph.currentImplementation = implementationId;
-  ph.upgradeCount = ph.upgradeCount + BigInt.fromI32(1);
+  ph.upgradeCount = ph.upgradeCount.plus(BigInt.fromI32(1));
   ph.editedAt = event.block.timestamp;
   ph.editedAtBlock = event.block.number;
 
@@ -79,7 +79,7 @@ export function handleHatched(event: Hatched): void {
   cub.save();
   CubTemplate.create(event.params.cub);
 
-  ph.cubCount = ph.cubCount + BigInt.fromI32(1);
+  ph.cubCount = ph.cubCount.plus(BigInt.fromI32(1));
   ph.editedAt = event.block.timestamp;
   ph.editedAtBlock = event.block.number;
 
@@ -158,7 +158,7 @@ export function handleRegisteredGlobalFix(event: RegisteredGlobalFix): void {
   globalFix.editedAtBlock = event.block.number;
   globalFix.save();
 
-  ph.globalFixesCount = ph.globalFixesCount + BigInt.fromI32(1);
+  ph.globalFixesCount = ph.globalFixesCount.plus(BigInt.fromI32(1));
   ph.editedAt = event.block.timestamp;
   ph.editedAtBlock = event.block.number;
   ph.save();
