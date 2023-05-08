@@ -219,10 +219,11 @@ export class Sha256 {
    * Absorb data to be hashed
    * @param m (partial) message
    */
-  update(m: Uint8Array): void {
+  update(m: Uint8Array): Sha256 {
     let n = m.length;
     this.t += n;
     this.r = Internal._hashUpdate(this.st, m, n, this.r as isize);
+    return this;
   }
 
   /**

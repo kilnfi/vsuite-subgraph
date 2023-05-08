@@ -16,11 +16,15 @@ import {
   vPool,
   Nexus
 } from '../generated/schema';
-import { BigInt, Bytes, ethereum, store } from '@graphprotocol/graph-ts';
-import { entityUUID } from './utils';
+import { Address, BigInt, Bytes, ethereum, store } from '@graphprotocol/graph-ts';
+import {
+  createChangedOracleAggregatorParameterSystemEvent,
+  createOracleMemberVotedSystemEvent,
+  entityUUID
+} from './utils';
 
 function getQuorum(memberCount: BigInt): BigInt {
-  return ((memberCount + BigInt.fromI32(1)) * BigInt.fromI32(3)) / BigInt.fromI32(4) + BigInt.fromI32(1);
+  return memberCount.plus(BigInt.fromI32(1)).times(BigInt.fromI32(3)).div(BigInt.fromI32(4)).plus(BigInt.fromI32(1));
 }
 
 export function handleAddedOracleAggregatorMember(event: AddedOracleAggregatorMember): void {
@@ -42,12 +46,25 @@ export function handleAddedOracleAggregatorMember(event: AddedOracleAggregatorMe
 
   oaMember.save();
 
-  oa!.memberCount = oa!.memberCount + BigInt.fromI32(1);
+  oa!.memberCount = oa!.memberCount.plus(BigInt.fromI32(1));
   oa!.quorum = getQuorum(oa!.memberCount);
 
   oa!.editedAt = event.block.timestamp;
   oa!.editedAtBlock = event.block.number;
   oa!.save();
+
+  const pool = vPool.load(oa!.pool);
+
+  const se = createChangedOracleAggregatorParameterSystemEvent(
+    event,
+    Address.fromBytes(pool!.factory),
+    Address.fromBytes(oa!.pool),
+    event.address,
+    `member[${event.params.member.toHexString()}]`,
+    'false'
+  );
+  se.newValue = 'true';
+  se.save();
 }
 
 export function handleRemovedOracleAggregatorMember(event: RemovedOracleAggregatorMember): void {
@@ -88,9 +105,22 @@ export function handleRemovedOracleAggregatorMember(event: RemovedOracleAggregat
 
     store.remove('OracleAggregatorMember', removedOaMemberId);
     swapOaMember!.save();
+
+    const pool = vPool.load(oa!.pool);
+
+    const se = createChangedOracleAggregatorParameterSystemEvent(
+      event,
+      Address.fromBytes(pool!.factory),
+      Address.fromBytes(oa!.pool),
+      event.address,
+      `member[${event.params.member.toHexString()}]`,
+      'true'
+    );
+    se.newValue = 'false';
+    se.save();
   }
 
-  oa!.memberCount = oa!.memberCount - BigInt.fromI32(1);
+  oa!.memberCount = oa!.memberCount.minus(BigInt.fromI32(1));
   oa!.quorum = getQuorum(oa!.memberCount);
 
   oa!.editedAt = event.block.timestamp;
@@ -108,12 +138,12 @@ function timeSinceLastVariant(epoch: BigInt, oracleAggregatorAddress: Bytes): Bi
         if (lastVariant.epoch == epoch) {
           return lastVariant.period;
         }
-        const epochDelta = epoch - lastVariant.epoch;
+        const epochDelta = epoch.minus(lastVariant.epoch);
         const pool = vPool.load(oa.pool);
         if (pool != null) {
           const nexus = Nexus.load(pool.nexus);
           if (nexus != null) {
-            return epochDelta * nexus.slotsPerEpoch * nexus.secondsPerSlot;
+            return epochDelta.times(nexus.slotsPerEpoch).times(nexus.secondsPerSlot);
           }
         }
       }
@@ -168,7 +198,7 @@ export function handleGlobalVote(
   vote.editedAtBlock = event.block.number;
   vote.save();
 
-  _variant.voteCount = _variant.voteCount + BigInt.fromI32(1);
+  _variant.voteCount = _variant.voteCount.plus(BigInt.fromI32(1));
   _variant.editedAt = event.block.timestamp;
   _variant.editedAtBlock = event.block.number;
   _variant.save();
@@ -176,6 +206,18 @@ export function handleGlobalVote(
   oa!.editedAt = event.block.timestamp;
   oa!.editedAtBlock = event.block.number;
   oa!.save();
+
+  const pool = vPool.load(oa!.pool);
+  const systemEvent = createOracleMemberVotedSystemEvent(
+    event,
+    Address.fromBytes(pool!.factory),
+    Address.fromBytes(oa!.pool),
+    event.address,
+    Address.fromBytes(voter),
+    true
+  );
+  systemEvent.vote = voteId;
+  systemEvent.save();
 }
 
 export function handleVote(event: ethereum.Event, voter: Bytes, variant: Bytes, report: MemberVotedReportStruct): void {
@@ -219,7 +261,7 @@ export function handleVote(event: ethereum.Event, voter: Bytes, variant: Bytes, 
   vote.editedAtBlock = event.block.number;
   vote.save();
 
-  _variant.voteCount = _variant.voteCount + BigInt.fromI32(1);
+  _variant.voteCount = _variant.voteCount.plus(BigInt.fromI32(1));
   _variant.editedAt = event.block.timestamp;
   _variant.editedAtBlock = event.block.number;
   _variant.save();
@@ -227,6 +269,18 @@ export function handleVote(event: ethereum.Event, voter: Bytes, variant: Bytes, 
   oa!.editedAt = event.block.timestamp;
   oa!.editedAtBlock = event.block.number;
   oa!.save();
+
+  const pool = vPool.load(oa!.pool);
+  const systemEvent = createOracleMemberVotedSystemEvent(
+    event,
+    Address.fromBytes(pool!.factory),
+    Address.fromBytes(oa!.pool),
+    event.address,
+    Address.fromBytes(voter),
+    false
+  );
+  systemEvent.vote = voteId;
+  systemEvent.save();
 }
 
 export function handleMemberVoted(event: MemberVoted): void {

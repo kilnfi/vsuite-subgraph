@@ -1,4 +1,4 @@
-import { BigInt } from '@graphprotocol/graph-ts';
+import { BigInt, dataSource, log, crypto, ByteArray, Address } from '@graphprotocol/graph-ts';
 import {
   WithdrawalChannel,
   ValidationKey,
@@ -6,7 +6,9 @@ import {
   ExitRequest,
   ValidatorRequest as ValidatorRequestEntity,
   vFactory,
-  FactoryDepositor
+  FactoryDepositor,
+  CommonValidationKeyEntry,
+  DepositEvent
 } from '../generated/schema';
 import {
   AddedValidators,
@@ -28,15 +30,44 @@ import { Bytes } from '@graphprotocol/graph-ts';
 import { store } from '@graphprotocol/graph-ts';
 import { SetMinimalRecipientImplementation } from '../generated/Nexus/Nexus';
 import { SetValidatorExtraData } from '../generated/templates/vFactory/vFactory';
-import { entityUUID, eventUUID } from './utils';
-import { verify } from './bls12_381_verify/verify';
+import {
+  cancelSystemEvent,
+  createAddedValidationKeysSystemEvent,
+  createChangedFactoryParameterSystemEvent,
+  createDuplicateKeySystemAlert,
+  createExternalFundingSystemAlert,
+  createFundedValidationKeySystemEvent,
+  createRemovedValidationKeysSystemEvent,
+  createUpdatedLimitSystemEvent,
+  createValidatorExtraDataChangedSystemEvent,
+  createValidatorFeeRecipientChangedSystemEvent,
+  createValidatorOwnerChangedSystemEvent,
+  entityUUID,
+  eventUUID
+} from './utils';
+import { verify } from './bls12_381_verify';
+import {
+  FORK_VERSIONS,
+  generateDepositDomain,
+  hashTreeRootDepositMessage,
+  hashTreeRootSigningData
+} from './ssz_deposit_message/index';
 
 const PUBLIC_KEY_LENGTH = 48;
 const SIGNATURE_LENGTH = 96;
 const KEY_PACK_LENGTH = PUBLIC_KEY_LENGTH + SIGNATURE_LENGTH;
 
+function concat(b: ByteArray[]): ByteArray {
+  let res = new ByteArray(0);
+  for (let i = 0; i < b.length; i++) {
+    res = res.concat(b[i]);
+  }
+  return res;
+}
+
 export function handleAddedValidators(event: AddedValidators): void {
   const channelId = entityUUID(event, [event.params.withdrawalChannel.toHexString()]);
+  const factory: vFactory = vFactory.load(event.address) as vFactory;
 
   let entity = WithdrawalChannel.load(channelId);
 
@@ -68,6 +99,126 @@ export function handleAddedValidators(event: AddedValidators): void {
     keyEntity.publicKey = publicKey;
     keyEntity.withdrawalChannel = channelId;
     keyEntity.index = BigInt.fromI32(keyCount + idx);
+
+    let withdrawalCredentials: Bytes;
+    if (
+      event.params.withdrawalChannel.toHexString() ==
+      '0x0000000000000000000000000000000000000000000000000000000000000000'
+    ) {
+      withdrawalCredentials = Bytes.fromByteArray(
+        concat([
+          ByteArray.fromHexString('0x010000000000000000000000'),
+          Bytes.fromUint8Array(
+            crypto
+              .keccak256(
+                concat([
+                  Bytes.fromHexString('0xff'),
+                  event.address,
+                  crypto.keccak256(publicKey),
+                  crypto.keccak256(
+                    concat([
+                      Bytes.fromHexString('0x3d602d80600a3d3981f3363d3d373d3d3d363d73'),
+                      factory.minimalRecipientImplementation as Bytes,
+                      Bytes.fromHexString('0x5af43d82803e903d91602b57fd5bf3')
+                    ])
+                  )
+                ])
+              )
+              .slice(12, 32)
+          )
+        ])
+      );
+    } else {
+      withdrawalCredentials = event.params.withdrawalChannel;
+    }
+
+    log.info('Starting verification for {}', [publicKey.toHexString()]);
+
+    const depositMessageRoot = hashTreeRootDepositMessage({
+      pubkey: publicKey,
+      withdrawalCredentials: withdrawalCredentials,
+      amount: 32000000000
+    });
+
+    const forkVersion: Uint8Array = FORK_VERSIONS[dataSource.network() == 'mainnet' ? 0 : 1];
+    const depositDomain: Uint8Array = generateDepositDomain(forkVersion);
+
+    const signingRoot = hashTreeRootSigningData({
+      objectRoot: depositMessageRoot,
+      domain: depositDomain
+    });
+
+    const signature_verification = verify(signature, signingRoot, publicKey);
+
+    if (signature_verification.error != null || signature_verification.value == false) {
+      keyEntity.validSignature = false;
+      keyEntity.validationError = signature_verification.error;
+    } else {
+      keyEntity.validSignature = true;
+    }
+
+    log.info('Finished verification for {}', [publicKey.toHexString()]);
+
+    let commonValidationKeyEntry = CommonValidationKeyEntry.load(publicKey);
+    if (commonValidationKeyEntry == null) {
+      commonValidationKeyEntry = new CommonValidationKeyEntry(publicKey);
+      commonValidationKeyEntry.depositEventCount = BigInt.fromI32(0);
+      commonValidationKeyEntry.validationKeyCount = BigInt.fromI32(0);
+      commonValidationKeyEntry.publicKey = publicKey;
+      commonValidationKeyEntry.createdAt = event.block.timestamp;
+      commonValidationKeyEntry.createdAtBlock = event.block.number;
+    }
+    commonValidationKeyEntry.editedAt = event.block.timestamp;
+    commonValidationKeyEntry.editedAtBlock = event.block.number;
+    commonValidationKeyEntry.validationKeyCount = commonValidationKeyEntry.validationKeyCount.plus(BigInt.fromI32(1));
+    commonValidationKeyEntry.save();
+
+    if (commonValidationKeyEntry.validationKeyCount.gt(BigInt.fromI32(1))) {
+      const se = createDuplicateKeySystemAlert(event, event.address);
+      se.key = publicKey;
+      se.save();
+    }
+
+    let depositIndex = 0;
+    let depositEventId = `${publicKey.toHexString()}-${depositIndex.toString()}`;
+    let depositEvent = DepositEvent.load(depositEventId);
+    while (depositEvent != null) {
+      const depositMessageRoot = hashTreeRootDepositMessage({
+        pubkey: depositEvent.pubkey,
+        withdrawalCredentials: depositEvent.withdrawalCredentials,
+        amount: depositEvent.amount.toI64()
+      });
+
+      const forkVersion: Uint8Array = FORK_VERSIONS[dataSource.network() == 'mainnet' ? 0 : 1];
+      const depositDomain: Uint8Array = generateDepositDomain(forkVersion);
+
+      const signingRoot = hashTreeRootSigningData({
+        objectRoot: depositMessageRoot,
+        domain: depositDomain
+      });
+
+      const signature_verification = verify(depositEvent.signature, signingRoot, depositEvent.pubkey);
+
+      if (signature_verification.error != null || signature_verification.value == false) {
+        depositEvent.validSignature = false;
+        depositEvent.validationError = signature_verification.error;
+      } else {
+        depositEvent.validSignature = true;
+        const se = createExternalFundingSystemAlert(event, publicKey);
+        se.key = publicKey;
+        se.save();
+      }
+      depositEvent.verified = true;
+      depositEvent.editedAt = event.block.timestamp;
+      depositEvent.editedAtBlock = event.block.number;
+      depositEvent.save();
+
+      depositIndex++;
+      depositEventId = `${publicKey.toHexString()}-${depositIndex.toString()}`;
+      depositEvent = DepositEvent.load(depositEventId);
+    }
+
+    keyEntity.commonValidationKeyEntry = publicKey;
     keyEntity.createdAt = event.block.timestamp;
     keyEntity.createdAtBlock = event.block.number;
     keyEntity.editedAt = event.block.timestamp;
@@ -78,6 +229,11 @@ export function handleAddedValidators(event: AddedValidators): void {
   entity.total = BigInt.fromI32(entity.total.toI32() + event.params.keys.length / KEY_PACK_LENGTH);
 
   entity.save();
+
+  const se = createAddedValidationKeysSystemEvent(event, event.address, event.params.withdrawalChannel);
+  se.count = se.count.plus(BigInt.fromI32(event.params.keys.length / KEY_PACK_LENGTH));
+  se.newTotal = entity.total;
+  se.save();
 }
 
 export function handleValidatorRequest(event: ValidatorRequest): void {
@@ -143,27 +299,21 @@ export function handleRemovedValidator(event: RemovedValidator): void {
     store.remove('ValidationKey', lastKeyId);
   }
 
+  let commonValidationKeyEntry = CommonValidationKeyEntry.load(keyToDelete!.publicKey);
+  commonValidationKeyEntry!.validationKeyCount = commonValidationKeyEntry!.validationKeyCount.minus(BigInt.fromI32(1));
+  commonValidationKeyEntry!.editedAt = event.block.timestamp;
+  commonValidationKeyEntry!.editedAtBlock = event.block.number;
+  commonValidationKeyEntry!.save();
+
   channel!.total = BigInt.fromI32(channel!.total.toI32() - 1);
   channel!.editedAt = event.block.timestamp;
   channel!.editedAtBlock = event.block.number;
   channel!.save();
-}
 
-function hexStringToUint8Array(hexString: string): Uint8Array {
-  if (hexString.length % 2 !== 0) {
-    throw 'Invalid hexString';
-  } /*from  w w w.  j  av a 2s  . c  o  m*/
-  var arrayBuffer = new Uint8Array(hexString.length / 2);
-
-  for (var i = 0; i < hexString.length; i += 2) {
-    var byteValue = parseInt(hexString.substr(i, 2), 16);
-    if (isNaN(byteValue)) {
-      throw 'Invalid hexString';
-    }
-    arrayBuffer[i / 2] = u8(byteValue);
-  }
-
-  return arrayBuffer;
+  const se = createRemovedValidationKeysSystemEvent(event, event.address, event.params.withdrawalChannel);
+  se.count = se.count.plus(BigInt.fromI32(1));
+  se.newTotal = channel!.total;
+  se.save();
 }
 
 export function handleFundedValidator(event: FundedValidator): void {
@@ -182,6 +332,17 @@ export function handleFundedValidator(event: FundedValidator): void {
   key!.editedAt = event.block.timestamp;
   key!.editedAtBlock = event.block.number;
 
+  let depositIndex = 1;
+  let depositEventId = `${key!.publicKey.toHexString()}-${depositIndex.toString()}`;
+  let depositEvent = DepositEvent.load(depositEventId);
+  while (depositEvent != null) {
+    depositIndex++;
+    depositEventId = `${key!.publicKey.toHexString()}-${depositIndex.toString()}`;
+    depositEvent = DepositEvent.load(depositEventId);
+  }
+  depositEventId = `${key!.publicKey.toHexString()}-${(depositIndex - 1).toString()}`;
+
+  fundedKey.depositEvent = depositEventId;
   fundedKey.validationKey = keyId;
   fundedKey.validatorId = event.params.id;
   fundedKey.depositor = depositorId;
@@ -191,17 +352,6 @@ export function handleFundedValidator(event: FundedValidator): void {
   fundedKey.editedAt = event.block.timestamp;
   fundedKey.editedAtBlock = event.block.number;
 
-  // fake verification to test perfs
-  verify(
-    hexStringToUint8Array(
-      '953B41C57CD30A4082659A12CB07E5678F8C1C42CFD0D7ED3CD36B1AD7D6A640ECDF44CD6EE36C68F4E180131BF3CD0906C4006EAA2452B7A5C507D497E1B5A0958BF92EC25F1AACDC7D19CA351F49B4034406D690930D6915800C792C629D33'
-    ),
-    hexStringToUint8Array('dc12dabb7c0618f8bfe7fadb294ddfd9eedf012b8b714ab62f8195b31728d13c'),
-    hexStringToUint8Array(
-      'B2BED4B86FE2BD9231B1EA1ACD1EE705BDC2C9702D9B33FFB8B82BD7AE1755A28314351E2AD46FF56184D2F21E348D88'
-    )
-  );
-
   channel!.funded = BigInt.fromI32(channel!.funded.toI32() + 1);
   channel!.editedAt = event.block.timestamp;
   channel!.editedAtBlock = event.block.number;
@@ -209,6 +359,21 @@ export function handleFundedValidator(event: FundedValidator): void {
   key!.save();
   channel!.save();
   fundedKey.save();
+
+  const se = createExternalFundingSystemAlert(event, key!.publicKey);
+  if (se.logIndex !== null && (se.logIndex as BigInt).equals(event.logIndex.minus(BigInt.fromI32(1)))) {
+    cancelSystemEvent(se.id, 'ExternalFundingSystemAlert');
+  }
+
+  const systemEvent = createFundedValidationKeySystemEvent(
+    event,
+    event.address,
+    event.params.withdrawalChannel,
+    event.params.depositor
+  );
+  systemEvent.count = systemEvent.count.plus(BigInt.fromI32(1));
+  systemEvent.newTotal = channel!.funded;
+  systemEvent.save();
 }
 
 export function handleExitValidator(event: ExitValidator): void {
@@ -240,11 +405,20 @@ export function handleUpdatedLimit(event: UpdatedLimit): void {
   const channelId = entityUUID(event, [event.params.withdrawalChannel.toHexString()]);
   const channel = WithdrawalChannel.load(channelId);
 
+  const oldLimit = channel!.limit;
+
   channel!.limit = event.params.limit;
   channel!.editedAt = event.block.timestamp;
   channel!.editedAtBlock = event.block.number;
 
   channel!.save();
+
+  if (oldLimit.notEqual(event.params.limit)) {
+    const se = createUpdatedLimitSystemEvent(event, event.address, event.params.withdrawalChannel);
+    se.oldLimit = oldLimit;
+    se.newLimit = event.params.limit;
+    se.save();
+  }
 }
 
 export function handleSetValidatorOwner(event: SetValidatorOwner): void {
@@ -252,12 +426,23 @@ export function handleSetValidatorOwner(event: SetValidatorOwner): void {
   const fundedKey = FundedValidationKey.load(fundedKeyId);
 
   if (fundedKey != null) {
+    let oldOwner = fundedKey.owner;
+    if (oldOwner === null) {
+      oldOwner = Address.zero();
+    }
     fundedKey.owner = event.params.owner;
 
     fundedKey.editedAt = event.block.timestamp;
     fundedKey.editedAtBlock = event.block.number;
 
     fundedKey.save();
+
+    if (oldOwner != event.params.owner) {
+      const se = createValidatorOwnerChangedSystemEvent(event, event.address, event.params.id);
+      se.oldOwner = oldOwner;
+      se.newOwner = event.params.owner;
+      se.save();
+    }
   }
 }
 
@@ -266,12 +451,23 @@ export function handleSetValidatorFeeRecipient(event: SetValidatorFeeRecipient):
   const fundedKey = FundedValidationKey.load(fundedKeyId);
 
   if (fundedKey != null) {
+    let oldFeeRecipient = fundedKey.feeRecipient;
+    if (oldFeeRecipient === null) {
+      oldFeeRecipient = Address.zero();
+    }
     fundedKey.feeRecipient = event.params.feeRecipient;
 
     fundedKey.editedAt = event.block.timestamp;
     fundedKey.editedAtBlock = event.block.number;
 
     fundedKey.save();
+
+    if (oldFeeRecipient != event.params.feeRecipient) {
+      const se = createValidatorFeeRecipientChangedSystemEvent(event, event.address, event.params.id);
+      se.oldFeeRecipient = oldFeeRecipient;
+      se.newFeeRecipient = event.params.feeRecipient;
+      se.save();
+    }
   }
 }
 
@@ -280,31 +476,91 @@ export function handleSetValidatorExtraData(event: SetValidatorExtraData): void 
   const fundedKey = FundedValidationKey.load(fundedKeyId);
 
   if (fundedKey != null) {
+    let oldExtraData = fundedKey.extraData;
+    if (oldExtraData === null) {
+      oldExtraData = '';
+    }
     fundedKey.extraData = event.params.extraData;
 
     fundedKey.editedAt = event.block.timestamp;
     fundedKey.editedAtBlock = event.block.number;
 
     fundedKey.save();
+    if (oldExtraData != event.params.extraData) {
+      const se = createValidatorExtraDataChangedSystemEvent(event, event.address, event.params.id);
+      se.oldExtraData = oldExtraData;
+      se.newExtraData = event.params.extraData;
+      se.save();
+    }
   }
 }
 
 export function handleSetMetadata(event: SetMetadata): void {
   const factory = vFactory.load(event.address);
 
-  // @TODO OPERATOR NAME
-  // factory!.operatorName = event.params.name;
-  // factory!.operatorUrl = event.params.url;
-  // factory!.operatorIconUrl = event.params.iconUrl;
+  let oldValueOperatorName = factory!.operatorName;
+  if (oldValueOperatorName === null) {
+    oldValueOperatorName = '';
+  }
+
+  let oldValueOperatorUrl = factory!.operatorUrl;
+  if (oldValueOperatorUrl === null) {
+    oldValueOperatorUrl = '';
+  }
+
+  let oldValueOperatorIconUrl = factory!.operatorIconUrl;
+  if (oldValueOperatorIconUrl === null) {
+    oldValueOperatorIconUrl = '';
+  }
+
+  factory!.operatorName = event.params.name;
+  factory!.operatorUrl = event.params.url;
+  factory!.operatorIconUrl = event.params.iconUrl;
 
   factory!.editedAt = event.block.timestamp;
   factory!.editedAtBlock = event.block.number;
 
   factory!.save();
+
+  if (oldValueOperatorName != event.params.name) {
+    const systemEvent = createChangedFactoryParameterSystemEvent(
+      event,
+      event.address,
+      `operatorName`,
+      oldValueOperatorName.toString()
+    );
+    systemEvent.newValue = event.params.name;
+    systemEvent.save();
+  }
+  if (oldValueOperatorUrl != event.params.url) {
+    const systemEvent = createChangedFactoryParameterSystemEvent(
+      event,
+      event.address,
+      `operatorUrl`,
+      oldValueOperatorUrl.toString()
+    );
+    systemEvent.newValue = event.params.url;
+    systemEvent.save();
+  }
+  if (oldValueOperatorIconUrl != event.params.iconUrl) {
+    const systemEvent = createChangedFactoryParameterSystemEvent(
+      event,
+      event.address,
+      `operatorIconUrl`,
+      oldValueOperatorIconUrl.toString()
+    );
+    systemEvent.newValue = event.params.iconUrl;
+    systemEvent.save();
+  }
 }
 
 export function handleSetAdmin(event: SetAdmin): void {
   const factory = vFactory.load(event.address);
+
+  let oldValue = factory!.admin;
+  if (oldValue === null) {
+    oldValue = Address.zero();
+  }
 
   factory!.admin = event.params.admin;
 
@@ -312,10 +568,19 @@ export function handleSetAdmin(event: SetAdmin): void {
   factory!.editedAtBlock = event.block.number;
 
   factory!.save();
+
+  const systemEvent = createChangedFactoryParameterSystemEvent(event, event.address, `admin`, oldValue.toHexString());
+  systemEvent.newValue = event.params.admin.toHexString();
+  systemEvent.save();
 }
 
 export function handleChangedOperator(event: ChangedOperator): void {
   const factory = vFactory.load(event.address);
+
+  let oldValue = factory!.operator;
+  if (oldValue === null) {
+    oldValue = Address.zero();
+  }
 
   factory!.operator = event.params.operator;
 
@@ -323,10 +588,24 @@ export function handleChangedOperator(event: ChangedOperator): void {
   factory!.editedAtBlock = event.block.number;
 
   factory!.save();
+
+  const systemEvent = createChangedFactoryParameterSystemEvent(
+    event,
+    event.address,
+    `operator`,
+    oldValue.toHexString()
+  );
+  systemEvent.newValue = event.params.operator.toHexString();
+  systemEvent.save();
 }
 
 export function handleChangedTreasury(event: ChangedTreasury): void {
   const factory = vFactory.load(event.address);
+
+  let oldValue = factory!.treasury;
+  if (oldValue === null) {
+    oldValue = Address.zero();
+  }
 
   factory!.treasury = event.params.treasury;
 
@@ -334,10 +613,24 @@ export function handleChangedTreasury(event: ChangedTreasury): void {
   factory!.editedAtBlock = event.block.number;
 
   factory!.save();
+
+  const systemEvent = createChangedFactoryParameterSystemEvent(
+    event,
+    event.address,
+    `treasury`,
+    oldValue.toHexString()
+  );
+  systemEvent.newValue = event.params.treasury.toHexString();
+  systemEvent.save();
 }
 
 export function handleSetMinimalRecipientImplementation(event: SetMinimalRecipientImplementation): void {
   const factory = vFactory.load(event.address);
+
+  let oldValue = factory!.minimalRecipientImplementation;
+  if (oldValue === null) {
+    oldValue = Address.zero();
+  }
 
   factory!.minimalRecipientImplementation = event.params.minimalRecipientImplementationAddress;
 
@@ -345,10 +638,24 @@ export function handleSetMinimalRecipientImplementation(event: SetMinimalRecipie
   factory!.editedAtBlock = event.block.number;
 
   factory!.save();
+
+  const systemEvent = createChangedFactoryParameterSystemEvent(
+    event,
+    event.address,
+    `minimalRecipientImplementation`,
+    oldValue.toHexString()
+  );
+  systemEvent.newValue = event.params.minimalRecipientImplementationAddress.toHexString();
+  systemEvent.save();
 }
 
 export function handleSetHatcherRegistry(event: SetHatcherRegistry): void {
   const factory = vFactory.load(event.address);
+
+  let oldValue = factory!.nexus;
+  if (oldValue === null) {
+    oldValue = Address.zero();
+  }
 
   factory!.nexus = event.params.hatcherRegistry;
 
@@ -356,11 +663,17 @@ export function handleSetHatcherRegistry(event: SetHatcherRegistry): void {
   factory!.editedAtBlock = event.block.number;
 
   factory!.save();
+
+  const systemEvent = createChangedFactoryParameterSystemEvent(event, event.address, `nexus`, oldValue.toHexString());
+  systemEvent.newValue = event.params.hatcherRegistry.toHexString();
+  systemEvent.save();
 }
 
 export function handleApproveDepositor(event: ApproveDepositor): void {
   const depositorId = entityUUID(event, [event.params.depositor.toHexString()]);
   let depositor = FactoryDepositor.load(depositorId);
+
+  let oldValue = false;
 
   if (depositor == null) {
     if (event.params.allowed) {
@@ -376,6 +689,7 @@ export function handleApproveDepositor(event: ApproveDepositor): void {
       depositor.save();
     }
   } else {
+    oldValue = true;
     if (!event.params.allowed) {
       store.remove('FactoryDepositor', depositorId);
     } else {
@@ -383,5 +697,16 @@ export function handleApproveDepositor(event: ApproveDepositor): void {
       depositor.editedAtBlock = event.block.number;
       depositor.save();
     }
+  }
+
+  if (oldValue != event.params.allowed) {
+    const systemEvent = createChangedFactoryParameterSystemEvent(
+      event,
+      event.address,
+      `depositor[${event.params.depositor.toHexString()}]`,
+      oldValue.toString()
+    );
+    systemEvent.newValue = event.params.allowed.toString();
+    systemEvent.save();
   }
 }

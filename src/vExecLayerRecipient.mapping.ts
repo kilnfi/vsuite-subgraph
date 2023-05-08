@@ -15,7 +15,7 @@ export function handleSuppliedEther(event: SuppliedEther): void {
   else_.editedAt = event.block.timestamp;
   else_.editedAtBlock = event.block.number;
 
-  elr!.totalSuppliedEther = elr!.totalSuppliedEther + event.params.amount;
+  elr!.totalSuppliedEther = elr!.totalSuppliedEther.plus(event.params.amount);
 
   elr!.editedAt = event.block.timestamp;
   elr!.editedAtBlock = event.block.number;
