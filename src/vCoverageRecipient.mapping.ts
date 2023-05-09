@@ -19,7 +19,7 @@ import {
   createCoverageRecipientUpdatedSharesSystemEvent,
   entityUUID,
   txUniqueUUID
-} from './utils';
+} from './utils/utils';
 
 export function handleSuppliedEther(event: SuppliedEther): void {
   const cseId = txUniqueUUID(event, [event.address.toHexString()]);

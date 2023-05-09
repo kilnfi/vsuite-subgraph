@@ -38,7 +38,7 @@ import {
   entityUUID,
   eventUUID,
   externalEntityUUID
-} from './utils';
+} from './utils/utils';
 
 function getOrCreateBalance(pool: Bytes, account: Bytes, timestamp: BigInt, block: BigInt): PoolBalance {
   const balanceId = externalEntityUUID(Address.fromBytes(pool), [account.toHexString()]);

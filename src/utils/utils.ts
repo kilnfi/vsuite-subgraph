@@ -23,7 +23,7 @@ import {
   ValidatorExtraDataChangedSystemEvent,
   ValidatorFeeRecipientChangedSystemEvent,
   ValidatorOwnerChangedSystemEvent
-} from '../generated/schema';
+} from '../../generated/schema';
 
 // an event is not unique per transaction
 export function eventUUID(event: ethereum.Event, keys: string[]): string {

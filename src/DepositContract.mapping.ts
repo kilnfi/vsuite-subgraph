@@ -8,7 +8,7 @@ import {
   hashTreeRootSigningData
 } from './ssz_deposit_message';
 import { BigInt, dataSource } from '@graphprotocol/graph-ts';
-import { createExternalFundingSystemAlert } from './utils';
+import { createExternalFundingSystemAlert } from './utils/utils';
 
 export function handleDepositEvent(event: DepositEvent): void {
   let depositIndex = 0;

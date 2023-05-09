@@ -21,7 +21,7 @@ import {
   createChangedOracleAggregatorParameterSystemEvent,
   createOracleMemberVotedSystemEvent,
   entityUUID
-} from './utils';
+} from './utils/utils';
 
 function getQuorum(memberCount: BigInt): BigInt {
   return memberCount.plus(BigInt.fromI32(1)).times(BigInt.fromI32(3)).div(BigInt.fromI32(4)).plus(BigInt.fromI32(1));
