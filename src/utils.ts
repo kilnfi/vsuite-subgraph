@@ -137,7 +137,7 @@ export function createUpdatedLimitSystemEvent(
 
     systemEvent.factory = factoryAddress;
     systemEvent.withdrawalChannel = externalEntityUUID(factoryAddress, [withdrawalChannel.toHexString()]);
-    systemEvent.oldLimit = BigInt.fromI32(0);
+    systemEvent.oldLimit = null;
     systemEvent.newLimit = BigInt.fromI32(0);
 
     systemEvent.createdAt = event.block.timestamp;
@@ -240,10 +240,14 @@ export function createValidatorExtraDataChangedSystemEvent(
   return systemEvent;
 }
 
-export function createDuplicateKeySystemAlert(event: ethereum.Event, factoryAddress: Address): DuplicateKeySystemAlert {
+export function createDuplicateKeySystemAlert(
+  event: ethereum.Event,
+  factoryAddress: Address,
+  publicKey: Bytes
+): DuplicateKeySystemAlert {
   const g = getOrCreateG();
 
-  const id = `DuplicateKeySystemAlert/${event.transaction.hash.toHexString()}/${factoryAddress.toHexString()}`;
+  const id = `DuplicateKeySystemAlert/${event.transaction.hash.toHexString()}/${factoryAddress.toHexString()}/${publicKey.toHexString()}`;
   let systemEvent = DuplicateKeySystemAlert.load(id);
   if (systemEvent == null) {
     systemEvent = new DuplicateKeySystemAlert(id);
@@ -311,6 +315,7 @@ export function createFundedValidationKeySystemEvent(
     systemEvent.withdrawalChannel = externalEntityUUID(factoryAddress, [withdrawalChannel.toHexString()]);
     systemEvent.count = BigInt.fromI32(0);
     systemEvent.newTotal = BigInt.fromI32(0);
+    systemEvent.fundedValidationKeys = [];
 
     systemEvent.createdAt = event.block.timestamp;
     systemEvent.createdAtBlock = event.block.number;
@@ -357,11 +362,12 @@ export function createChangedFactoryParameterSystemEvent(
 export function createReportProcessedSystemEvent(
   event: ethereum.Event,
   factoryAddress: Address,
-  poolAddress: Address
+  poolAddress: Address,
+  epoch: BigInt
 ): ReportProcessedSystemEvent {
   const g = getOrCreateG();
 
-  const id = `ReportProcessedSystemEvent/${event.transaction.hash.toHexString()}/${poolAddress.toHexString()}`;
+  const id = `ReportProcessedSystemEvent/${event.transaction.hash.toHexString()}/${poolAddress.toHexString()}/${epoch.toString()}`;
   let systemEvent = ReportProcessedSystemEvent.load(id);
   if (systemEvent == null) {
     systemEvent = new ReportProcessedSystemEvent(id);
@@ -389,11 +395,12 @@ export function createOracleMemberVotedSystemEvent(
   poolAddress: Address,
   oracleAggregatorAddress: Address,
   voterAddress: Address,
-  globalMember: boolean
+  globalMember: boolean,
+  epoch: BigInt
 ): OracleMemberVotedSystemEvent {
   const g = getOrCreateG();
 
-  const id = `OracleMemberVotedSystemEvent/${event.transaction.hash.toHexString()}/${poolAddress.toHexString()}/${oracleAggregatorAddress.toHexString()}/${voterAddress.toHexString()}/${globalMember.toString()}`;
+  const id = `OracleMemberVotedSystemEvent/${event.transaction.hash.toHexString()}/${poolAddress.toHexString()}/${oracleAggregatorAddress.toHexString()}/${voterAddress.toHexString()}/${globalMember.toString()}/${epoch.toString()}`;
   let systemEvent = OracleMemberVotedSystemEvent.load(id);
   if (systemEvent == null) {
     systemEvent = new OracleMemberVotedSystemEvent(id);

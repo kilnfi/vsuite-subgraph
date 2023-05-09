@@ -289,7 +289,12 @@ export function handleProcessedReport(event: ProcessedReport): void {
   pool!.editedAtBlock = event.block.number;
   pool!.save();
 
-  const systemEvent = createReportProcessedSystemEvent(event, Address.fromBytes(pool!.factory), event.address);
+  const systemEvent = createReportProcessedSystemEvent(
+    event,
+    Address.fromBytes(pool!.factory),
+    event.address,
+    report.epoch
+  );
   systemEvent.report = reportId;
   systemEvent.save();
 }

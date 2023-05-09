@@ -79,7 +79,7 @@ export function handleUpdatedEtherForCoverage(event: UpdatedEtherForCoverage): v
 
   const pool = vPool.load(cr!.pool);
   const se = createCoverageRecipientUpdatedEthSystemEvent(event, pool!.factory, cr!.pool, event.address);
-  se.delta = event.params.amount.minus(initialAmount);
+  se.delta = se.delta.plus(event.params.amount.minus(initialAmount));
   se.total = event.params.amount;
   se.save();
 }

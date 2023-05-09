@@ -214,7 +214,8 @@ export function handleGlobalVote(
     Address.fromBytes(oa!.pool),
     event.address,
     Address.fromBytes(voter),
-    true
+    true,
+    _variant.epoch
   );
   systemEvent.vote = voteId;
   systemEvent.save();
@@ -277,7 +278,8 @@ export function handleVote(event: ethereum.Event, voter: Bytes, variant: Bytes, 
     Address.fromBytes(oa!.pool),
     event.address,
     Address.fromBytes(voter),
-    false
+    false,
+    _variant.epoch
   );
   systemEvent.vote = voteId;
   systemEvent.save();

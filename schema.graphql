@@ -1038,6 +1038,7 @@ type FundedValidationKeySystemEvent implements SystemEvent @entity {
   count: BigInt!
   newTotal: BigInt!
   withdrawalChannel: WithdrawalChannel!
+  fundedValidationKeys: [FundedValidationKey!]!
 
   createdAt: BigInt!
   createdAtBlock: BigInt!
@@ -1060,7 +1061,7 @@ type UpdatedLimitSystemEvent implements SystemEvent @entity {
   oracleAggregator: vOracleAggregator
   exitQueue: vExitQueue
 
-  oldLimit: BigInt!
+  oldLimit: BigInt
   newLimit: BigInt!
   withdrawalChannel: WithdrawalChannel!
 

@@ -174,7 +174,7 @@ export function handleAddedValidators(event: AddedValidators): void {
     commonValidationKeyEntry.save();
 
     if (commonValidationKeyEntry.validationKeyCount.gt(BigInt.fromI32(1))) {
-      const se = createDuplicateKeySystemAlert(event, event.address);
+      const se = createDuplicateKeySystemAlert(event, event.address, publicKey);
       se.key = publicKey;
       se.save();
     }
@@ -373,6 +373,9 @@ export function handleFundedValidator(event: FundedValidator): void {
   );
   systemEvent.count = systemEvent.count.plus(BigInt.fromI32(1));
   systemEvent.newTotal = channel!.funded;
+  const fundedKeys = systemEvent.fundedValidationKeys;
+  fundedKeys.push(fundedKeyId);
+  systemEvent.fundedValidationKeys = fundedKeys;
   systemEvent.save();
 }
 
@@ -415,7 +418,9 @@ export function handleUpdatedLimit(event: UpdatedLimit): void {
 
   if (oldLimit.notEqual(event.params.limit)) {
     const se = createUpdatedLimitSystemEvent(event, event.address, event.params.withdrawalChannel);
-    se.oldLimit = oldLimit;
+    if (se.oldLimit === null) {
+      se.oldLimit = oldLimit;
+    }
     se.newLimit = event.params.limit;
     se.save();
   }
