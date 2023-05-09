@@ -1,4 +1,3 @@
-const abi = `
 [
   {
     "inputs": [
@@ -22,47 +21,10 @@ const abi = `
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "InvalidZeroAddress",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "prod1",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "denominator",
-        "type": "uint256"
-      }
-    ],
-    "name": "PRBMath__MulDivOverflow",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "requestedAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "availableAmount",
-        "type": "uint256"
-      }
-    ],
-    "name": "RemovedAmountTooHigh",
-    "type": "error"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
-        "name": "recipient",
+        "name": "account",
         "type": "address"
       },
       {
@@ -71,12 +33,28 @@ const abi = `
         "type": "uint256"
       },
       {
-        "internalType": "bytes",
-        "name": "cdata",
-        "type": "bytes"
+        "internalType": "bytes32[]",
+        "name": "proofs",
+        "type": "bytes32[]"
       }
     ],
-    "name": "SharesTransferError",
+    "name": "InvalidProofs",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidZeroAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "NothingToClaim",
     "type": "error"
   },
   {
@@ -101,17 +79,23 @@ const abi = `
       {
         "indexed": false,
         "internalType": "address",
-        "name": "donorAddress",
+        "name": "account",
         "type": "address"
       },
       {
         "indexed": false,
-        "internalType": "bool",
-        "name": "allowed",
-        "type": "bool"
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalClaimed",
+        "type": "uint256"
       }
     ],
-    "name": "AllowedDonor",
+    "name": "Claimed",
     "type": "event"
   },
   {
@@ -139,11 +123,11 @@ const abi = `
       {
         "indexed": false,
         "internalType": "address",
-        "name": "pool",
+        "name": "admin",
         "type": "address"
       }
     ],
-    "name": "SetPool",
+    "name": "SetAdmin",
     "type": "event"
   },
   {
@@ -152,11 +136,11 @@ const abi = `
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "amount",
+        "name": "frameSize",
         "type": "uint256"
       }
     ],
-    "name": "SuppliedEther",
+    "name": "SetFrameSize",
     "type": "event"
   },
   {
@@ -164,180 +148,47 @@ const abi = `
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "UpdatedEtherForCoverage",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "UpdatedSharesForCoverage",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "VoidedShares",
-    "type": "event"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
-        "name": "donorAddress",
+        "name": "pendingAdmin",
         "type": "address"
+      }
+    ],
+    "name": "SetPendingAdmin",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "root",
+        "type": "bytes32"
       },
       {
-        "internalType": "bool",
-        "name": "allowed",
-        "type": "bool"
+        "indexed": false,
+        "internalType": "string",
+        "name": "ipfsHash",
+        "type": "string"
       }
     ],
-    "name": "allowDonor",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    "name": "SetRootAndIpfsHash",
+    "type": "event"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "max",
-        "type": "uint256"
-      }
-    ],
-    "name": "cover",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "donorAddress",
-        "type": "address"
-      }
-    ],
-    "name": "donor",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "etherFunds",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "fix",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "fundWithEther",
-    "outputs": [],
     "stateMutability": "payable",
-    "type": "function"
+    "type": "fallback"
   },
   {
     "inputs": [],
-    "name": "hasFunds",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "vpool",
-        "type": "address"
-      }
-    ],
-    "name": "initializeV1",
+    "name": "acceptAdmin",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "operator",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes",
-        "name": "",
-        "type": "bytes"
-      }
-    ],
-    "name": "onvPoolSharesReceived",
-    "outputs": [
-      {
-        "internalType": "bytes4",
-        "name": "",
-        "type": "bytes4"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
-    "name": "pool",
+    "name": "admin",
     "outputs": [
       {
         "internalType": "address",
@@ -352,41 +203,28 @@ const abi = `
     "inputs": [
       {
         "internalType": "address",
-        "name": "recipient",
+        "name": "account",
         "type": "address"
       },
       {
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
-      }
-    ],
-    "name": "removeEther",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "recipient",
-        "type": "address"
       },
       {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
+        "internalType": "bytes32[]",
+        "name": "proofs",
+        "type": "bytes32[]"
       }
     ],
-    "name": "removeShares",
+    "name": "claim",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "sharesFunds",
+    "name": "frameSize",
     "outputs": [
       {
         "internalType": "uint256",
@@ -396,8 +234,152 @@ const abi = `
     ],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "admin",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "initialRoot",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "initialIpfsHash",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "initialFrameSize",
+        "type": "uint256"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "ipfsHash",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "pendingAdmin",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "root",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "newFrameSize",
+        "type": "uint256"
+      }
+    ],
+    "name": "setFrameSize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "newRoot",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "newIpfsHash",
+        "type": "string"
+      }
+    ],
+    "name": "setRootAndIpfsHash",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalClaimed",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "totalClaimedForAccount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newAdmin",
+        "type": "address"
+      }
+    ],
+    "name": "transferAdmin",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
   }
 ]
-`;
-
-export default abi;

@@ -822,6 +822,19 @@ type OracleAggregatorReportVariantVote @entity {
 # ██ ██   ████    ██    ███████  ██████  ██   ██ ██   ██    ██    ██  ██████  ██   ████ ███████
 #
 
+type Commission @entity {
+  id: String! # "integrationsAddress+recipient"
+  vPoolIntegration: vPoolIntegration!
+
+  recipient: Bytes!
+  commission: BigInt!
+  withdrawnCommission: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
 
 type IntegrationChannel @entity {
   id: Bytes!
@@ -835,23 +848,84 @@ type IntegrationChannel @entity {
   editedAtBlock: BigInt!
 }
 
-type vStake @entity {
+interface Integration {
   id: Bytes!
-  vPool: vPool!
-
   address: Bytes!
   channel: IntegrationChannel!
   name: String!
   symbol: String!
-  decimals: BigInt!
 
-  integratorFee: BigInt!
+  paused: Boolean!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+#
+# ███    ███ ██    ██ ██      ████████ ██ ██████   ██████   ██████  ██      ███████ 
+# ████  ████ ██    ██ ██         ██    ██ ██   ██ ██    ██ ██    ██ ██      ██      
+# ██ ████ ██ ██    ██ ██         ██    ██ ██████  ██    ██ ██    ██ ██      ███████ 
+# ██  ██  ██ ██    ██ ██         ██    ██ ██      ██    ██ ██    ██ ██           ██ 
+# ██      ██  ██████  ███████    ██    ██ ██       ██████   ██████  ███████ ███████ 
+#                                                                                                                                                                            
+
+type MultiPool @entity {
+  id: ID! # integrationAddress+poolId
+
+  number: BigInt!
+  pool: vPool!
+  active: Boolean!
+  fees: BigInt!
+  shares: PoolBalance
+  poolAllocation: BigInt!
+
+  integration: vPoolIntegration!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+interface vPoolIntegration {
+  id: Bytes!
+
+  pools: [MultiPool!]! @derivedFrom(field: "integration")
+  commissions: [Commission!]! @derivedFrom(field: "vPoolIntegration")
+}
+
+#
+# ███████ ██████   ██████       ██████   ██████  
+# ██      ██   ██ ██                 ██ ██  ████ 
+# █████   ██████  ██      █████  █████  ██ ██ ██ 
+# ██      ██   ██ ██            ██      ████  ██ 
+# ███████ ██   ██  ██████       ███████  ██████ 
+#
+
+type ERC20 implements vPoolIntegration & Integration @entity {
+
   totalSupply: BigInt!
   totalUnderlyingSupply: BigInt!
+  decimals: BigInt!
+  deposits: [ERC20Deposit!]! @derivedFrom(field: "integration")
+  balances: [ERC20Balance!]! @derivedFrom(field: "integration")
+  transfers: [ERC20Transfer!]! @derivedFrom(field: "integration")
+  approvals: [ERC20Approval!]! @derivedFrom(field: "integration")
 
-  operatorCommissions: [OperatorCommission!]! @derivedFrom(field: "vStake")
-  deposits: [vStakesDeposit!]! @derivedFrom(field: "vStake")
-  balances: [vStakesBalance!]! @derivedFrom(field: "vStake")
+  # vPoolIntegration
+  pools: [MultiPool!]! @derivedFrom(field: "integration")
+  commissions: [Commission!]! @derivedFrom(field: "vPoolIntegration")
+
+  # Integration
+  id: Bytes!
+  address: Bytes!
+  channel: IntegrationChannel!
+  name: String!
+  symbol: String!
+
+  paused: Boolean!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -859,29 +933,16 @@ type vStake @entity {
   editedAtBlock: BigInt!
 }
 
-type OperatorCommission @entity {
-  id: String! # "{vStakesAddress}@{operatorAddres}"
-  vStake: vStake!
 
-  recipient: Bytes!
-  commission: BigInt!
-  withdrawnCommission: BigInt!
-
-  createdAt: BigInt!
-  editedAt: BigInt!
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
-
-type vStakesDeposit @entity {
-  id: String! # "{vStakesAddress}@{stakerAddress}@{txHash}"
-  vStake: vStake!
+type ERC20Deposit @entity {
+  id: ID! # txHash+integrationAddress+stakerAddress
+  integration: ERC20!
   
   hash: Bytes!
   
   staker: Bytes!
   depositAmount: BigInt!
-  mintedShares: BigInt!
+  # mintedShares: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -889,13 +950,281 @@ type vStakesDeposit @entity {
   editedAtBlock: BigInt!
 }
 
-type vStakesBalance @entity {
-  id: String! # "{vStakesAddress}@{stakerAddress}"
-  vStake: vStake!
+type ERC20Balance @entity {
+  id: String! # integrationAddress+stakerAddress
+  integration: ERC20!
     
   staker: Bytes!
-  underlyingBalance: BigInt!
   sharesBalance: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type ERC20Transfer @entity {
+  id: String! # eventLog+integrationAddress
+  integration: ERC20!
+    
+  from: Bytes!
+  to: Bytes!
+  amount: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type ERC20Approval @entity {
+  id: String! # integrationAddress+owner+spender
+  integration: ERC20!
+    
+  owner: Bytes!
+  spender: Bytes!
+  allowance: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+# 
+# ███████ ██████   ██████        ██  ██ ███████ ███████ 
+# ██      ██   ██ ██            ███ ███ ██      ██      
+# █████   ██████  ██      █████  ██  ██ ███████ ███████ 
+# ██      ██   ██ ██             ██  ██      ██      ██ 
+# ███████ ██   ██  ██████        ██  ██ ███████ ███████ 
+# 
+
+type ERC1155Deposit @entity {
+  id: ID! # txHash+integrationAddress+tokenId+stakerAddress
+  token: ERC1155!
+  
+  hash: Bytes!
+  
+  staker: Bytes!
+  depositAmount: BigInt!
+  # mintedShares: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type ERC1155Balance @entity {
+  id: String! # integrationAddress+tokenId+stakerAddress
+  token: ERC1155!
+    
+  staker: Bytes!
+  tokenBalance: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type ERC1155Transfer @entity {
+  id: String! # eventLog+integrationAddress+tokenId
+  token: ERC1155!
+
+  from: Bytes!
+  to: Bytes!
+  by: Bytes!
+  amount: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type ERC1155Approval @entity {
+  id: String! # integrationAddress+owner+spender
+  integration: ERC1155Integration!
+    
+  owner: Bytes!
+  operator: Bytes!
+  approval: Boolean!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type ERC1155 @entity {
+  id: ID! # integrationAddress+tokenId
+
+  integration: ERC1155Integration!
+  tokenId: BigInt!
+  totalSupply: BigInt!
+  totalUnderlyingSupply: BigInt!
+  pool: MultiPool!
+
+  deposits: [ERC1155Deposit!]! @derivedFrom(field: "token")
+  balances: [ERC1155Balance!]! @derivedFrom(field: "token")
+  transfers: [ERC1155Transfer!]! @derivedFrom(field: "token")
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type ERC1155Integration implements vPoolIntegration & Integration @entity {
+  uriPrefix: String!
+  totalSupply: BigInt!
+  totalUnderlyingSupply: BigInt!
+  tokens: [ERC1155!]! @derivedFrom(field: "integration")
+  approvals: [ERC1155Approval!]! @derivedFrom(field: "integration")
+
+  # vPoolIntegration
+  pools: [MultiPool!]! @derivedFrom(field: "integration")
+  commissions: [Commission!]! @derivedFrom(field: "vPoolIntegration")
+
+  # Integration
+  id: Bytes!
+  address: Bytes!
+  channel: IntegrationChannel!
+  name: String!
+  symbol: String!
+
+  paused: Boolean!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+
+# 
+# ██    ██ ███    ██ ███████ ████████ 
+# ██    ██ ████   ██ ██         ██    
+# ██    ██ ██ ██  ██ █████      ██    
+#  ██  ██  ██  ██ ██ ██         ██    
+#   ████   ██   ████ ██         ██ 
+# 
+
+type VaultClaim @entity {
+  id: ID! # logIndex+vaultAddress
+  execLayerVault: MerkleVault!
+  
+  hash: Bytes!
+  
+  account: Bytes!
+  amount: BigInt!
+  totalClaimed: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type MerkleVault @entity {
+  id: Bytes!
+
+  root: Bytes!
+  frameSize: BigInt!
+  ipfsHash: String!
+
+  integrations: [vNFTIntegration!]! @derivedFrom(field: "execLayerVault")
+  claims: [VaultClaim!]! @derivedFrom(field: "execLayerVault")
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vNFTApprovals @entity {
+  id: String! # integrationAddress+owner+operator
+  integration: vNFTIntegration!
+    
+  owner: Bytes!
+  operator: Bytes!
+  approval: Boolean!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vNFTIntegration implements Integration @entity {
+  vFactory: vFactory!
+  execLayerVault: MerkleVault!
+  operatorCommission: BigInt!
+  integratorCommission: BigInt!
+  integrator: Bytes!
+
+  extraData: String!
+  uriPrefix: String!
+  supply: BigInt!
+  timeout: BigInt!
+
+  vnfts: [vNFT!]! @derivedFrom(field: "integration")
+  approvals: [vNFTApprovals!]! @derivedFrom(field: "integration")
+
+  # Integration
+  id: Bytes!
+  address: Bytes!
+  channel: IntegrationChannel!
+  name: String!
+  symbol: String!
+
+  paused: Boolean!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vNFT @entity {
+  id: ID! # integrationAddress+tokenId
+  tokenId: BigInt!
+  integration: vNFTIntegration!
+
+  owner: Bytes!
+  validator: FundedValidationKey!
+  freezeTimestamp: BigInt!
+
+  transfers: [vNFTTransfer!]! @derivedFrom(field: "vNFT")
+  user: vNFTUser @derivedFrom(field: "vNFT")
+  approval: Bytes
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vNFTTransfer @entity {
+  id: ID! # eventLog+integrationAddress+tokenId
+  vNFT: vNFT!
+
+  from: Bytes!
+  to: Bytes!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vNFTUser @entity {
+  id: ID! # integrationAddress+tokenId
+
+  vNFT: vNFT!
+  user: Bytes!
+  expiry: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!

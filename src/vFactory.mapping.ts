@@ -44,7 +44,7 @@ import {
   createValidatorOwnerChangedSystemEvent,
   entityUUID,
   eventUUID
-} from './utils';
+} from './utils/utils';
 import { verify } from './bls12_381_verify';
 import {
   FORK_VERSIONS,

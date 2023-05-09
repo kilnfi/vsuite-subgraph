@@ -14,7 +14,7 @@ import {
   entityUUID,
   eventUUID,
   txUniqueUUID
-} from './utils';
+} from './utils/utils';
 import { BigInt } from '@graphprotocol/graph-ts';
 
 export function handlePrintedTicket(event: PrintedTicket): void {

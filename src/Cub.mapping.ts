@@ -1,6 +1,6 @@
 import { Cub, Fix } from '../generated/schema';
 import { AppliedFixes } from '../generated/templates/Cub/Cub';
-import { eventUUID } from './utils';
+import { eventUUID } from './utils/utils';
 
 export function handleAppliedFixes(event: AppliedFixes): void {
   const cub = Cub.load(event.address);
