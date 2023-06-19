@@ -17,12 +17,33 @@
   },
   {
     "inputs": [],
+    "name": "CallbackNotFromMinting",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "CommissionPaidUnderflow",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "DepositsPaused",
     "type": "error"
   },
   {
     "inputs": [],
     "name": "EmptyPoolList",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "maxFeeBps",
+        "type": "uint256"
+      }
+    ],
+    "name": "FeeOverMax",
     "type": "error"
   },
   {
@@ -97,6 +118,28 @@
   {
     "inputs": [],
     "name": "InvalidZeroAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "poolId",
+        "type": "uint256"
+      }
+    ],
+    "name": "NoSharesToExit",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      }
+    ],
+    "name": "NonZeroPercentageOnDeactivatedPool",
     "type": "error"
   },
   {
@@ -210,6 +253,11 @@
       }
     ],
     "name": "UnequalLengths",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroSharesMint",
     "type": "error"
   },
   {
@@ -413,6 +461,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "maxCommission",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetMaxCommission",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "string",
         "name": "name",
         "type": "string"
@@ -432,6 +493,19 @@
       }
     ],
     "name": "SetPendingAdmin",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "split",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "SetPoolPercentages",
     "type": "event"
   },
   {
@@ -515,6 +589,12 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "poolId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
       }
@@ -536,32 +616,6 @@
         "internalType": "contract IvPool",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "_totalSupply",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "_totalUnderlyingSupply",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -768,13 +822,6 @@
   },
   {
     "inputs": [],
-    "name": "fix",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "getCurrentSplit",
     "outputs": [
       {
@@ -859,11 +906,6 @@
             "type": "uint256[]"
           },
           {
-            "internalType": "uint256[]",
-            "name": "poolPercentages",
-            "type": "uint256[]"
-          },
-          {
             "internalType": "address[]",
             "name": "commissionRecipients",
             "type": "address[]"
@@ -872,6 +914,21 @@
             "internalType": "uint256[]",
             "name": "commissionDistribution",
             "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "poolPercentages",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxCommissionBps",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "monoTicketThreshold",
+            "type": "uint256"
           }
         ],
         "internalType": "struct Native20Configuration",
@@ -882,6 +939,78 @@
     "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "poolId",
+        "type": "uint256"
+      }
+    ],
+    "name": "integratorCommissionOwed",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "exitQueues",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[][]",
+        "name": "ticketIds",
+        "type": "uint256[][]"
+      },
+      {
+        "internalType": "uint32[][]",
+        "name": "casksIds",
+        "type": "uint32[][]"
+      }
+    ],
+    "name": "multiClaim",
+    "outputs": [
+      {
+        "internalType": "enum IvExitQueue.ClaimStatus[][]",
+        "name": "statuses",
+        "type": "uint8[][]"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "exitQueues",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[][]",
+        "name": "ticketIds",
+        "type": "uint256[][]"
+      }
+    ],
+    "name": "multiResolve",
+    "outputs": [
+      {
+        "internalType": "int64[][]",
+        "name": "caskIdsOrErrors",
+        "type": "int64[][]"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -901,12 +1030,12 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "",
+        "name": "operator",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "",
+        "name": "from",
         "type": "address"
       },
       {
@@ -1000,6 +1129,19 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "minTicketEthValue",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMonoTicketThreshold",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "poolId",
         "type": "uint256"
       },
@@ -1007,6 +1149,11 @@
         "internalType": "bool",
         "name": "status",
         "type": "bool"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "newPoolPercentages",
+        "type": "uint256[]"
       }
     ],
     "name": "setPoolActivation",

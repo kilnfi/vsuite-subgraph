@@ -83,8 +83,8 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     vnft.integrator = Address.empty();
     vnft.vFactory = Address.empty();
     vnft.extraData = '';
-    vnft.timeout = BigInt.zero();
     vnft.execLayerVault = Address.empty();
+    vnft.soulboundMode = false;
 
     vnft.createdAt = event.block.timestamp;
     vnft.editedAt = event.block.timestamp;
