@@ -17,6 +17,7 @@ import {
   PoolAdded,
   SetDepositsPaused,
   SetFee,
+  SetMaxCommission,
   SetName,
   SetSymbol,
   SetURIPrefix,
@@ -26,6 +27,7 @@ import {
   VPoolSharesReceived
 } from '../generated/templates/ERC1155/Liquid1155';
 import { eventUUID, entityUUID } from './utils/utils';
+import { SetAdmin } from '../generated/IntegrationRouter/IntegrationRouter';
 
 export function handleSetName(event: SetName): void {
   const erc1155 = ERC1155Integration.load(event.address);
@@ -319,3 +321,19 @@ export function handleApprovalForAll(event: ApprovalForAll): void {
 }
 
 export function handleVPoolSharesReceived(event: VPoolSharesReceived): void {}
+
+export function handleSetAdmin(event: SetAdmin): void {
+  const erc1155Integration = ERC1155Integration.load(event.address);
+  erc1155Integration!.admin = event.params.admin;
+  erc1155Integration!.editedAt = event.block.timestamp;
+  erc1155Integration!.editedAtBlock = event.block.number;
+  erc1155Integration!.save();
+}
+
+export function handleSetMaxCommission(event: SetMaxCommission): void {
+  const erc1155Integration = ERC1155Integration.load(event.address);
+  erc1155Integration!.maxCommission = event.params.maxCommission;
+  erc1155Integration!.editedAt = event.block.timestamp;
+  erc1155Integration!.editedAtBlock = event.block.number;
+  erc1155Integration!.save();
+}

@@ -14,8 +14,10 @@ import {
   NewCommissionSplit,
   PoolActivation,
   PoolAdded,
+  SetAdmin,
   SetDepositsPaused,
   SetFee,
+  SetMaxCommission,
   SetName,
   SetSymbol,
   Stake,
@@ -272,4 +274,20 @@ export function handleApproval(event: Approval): void {
   approval.editedAtBlock = blockId;
 
   approval.save();
+}
+
+export function handleSetAdmin(event: SetAdmin): void {
+  const erc20 = ERC20.load(event.address);
+  erc20!.admin = event.params.admin;
+  erc20!.editedAt = event.block.timestamp;
+  erc20!.editedAtBlock = event.block.number;
+  erc20!.save();
+}
+
+export function handleSetMaxCommission(event: SetMaxCommission): void {
+  const erc20 = ERC20.load(event.address);
+  erc20!.maxCommission = event.params.maxCommission;
+  erc20!.editedAt = event.block.timestamp;
+  erc20!.editedAtBlock = event.block.number;
+  erc20!.save();
 }

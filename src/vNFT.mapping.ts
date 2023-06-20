@@ -1,5 +1,13 @@
 import { Address, BigInt, Bytes } from '@graphprotocol/graph-ts';
-import { MerkleVault, vNFT, vNFTApprovals, vNFTIntegration, vNFTTransfer, vNFTUser, vNFTidsMapping } from '../generated/schema';
+import {
+  MerkleVault,
+  vNFT,
+  vNFTApprovals,
+  vNFTIntegration,
+  vNFTTransfer,
+  vNFTUser,
+  vNFTidsMapping
+} from '../generated/schema';
 import {
   Approval,
   ApprovalForAll,
@@ -22,7 +30,8 @@ import {
 } from '../generated/templates/vNFT/vNFT';
 import { MerkleVault as MerkleVaultTemplate } from '../generated/templates';
 import { entityUUID, eventUUID, externalEntityUUID } from './utils/utils';
-import { store } from '@graphprotocol/graph-ts'
+import { store } from '@graphprotocol/graph-ts';
+import { SetAdmin } from '../generated/IntegrationRouter/IntegrationRouter';
 
 function getInternalTokenId(vnftIntegrationAddress: Address, externalTokenId: BigInt): BigInt {
   const mapping = vNFTidsMapping.load(externalEntityUUID(vnftIntegrationAddress, [externalTokenId.toString()]));
@@ -149,7 +158,7 @@ export function handlePurchasedValidator(event: PurchasedValidator): void {
   vnftIntegration!.editedAtBlock = blockId;
   vnftIntegration!.save();
 
-  const mapping = new vNFTidsMapping(entityUUID(event, [tokenId.toString()]))
+  const mapping = new vNFTidsMapping(entityUUID(event, [tokenId.toString()]));
   mapping.internalTokenId = internalTokenId;
   mapping.externalTokenId = tokenId;
   mapping.save();
@@ -293,7 +302,7 @@ export function handleTokenIdUpdated(event: TokenIdUpdated): void {
   mapping.externalTokenId = event.params.newTokenId;
   mapping.save();
 
-  store.remove('vNFTidsMapping', entityUUID(event, [event.params.oldTokenId.toString()]))
+  store.remove('vNFTidsMapping', entityUUID(event, [event.params.oldTokenId.toString()]));
 }
 
 export function handleSetSoulboundMode(event: SetSoulboundMode): void {
@@ -302,6 +311,18 @@ export function handleSetSoulboundMode(event: SetSoulboundMode): void {
 
   const vnftIntegration = vNFTIntegration.load(event.address);
   vnftIntegration!.soulboundMode = event.params.active;
+
+  vnftIntegration!.editedAt = ts;
+  vnftIntegration!.editedAtBlock = blockId;
+  vnftIntegration!.save();
+}
+
+export function handleSetAdmin(event: SetAdmin): void {
+  const ts = event.block.timestamp;
+  const blockId = event.block.number;
+
+  const vnftIntegration = vNFTIntegration.load(event.address);
+  vnftIntegration!.admin = event.params.admin;
 
   vnftIntegration!.editedAt = ts;
   vnftIntegration!.editedAtBlock = blockId;

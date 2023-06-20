@@ -38,6 +38,8 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     integration.totalSupply = BigInt.zero();
     integration.totalUnderlyingSupply = BigInt.zero();
     integration.decimals = BigInt.fromI32(18);
+    integration.admin = Address.empty();
+    integration.maxCommission = BigInt.zero();
 
     integration.createdAt = event.block.timestamp;
     integration.editedAt = event.block.timestamp;
@@ -65,6 +67,8 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     integration.editedAt = event.block.timestamp;
     integration.createdAtBlock = event.block.number;
     integration.editedAtBlock = event.block.number;
+    integration.admin = Address.empty();
+    integration.maxCommission = BigInt.zero();
 
     integration.save();
   } else if (channel.equals(CHANNEL_VNFT_BYTES32)) {
@@ -85,6 +89,7 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     vnft.extraData = '';
     vnft.execLayerVault = Address.empty();
     vnft.soulboundMode = false;
+    vnft.admin = Address.empty();
 
     vnft.createdAt = event.block.timestamp;
     vnft.editedAt = event.block.timestamp;

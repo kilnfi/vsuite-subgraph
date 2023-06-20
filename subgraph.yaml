@@ -678,7 +678,10 @@ templates:
           handler: handleTransfer
         - event: Approval(indexed address,indexed address,uint256)
           handler: handleApproval
-
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetMaxCommission(uint256)
+          handler: handleSetMaxCommission
   - name: ERC1155
     kind: ethereum/contract
     network: goerli
@@ -723,6 +726,10 @@ templates:
           handler: handleTransferBatch
         - event: ApprovalForAll(indexed address,indexed address,bool)
           handler: handleApprovalForAll
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetMaxCommission(uint256)
+          handler: handleSetMaxCommission
   - kind: ethereum
     name: vNFT
     network: goerli
@@ -777,6 +784,8 @@ templates:
           handler: handleSetExecLayerVault
         - event: SetSoulboundMode(bool)
           handler: handleSetSoulboundMode
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
       file: ./src/vNFT.mapping.ts
   - kind: ethereum
     name: ProxyFactory
