@@ -1,4 +1,4 @@
-import { AutoCover, Cub, Fix, TreasuryFeeVote, vTreasury, TreasuryWithdrawal } from '../generated/schema';
+import { AutoCover, TreasuryFeeVote, vTreasury, TreasuryWithdrawal } from '../generated/schema';
 import { entityUUID, eventUUID } from './utils/utils';
 import { SetAutoCover, SetFee, SetOperator, VoteChanged, Withdraw } from '../generated/templates/vTreasury/vTreasury';
 

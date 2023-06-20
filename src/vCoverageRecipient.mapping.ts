@@ -12,7 +12,7 @@ import {
   vCoverageRecipient,
   vPool
 } from '../generated/schema';
-import { store, BigInt } from '@graphprotocol/graph-ts';
+import { store } from '@graphprotocol/graph-ts';
 import {
   createChangedCoverageRecipientParameterSystemEvent,
   createCoverageRecipientUpdatedEthSystemEvent,

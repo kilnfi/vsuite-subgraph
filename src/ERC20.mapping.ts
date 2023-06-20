@@ -22,7 +22,7 @@ import {
   Transfer,
   VPoolSharesReceived
 } from '../generated/templates/ERC20/Native20';
-import { eventUUID, txUniqueUUID, entityUUID, externalEntityUUID } from './utils/utils';
+import { eventUUID, txUniqueUUID, entityUUID } from './utils/utils';
 
 export function handleSetName(event: SetName): void {
   const erc20 = ERC20.load(event.address);

@@ -29,7 +29,6 @@ import {
   vCoverageRecipient,
   vWithdrawalRecipient,
   vOracleAggregator,
-  PluggableHatcher,
   vExitQueue
 } from '../generated/schema';
 import { Address, BigInt, Bytes, ethereum } from '@graphprotocol/graph-ts';

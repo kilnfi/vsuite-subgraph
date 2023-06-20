@@ -1,4 +1,4 @@
-import { BigInt, dataSource, log, crypto, ByteArray, Address, ethereum } from '@graphprotocol/graph-ts';
+import { Bytes, store, BigInt, dataSource, log, crypto, ByteArray, Address, ethereum } from '@graphprotocol/graph-ts';
 import {
   WithdrawalChannel,
   ValidationKey,
@@ -28,8 +28,6 @@ import {
   ChangedTreasury,
   ApproveDepositor
 } from '../generated/templates/vFactory/vFactory';
-import { Bytes } from '@graphprotocol/graph-ts';
-import { store } from '@graphprotocol/graph-ts';
 import { SetMinimalRecipientImplementation } from '../generated/Nexus/Nexus';
 import { SetValidatorExtraData } from '../generated/templates/vFactory/vFactory';
 import {

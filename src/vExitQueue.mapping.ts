@@ -14,8 +14,7 @@ import {
   createNewExitQueueCaskSystemEvent,
   createNewExitQueueTicketSystemEvent,
   entityUUID,
-  eventUUID,
-  txUniqueUUID
+  eventUUID
 } from './utils/utils';
 import { Address, BigInt, store } from '@graphprotocol/graph-ts';
 
