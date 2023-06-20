@@ -7,7 +7,6 @@ import {
   SetGlobalOracle,
   SetGlobalRecipient,
   SetMinimalRecipientImplementation,
-  SetPluggableHatcher,
   SpawnedFactory,
   SpawnedPool,
   SetAdmin
@@ -88,6 +87,7 @@ export function handleSpawnedFactory(event: SpawnedFactory): void {
   factory.contract = getOrCreateMetaContract('vFactory');
   factory.cub = event.params.factory;
   factory.treasury = Address.zero();
+  factory.totalActivatedValidators = BigInt.zero();
   factory.operatorName = '';
   factory.operatorUrl = '';
   factory.operatorIconUrl = '';
@@ -231,23 +231,6 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     oa.save();
     vOracleAggregatorTemplate.create(event.params.oracleAggregator);
   }
-}
-
-export function handleSetPluggableHatcher(event: SetPluggableHatcher): void {
-  const nexus = Nexus.load(event.address);
-
-  const ph = PluggableHatcher.load(event.address);
-
-  if (ph != null) {
-    ph.hatcherRegistry = event.address;
-    ph.editedAt = event.block.timestamp;
-    ph.editedAtBlock = event.block.number;
-    ph.save();
-  }
-
-  nexus!.editedAt = event.block.timestamp;
-  nexus!.editedAtBlock = event.block.number;
-  nexus!.save();
 }
 
 export function handleSetCoreHatchers(event: SetCoreHatchers): void {

@@ -4,10 +4,6 @@ import {
   Transfer,
   Deposit,
   PurchasedValidators,
-  SetOracleAggregator,
-  SetCoverageRecipient,
-  SetExecLayerRecipient,
-  SetWithdrawalRecipient,
   SetOperatorFee,
   SetEpochsPerFrame,
   SetReportBounds,
@@ -17,7 +13,7 @@ import {
   SetCommittedEthers,
   SetDepositedEthers,
   SetRequestedExits,
-  SetExitQueue
+  SetContractLinks
 } from '../generated/templates/vPool/vPool';
 import {
   PoolBalance,
@@ -107,16 +103,7 @@ export function handleDeposit(event: Deposit): void {
 
   poolDeposit.from = event.params.sender;
   poolDeposit.amount = event.params.amount;
-  // TODO update when event is updated
-
-  const totalUnderlyingSupply = pool!.totalUnderlyingSupply;
-  const totalSupply = pool!.totalSupply;
-
-  if (totalUnderlyingSupply.lt(BigInt.fromString('32000000000000000000'))) {
-    poolDeposit.mintedShares = event.params.amount;
-  } else {
-    poolDeposit.mintedShares = event.params.amount.times(totalSupply).div(totalUnderlyingSupply);
-  }
+  poolDeposit.mintedShares = event.params.mintedShares;
 
   poolDeposit.createdAt = event.block.timestamp;
   poolDeposit.editedAt = event.block.timestamp;
@@ -299,121 +286,78 @@ export function handleProcessedReport(event: ProcessedReport): void {
   systemEvent.save();
 }
 
-export function handleSetOracleAggregator(event: SetOracleAggregator): void {
+export function handleSetContractLinks(event: SetContractLinks): void {
   const pool = vPool.load(event.address);
 
-  let oldValue = pool!.oracleAggregator;
+  const withdrawalRecipientOld = pool!.withdrawalRecipient;
+  const exitQueueOld = pool!.exitQueue;
+  const execLayerRecipientOld = pool!.execLayerRecipient;
+  const coverageRecipientOld = pool!.coverageRecipient;
+  const oracleAggregatorOld = pool!.oracleAggregator;
 
+  pool!.withdrawalRecipient = event.params.withdrawalRecipient;
+  pool!.exitQueue = event.params.exitQueue;
+  pool!.execLayerRecipient = event.params.execLayerRecipient;
+  pool!.coverageRecipient = event.params.coverageRecipient;
   pool!.oracleAggregator = event.params.oracleAggregator;
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
   pool!.save();
 
-  if (oldValue.notEqual(event.params.oracleAggregator)) {
-    const systemEvent = createChangedPoolParameterSystemEvent(
-      event,
-      pool!.factory,
-      event.address,
-      `oracleAggregator`,
-      oldValue.toHexString()
-    );
-    systemEvent.newValue = event.params.oracleAggregator.toHexString();
-    systemEvent.save();
-  }
-}
-
-export function handleSetCoverageRecipient(event: SetCoverageRecipient): void {
-  const pool = vPool.load(event.address);
-
-  let oldValue = pool!.coverageRecipient;
-
-  pool!.coverageRecipient = event.params.coverageRecipient;
-
-  pool!.editedAt = event.block.timestamp;
-  pool!.editedAtBlock = event.block.number;
-  pool!.save();
-
-  if (oldValue.notEqual(event.params.coverageRecipient)) {
-    const systemEvent = createChangedPoolParameterSystemEvent(
-      event,
-      pool!.factory,
-      event.address,
-      `coverageRecipient`,
-      oldValue.toHexString()
-    );
-    systemEvent.newValue = event.params.coverageRecipient.toHexString();
-    systemEvent.save();
-  }
-}
-
-export function handleSetExecLayerRecipient(event: SetExecLayerRecipient): void {
-  const pool = vPool.load(event.address);
-
-  let oldValue = pool!.execLayerRecipient;
-
-  pool!.execLayerRecipient = event.params.execLayerRecipient;
-
-  pool!.editedAt = event.block.timestamp;
-  pool!.editedAtBlock = event.block.number;
-  pool!.save();
-
-  if (oldValue.notEqual(event.params.execLayerRecipient)) {
-    const systemEvent = createChangedPoolParameterSystemEvent(
-      event,
-      pool!.factory,
-      event.address,
-      `execLayerRecipient`,
-      oldValue.toHexString()
-    );
-    systemEvent.newValue = event.params.execLayerRecipient.toHexString();
-    systemEvent.save();
-  }
-}
-
-export function handleSetExitQueue(event: SetExitQueue): void {
-  const pool = vPool.load(event.address);
-
-  let oldValue = pool!.exitQueue;
-  pool!.exitQueue = event.params.exitQueue;
-
-  pool!.editedAt = event.block.timestamp;
-  pool!.editedAtBlock = event.block.number;
-  pool!.save();
-
-  if (oldValue.notEqual(event.params.exitQueue)) {
-    const systemEvent = createChangedPoolParameterSystemEvent(
-      event,
-      pool!.factory,
-      event.address,
-      `exitQueue`,
-      oldValue.toHexString()
-    );
-    systemEvent.newValue = event.params.exitQueue.toHexString();
-    systemEvent.save();
-  }
-}
-
-export function handleSetWithdrawalRecipient(event: SetWithdrawalRecipient): void {
-  const pool = vPool.load(event.address);
-
-  let oldValue = pool!.withdrawalRecipient;
-
-  pool!.withdrawalRecipient = event.params.withdrawalRecipient;
-
-  pool!.editedAt = event.block.timestamp;
-  pool!.editedAtBlock = event.block.number;
-  pool!.save();
-
-  if (oldValue.notEqual(event.params.withdrawalRecipient)) {
+  {
     const systemEvent = createChangedPoolParameterSystemEvent(
       event,
       pool!.factory,
       event.address,
       `withdrawalRecipient`,
-      oldValue.toHexString()
+      withdrawalRecipientOld.toHexString()
     );
     systemEvent.newValue = event.params.withdrawalRecipient.toHexString();
+    systemEvent.save();
+  }
+  {
+    const systemEvent = createChangedPoolParameterSystemEvent(
+      event,
+      pool!.factory,
+      event.address,
+      `exitQueue`,
+      exitQueueOld.toHexString()
+    );
+    systemEvent.newValue = event.params.exitQueue.toHexString();
+    systemEvent.save();
+  }
+  {
+    const systemEvent = createChangedPoolParameterSystemEvent(
+      event,
+      pool!.factory,
+      event.address,
+      `execLayerRecipient`,
+      execLayerRecipientOld.toHexString()
+    );
+    systemEvent.newValue = event.params.execLayerRecipient.toHexString();
+    systemEvent.save();
+  }
+  {
+    const systemEvent = createChangedPoolParameterSystemEvent(
+      event,
+      pool!.factory,
+      event.address,
+      `coverageRecipient`,
+      coverageRecipientOld.toHexString()
+    );
+    systemEvent.newValue = event.params.coverageRecipient.toHexString();
+    systemEvent.save();
+  }
+  {
+    const systemEvent = createChangedPoolParameterSystemEvent(
+      event,
+      pool!.factory,
+      event.address,
+      `oracleAggregator`,
+      oracleAggregatorOld.toHexString()
+    );
+    systemEvent.newValue = event.params.oracleAggregator.toHexString();
     systemEvent.save();
   }
 }

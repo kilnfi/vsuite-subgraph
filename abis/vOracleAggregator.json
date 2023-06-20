@@ -86,6 +86,11 @@
   },
   {
     "inputs": [],
+    "name": "StatusNotChanged",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "TooManyMembers",
     "type": "error"
   },
@@ -339,6 +344,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "bool",
+        "name": "status",
+        "type": "bool"
+      }
+    ],
+    "name": "SetGlobalMemberEjectionStatus",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "epoch",
         "type": "uint256"
@@ -504,6 +522,19 @@
   },
   {
     "inputs": [],
+    "name": "globalMemberEjected",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "highestReportedEpoch",
     "outputs": [
       {
@@ -637,6 +668,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "status",
+        "type": "bool"
+      }
+    ],
+    "name": "setGlobalMemberEjectionStatus",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

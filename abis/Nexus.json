@@ -19,11 +19,16 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "hatcher",
+        "name": "pluggableHatcher",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "configuredNexus",
         "type": "address"
       }
     ],
-    "name": "InvalidProvidedHatcher",
+    "name": "InvalidPluggableHatcherConfiguration",
     "type": "error"
   },
   {
@@ -252,50 +257,6 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "pluggableHatcher",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "active",
-        "type": "bool"
-      }
-    ],
-    "name": "SetPluggableHatcher",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "caller",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "hatcher",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "cub",
-        "type": "address"
-      }
-    ],
-    "name": "Spawn",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
         "name": "factory",
         "type": "address"
       },
@@ -431,7 +392,7 @@
             "type": "uint64"
           }
         ],
-        "internalType": "struct ctypes.GlobalConsensusLayerSpec",
+        "internalType": "struct ctypes.ConsensusLayerSpec",
         "name": "",
         "type": "tuple"
       }
@@ -524,25 +485,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "pluggableHatcher",
-        "type": "address"
-      }
-    ],
-    "name": "isPluggableHatcher",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "minimalRecipientImplementation",
     "outputs": [
@@ -566,48 +508,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "factory",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "pluggableHatcher",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes",
-        "name": "cdata",
-        "type": "bytes"
-      }
-    ],
-    "name": "plugOnFactory",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "pluggableHatcher",
-        "type": "address"
-      }
-    ],
-    "name": "registerPluggableHatcher",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -797,19 +697,6 @@
       }
     ],
     "name": "transferAdmin",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "pluggableHatcher",
-        "type": "address"
-      }
-    ],
-    "name": "unregisterPluggableHatcher",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

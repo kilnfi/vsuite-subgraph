@@ -544,6 +544,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "nexus",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address[]",
@@ -648,6 +661,24 @@
       }
     ],
     "name": "registerGlobalFix",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "cub",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "newProgress",
+        "type": "uint256"
+      }
+    ],
+    "name": "setCubProgress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
