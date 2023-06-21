@@ -24,10 +24,10 @@ import {
   Stake,
   TransferBatch,
   TransferSingle,
-  VPoolSharesReceived
+  VPoolSharesReceived,
+  SetAdmin
 } from '../generated/templates/ERC1155/Liquid1155';
 import { eventUUID, entityUUID } from './utils/utils';
-import { SetAdmin } from '../generated/IntegrationRouter/IntegrationRouter';
 
 export function handleSetName(event: SetName): void {
   const erc1155 = ERC1155Integration.load(event.address);

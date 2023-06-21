@@ -26,12 +26,12 @@ import {
   TokenIdUpdated,
   Transfer,
   UpdateUser,
-  UsershipCleared
+  UsershipCleared,
+  SetAdmin
 } from '../generated/templates/vNFT/vNFT';
 import { MerkleVault as MerkleVaultTemplate } from '../generated/templates';
 import { entityUUID, eventUUID, externalEntityUUID } from './utils/utils';
 import { store } from '@graphprotocol/graph-ts';
-import { SetAdmin } from '../generated/IntegrationRouter/IntegrationRouter';
 
 function getInternalTokenId(vnftIntegrationAddress: Address, externalTokenId: BigInt): BigInt {
   const mapping = vNFTidsMapping.load(externalEntityUUID(vnftIntegrationAddress, [externalTokenId.toString()]));
