@@ -2,27 +2,27 @@ specVersion: 0.0.5
 schema:
   file: ./schema.graphql
 dataSources:
-  - kind: ethereum
-    name: DepositContract
-    network: goerli
-    source:
-      address: "0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b"
-      abi: DepositContract 
-      startBlock: 4367320
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - vFactory
-        - vTreasury
-      abis:
-        - name: DepositContract
-          file: ./abis/DepositContract.json
-      eventHandlers:
-        - event: DepositEvent(bytes,bytes,bytes,bytes,bytes)
-          handler: handleDepositEvent
-      file: ./src/DepositContract.mapping.ts
+  # - kind: ethereum
+  #   name: DepositContract
+  #   network: goerli
+  #   source:
+  #     address: "0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b"
+  #     abi: DepositContract 
+  #     startBlock: 4367320
+  #   mapping:
+  #     kind: ethereum/events
+  #     apiVersion: 0.0.7
+  #     language: wasm/assemblyscript
+  #     entities:
+  #       - vFactory
+  #       - vTreasury
+  #     abis:
+  #       - name: DepositContract
+  #         file: ./abis/DepositContract.json
+  #     eventHandlers:
+  #       - event: DepositEvent(bytes,bytes,bytes,bytes,bytes)
+  #         handler: handleDepositEvent
+  #     file: ./src/DepositContract.mapping.ts
   - kind: ethereum
     name: Nexus
     network: goerli
@@ -422,8 +422,8 @@ templates:
       abis:
         - name: vFactory
           file: ./abis/vFactory.json
-      blockHandlers:
-        - handler: handleBlock
+      # blockHandlers:
+      #   - handler: handleBlock
       eventHandlers:
         - event: AddedValidators(indexed bytes32,bytes)
           handler: handleAddedValidators
