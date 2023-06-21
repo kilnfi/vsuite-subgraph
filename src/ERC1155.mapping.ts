@@ -25,7 +25,7 @@ import {
   TransferSingle,
   VPoolSharesReceived
 } from '../generated/templates/ERC1155/Liquid1155';
-import { eventUUID, txUniqueUUID, entityUUID, externalEntityUUID } from './utils/utils';
+import { eventUUID, entityUUID } from './utils/utils';
 
 export function handleSetName(event: SetName): void {
   const erc1155 = ERC1155Integration.load(event.address);

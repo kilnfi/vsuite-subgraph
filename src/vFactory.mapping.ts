@@ -1,4 +1,4 @@
-import { BigInt, dataSource, log, crypto, ByteArray, Address } from '@graphprotocol/graph-ts';
+import { Bytes, store, BigInt, dataSource, log, crypto, ByteArray, Address, ethereum } from '@graphprotocol/graph-ts';
 import {
   WithdrawalChannel,
   ValidationKey,
@@ -8,7 +8,9 @@ import {
   vFactory,
   FactoryDepositor,
   CommonValidationKeyEntry,
-  DepositEvent
+  DepositEvent,
+  PendingKeyValidationRequest,
+  PendingKeyValidationTracker
 } from '../generated/schema';
 import {
   AddedValidators,
@@ -26,8 +28,6 @@ import {
   ChangedTreasury,
   ApproveDepositor
 } from '../generated/templates/vFactory/vFactory';
-import { Bytes } from '@graphprotocol/graph-ts';
-import { store } from '@graphprotocol/graph-ts';
 import { SetMinimalRecipientImplementation } from '../generated/Nexus/Nexus';
 import { SetValidatorExtraData } from '../generated/templates/vFactory/vFactory';
 import {
@@ -65,10 +65,101 @@ function concat(b: ByteArray[]): ByteArray {
   return res;
 }
 
+// due to an issue with the heap when verify a lot of signatures, we need this
+// workaround to very the keys in an async manner. This is suboptimal and an
+// alternative should be found as it slows down the whole indexing process
+export function handleBlock(block: ethereum.Block): void {
+  const verificationTracker = getOrLoadVerificationTracker();
+
+  if (verificationTracker.current.lt(verificationTracker.total)) {
+    log.info('Found pending verifications !', []);
+    const from = verificationTracker.current;
+    let to = verificationTracker.total;
+    if (to.minus(from).gt(BigInt.fromI32(10))) {
+      to = from.plus(BigInt.fromI32(10));
+    }
+    for (let i = from; i.lt(to); i = i.plus(BigInt.fromI32(1))) {
+      const keyReq = PendingKeyValidationRequest.load(i.toString());
+      const key = ValidationKey.load(keyReq!.key);
+      const wc = WithdrawalChannel.load(key!.withdrawalChannel);
+      const factory = vFactory.load(wc!.factory);
+      let withdrawalCredentials: Bytes;
+      if (wc!.withdrawalChannel.toHexString() == '0x0000000000000000000000000000000000000000000000000000000000000000') {
+        withdrawalCredentials = Bytes.fromByteArray(
+          concat([
+            ByteArray.fromHexString('0x010000000000000000000000'),
+            Bytes.fromUint8Array(
+              crypto
+                .keccak256(
+                  concat([
+                    Bytes.fromHexString('0xff'),
+                    factory!.address,
+                    crypto.keccak256(key!.publicKey),
+                    crypto.keccak256(
+                      concat([
+                        Bytes.fromHexString('0x3d602d80600a3d3981f3363d3d373d3d3d363d73'),
+                        factory!.minimalRecipientImplementation as Bytes,
+                        Bytes.fromHexString('0x5af43d82803e903d91602b57fd5bf3')
+                      ])
+                    )
+                  ])
+                )
+                .slice(12, 32)
+            )
+          ])
+        );
+      } else {
+        withdrawalCredentials = wc!.withdrawalChannel;
+      }
+
+      log.info('Starting verification for {}', [key!.publicKey.toHexString()]);
+
+      const depositMessageRoot = hashTreeRootDepositMessage({
+        pubkey: key!.publicKey,
+        withdrawalCredentials: withdrawalCredentials,
+        amount: 32000000000
+      });
+
+      const forkVersion: Uint8Array = FORK_VERSIONS[dataSource.network() == 'mainnet' ? 0 : 1];
+      const depositDomain: Uint8Array = generateDepositDomain(forkVersion);
+
+      const signingRoot = hashTreeRootSigningData({
+        objectRoot: depositMessageRoot,
+        domain: depositDomain
+      });
+
+      const signature_verification = verify(key!.signature, signingRoot, key!.publicKey);
+
+      if (signature_verification.error != null || signature_verification.value == false) {
+        key!.validSignature = false;
+        key!.validationError = signature_verification.error;
+      } else {
+        key!.validSignature = true;
+      }
+
+      key!.validationStatus = 'done';
+      key!.save();
+
+      log.info('Finished verification for {}', [key!.publicKey.toHexString()]);
+    }
+    verificationTracker.current = to;
+    verificationTracker.save();
+  }
+}
+
+function getOrLoadVerificationTracker(): PendingKeyValidationTracker {
+  let tracker = PendingKeyValidationTracker.load('global');
+  if (tracker == null) {
+    tracker = new PendingKeyValidationTracker('global');
+    tracker.total = BigInt.fromI32(0);
+    tracker.current = BigInt.fromI32(0);
+    tracker.save();
+  }
+  return tracker;
+}
+
 export function handleAddedValidators(event: AddedValidators): void {
   const channelId = entityUUID(event, [event.params.withdrawalChannel.toHexString()]);
-  const factory: vFactory = vFactory.load(event.address) as vFactory;
-
   let entity = WithdrawalChannel.load(channelId);
 
   if (entity == null) {
@@ -86,12 +177,14 @@ export function handleAddedValidators(event: AddedValidators): void {
   entity.editedAtBlock = event.block.number;
   const keyCount = entity.total.toI32();
 
-  for (let idx = 0; idx < event.params.keys.length / KEY_PACK_LENGTH; ++idx) {
-    const signature = Bytes.fromUint8Array(
-      event.params.keys.slice(idx * KEY_PACK_LENGTH, idx * KEY_PACK_LENGTH + SIGNATURE_LENGTH)
-    );
+  const keys = event.params.keys;
+
+  const verificationTracker = getOrLoadVerificationTracker();
+
+  for (let idx = 0; idx < keys.length / KEY_PACK_LENGTH; ++idx) {
+    const signature = Bytes.fromUint8Array(keys.slice(idx * KEY_PACK_LENGTH, idx * KEY_PACK_LENGTH + SIGNATURE_LENGTH));
     const publicKey = Bytes.fromUint8Array(
-      event.params.keys.slice(idx * KEY_PACK_LENGTH + SIGNATURE_LENGTH, (idx + 1) * KEY_PACK_LENGTH)
+      keys.slice(idx * KEY_PACK_LENGTH + SIGNATURE_LENGTH, (idx + 1) * KEY_PACK_LENGTH)
     );
     const keyId = entityUUID(event, [event.params.withdrawalChannel.toHexString(), (keyCount + idx).toString()]);
     const keyEntity = new ValidationKey(keyId);
@@ -100,64 +193,13 @@ export function handleAddedValidators(event: AddedValidators): void {
     keyEntity.withdrawalChannel = channelId;
     keyEntity.index = BigInt.fromI32(keyCount + idx);
 
-    let withdrawalCredentials: Bytes;
-    if (
-      event.params.withdrawalChannel.toHexString() ==
-      '0x0000000000000000000000000000000000000000000000000000000000000000'
-    ) {
-      withdrawalCredentials = Bytes.fromByteArray(
-        concat([
-          ByteArray.fromHexString('0x010000000000000000000000'),
-          Bytes.fromUint8Array(
-            crypto
-              .keccak256(
-                concat([
-                  Bytes.fromHexString('0xff'),
-                  event.address,
-                  crypto.keccak256(publicKey),
-                  crypto.keccak256(
-                    concat([
-                      Bytes.fromHexString('0x3d602d80600a3d3981f3363d3d373d3d3d363d73'),
-                      factory.minimalRecipientImplementation as Bytes,
-                      Bytes.fromHexString('0x5af43d82803e903d91602b57fd5bf3')
-                    ])
-                  )
-                ])
-              )
-              .slice(12, 32)
-          )
-        ])
-      );
-    } else {
-      withdrawalCredentials = event.params.withdrawalChannel;
-    }
+    keyEntity.validationStatus = 'pending';
 
-    log.info('Starting verification for {}', [publicKey.toHexString()]);
-
-    const depositMessageRoot = hashTreeRootDepositMessage({
-      pubkey: publicKey,
-      withdrawalCredentials: withdrawalCredentials,
-      amount: 32000000000
-    });
-
-    const forkVersion: Uint8Array = FORK_VERSIONS[dataSource.network() == 'mainnet' ? 0 : 1];
-    const depositDomain: Uint8Array = generateDepositDomain(forkVersion);
-
-    const signingRoot = hashTreeRootSigningData({
-      objectRoot: depositMessageRoot,
-      domain: depositDomain
-    });
-
-    const signature_verification = verify(signature, signingRoot, publicKey);
-
-    if (signature_verification.error != null || signature_verification.value == false) {
-      keyEntity.validSignature = false;
-      keyEntity.validationError = signature_verification.error;
-    } else {
-      keyEntity.validSignature = true;
-    }
-
-    log.info('Finished verification for {}', [publicKey.toHexString()]);
+    const verificationRequest = new PendingKeyValidationRequest(
+      verificationTracker.total.plus(BigInt.fromI32(idx)).toString()
+    );
+    verificationRequest.key = keyId;
+    verificationRequest.save();
 
     let commonValidationKeyEntry = CommonValidationKeyEntry.load(publicKey);
     if (commonValidationKeyEntry == null) {
@@ -226,14 +268,19 @@ export function handleAddedValidators(event: AddedValidators): void {
     keyEntity.save();
   }
 
-  entity.total = BigInt.fromI32(entity.total.toI32() + event.params.keys.length / KEY_PACK_LENGTH);
+  verificationTracker.total = verificationTracker.total.plus(BigInt.fromI32(keys.length / KEY_PACK_LENGTH));
+  verificationTracker.save();
+
+  entity.total = BigInt.fromI32(entity.total.toI32() + keys.length / KEY_PACK_LENGTH);
 
   entity.save();
 
   const se = createAddedValidationKeysSystemEvent(event, event.address, event.params.withdrawalChannel);
-  se.count = se.count.plus(BigInt.fromI32(event.params.keys.length / KEY_PACK_LENGTH));
+  se.count = se.count.plus(BigInt.fromI32(keys.length / KEY_PACK_LENGTH));
   se.newTotal = entity.total;
   se.save();
+
+  dataSource.create;
 }
 
 export function handleValidatorRequest(event: ValidatorRequest): void {
@@ -377,6 +424,10 @@ export function handleFundedValidator(event: FundedValidator): void {
   fundedKeys.push(fundedKeyId);
   systemEvent.fundedValidationKeys = fundedKeys;
   systemEvent.save();
+
+  const factory = vFactory.load(event.address);
+  factory!.totalActivatedValidators = factory!.totalActivatedValidators.plus(BigInt.fromI32(1));
+  factory!.save();
 }
 
 export function handleExitValidator(event: ExitValidator): void {
@@ -675,8 +726,24 @@ export function handleSetHatcherRegistry(event: SetHatcherRegistry): void {
 }
 
 export function handleApproveDepositor(event: ApproveDepositor): void {
-  const depositorId = entityUUID(event, [event.params.depositor.toHexString()]);
+  const depositorId = entityUUID(event, [event.params.wc.toHexString(), event.params.depositor.toHexString()]);
   let depositor = FactoryDepositor.load(depositorId);
+  const channelId = entityUUID(event, [event.params.wc.toHexString()]);
+  let channel = WithdrawalChannel.load(channelId);
+
+  if (channel == null) {
+    channel = new WithdrawalChannel(channelId);
+    channel.withdrawalChannel = event.params.wc;
+    channel.factory = event.address;
+    channel.total = BigInt.fromI32(0);
+    channel.funded = BigInt.fromI32(0);
+    channel.limit = BigInt.fromI32(0);
+    channel.editedAt = event.block.timestamp;
+    channel.editedAtBlock = event.block.number;
+    channel.createdAt = event.block.timestamp;
+    channel.createdAtBlock = event.block.number;
+    channel.save();
+  }
 
   let oldValue = false;
 
@@ -685,7 +752,7 @@ export function handleApproveDepositor(event: ApproveDepositor): void {
       depositor = new FactoryDepositor(depositorId);
 
       depositor.address = event.params.depositor;
-      depositor.factory = event.address;
+      depositor.withdrawalChannel = channelId;
 
       depositor.createdAt = event.block.timestamp;
       depositor.createdAtBlock = event.block.number;

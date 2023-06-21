@@ -266,6 +266,11 @@
   },
   {
     "inputs": [],
+    "name": "InvalidNullMint",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "InvalidNullValue",
     "type": "error"
   },
@@ -468,6 +473,12 @@
         "indexed": false,
         "internalType": "uint256",
         "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "mintedShares",
         "type": "uint256"
       }
     ],
@@ -788,13 +799,78 @@
     "anonymous": false,
     "inputs": [
       {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "genesisTimestamp",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "epochsUntilFinal",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "slotsPerEpoch",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "secondsPerSlot",
+            "type": "uint64"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct ctypes.ConsensusLayerSpec",
+        "name": "consensusLayerSpec",
+        "type": "tuple"
+      }
+    ],
+    "name": "SetConsensusLayerSpec",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "factory",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "withdrawalRecipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "execLayerRecipient",
+        "type": "address"
+      },
+      {
         "indexed": false,
         "internalType": "address",
         "name": "coverageRecipient",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "oracleAggregator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "exitQueue",
+        "type": "address"
       }
     ],
-    "name": "SetCoverageRecipient",
+    "name": "SetContractLinks",
     "type": "event"
   },
   {
@@ -828,77 +904,12 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "execLayerRecipient",
-        "type": "address"
-      }
-    ],
-    "name": "SetExecLayerRecipient",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "exitQueue",
-        "type": "address"
-      }
-    ],
-    "name": "SetExitQueue",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "factory",
-        "type": "address"
-      }
-    ],
-    "name": "SetFactory",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "nexus",
-        "type": "address"
-      }
-    ],
-    "name": "SetNexus",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "uint256",
         "name": "operatorFeeBps",
         "type": "uint256"
       }
     ],
     "name": "SetOperatorFee",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "oracleAggregator",
-        "type": "address"
-      }
-    ],
-    "name": "SetOracleAggregator",
     "type": "event"
   },
   {
@@ -950,19 +961,6 @@
       }
     ],
     "name": "SetValidatorGlobalExtraData",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "withdrawalRecipient",
-        "type": "address"
-      }
-    ],
-    "name": "SetWithdrawalRecipient",
     "type": "event"
   },
   {
@@ -1068,6 +1066,41 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "consensusLayerSpec",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "genesisTimestamp",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "epochsUntilFinal",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "slotsPerEpoch",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "secondsPerSlot",
+            "type": "uint64"
+          }
+        ],
+        "internalType": "struct ctypes.ConsensusLayerSpec",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -1263,14 +1296,41 @@
   {
     "inputs": [
       {
-        "internalType": "address[7]",
+        "internalType": "address[6]",
         "name": "addrs",
-        "type": "address[7]"
+        "type": "address[6]"
       },
       {
         "internalType": "uint256",
         "name": "epochsPerFrame_",
         "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "genesisTimestamp",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "epochsUntilFinal",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "slotsPerEpoch",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "secondsPerSlot",
+            "type": "uint64"
+          }
+        ],
+        "internalType": "struct ctypes.ConsensusLayerSpec",
+        "name": "consensusLayerSpec_",
+        "type": "tuple"
       },
       {
         "internalType": "uint64[3]",
@@ -1405,19 +1465,6 @@
         "internalType": "string",
         "name": "",
         "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "nexus",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -1632,6 +1679,41 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "genesisTimestamp",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "epochsUntilFinal",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "slotsPerEpoch",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "secondsPerSlot",
+            "type": "uint64"
+          }
+        ],
+        "internalType": "struct ctypes.ConsensusLayerSpec",
+        "name": "consensusLayerSpec_",
+        "type": "tuple"
+      }
+    ],
+    "name": "setConsensusLayerSpec",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1853,7 +1935,7 @@
     ],
     "name": "voidShares",
     "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

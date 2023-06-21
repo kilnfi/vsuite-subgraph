@@ -27,6 +27,22 @@
 		"type": "error"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "recipient",
+				"type": "address"
+			},
+			{
+				"internalType": "bytes",
+				"name": "rdata",
+				"type": "bytes"
+			}
+		],
+		"name": "ClaimTransferFailed",
+		"type": "error"
+	},
+	{
 		"inputs": [],
 		"name": "IllegalMintToZero",
 		"type": "error"
@@ -86,9 +102,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint32",
+				"internalType": "uint256",
 				"name": "id",
-				"type": "uint32"
+				"type": "uint256"
 			}
 		],
 		"name": "InvalidTicketId",
@@ -165,9 +181,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint32",
+				"internalType": "uint256",
 				"name": "ticketId",
-				"type": "uint32"
+				"type": "uint256"
 			},
 			{
 				"internalType": "uint32",
@@ -265,9 +281,9 @@
 		"inputs": [
 			{
 				"indexed": true,
-				"internalType": "uint32",
+				"internalType": "uint256",
 				"name": "ticketId",
-				"type": "uint32"
+				"type": "uint256"
 			},
 			{
 				"indexed": true,
@@ -347,8 +363,14 @@
 			{
 				"indexed": false,
 				"internalType": "uint32",
-				"name": "id",
+				"name": "idx",
 				"type": "uint32"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
 			},
 			{
 				"components": [
@@ -366,11 +388,6 @@
 						"internalType": "uint128",
 						"name": "maxExitable",
 						"type": "uint128"
-					},
-					{
-						"internalType": "address",
-						"name": "owner",
-						"type": "address"
 					}
 				],
 				"indexed": false,
@@ -514,6 +531,31 @@
 		"inputs": [
 			{
 				"indexed": true,
+				"internalType": "uint256",
+				"name": "oldTicketId",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "newTicketId",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "uint32",
+				"name": "ticketIndex",
+				"type": "uint32"
+			}
+		],
+		"name": "TicketIdUpdated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
 				"internalType": "address",
 				"name": "from",
 				"type": "address"
@@ -623,9 +665,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint32[]",
+				"internalType": "uint256[]",
 				"name": "ticketIds",
-				"type": "uint32[]"
+				"type": "uint256[]"
 			},
 			{
 				"internalType": "uint32[]",
@@ -812,9 +854,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint32[]",
+				"internalType": "uint256[]",
 				"name": "ticketIds",
-				"type": "uint32[]"
+				"type": "uint256[]"
 			}
 		],
 		"name": "resolve",
@@ -958,9 +1000,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint32",
+				"internalType": "uint256",
 				"name": "id",
-				"type": "uint32"
+				"type": "uint256"
 			}
 		],
 		"name": "ticket",
@@ -981,11 +1023,6 @@
 						"internalType": "uint128",
 						"name": "maxExitable",
 						"type": "uint128"
-					},
-					{
-						"internalType": "address",
-						"name": "owner",
-						"type": "address"
 					}
 				],
 				"internalType": "struct ctypes.Ticket",
@@ -999,6 +1036,25 @@
 	{
 		"inputs": [],
 		"name": "ticketCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint32",
+				"name": "idx",
+				"type": "uint32"
+			}
+		],
+		"name": "ticketIdAtIndex",
 		"outputs": [
 			{
 				"internalType": "uint256",

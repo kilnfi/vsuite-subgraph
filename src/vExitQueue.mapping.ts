@@ -1,21 +1,22 @@
 import { Cask, FillTrace, Ticket, vExitQueue, Payment as PaymentEntity, vPool } from '../generated/schema';
+import { Transfer } from '../generated/templates/ERC20/Native20';
 import {
   FilledTicket,
   PrintedTicket,
   ReceivedCask,
   SetPool,
   SuppliedEther,
-  Payment
+  Payment,
+  TicketIdUpdated
 } from '../generated/templates/vExitQueue/vExitQueue';
 import {
   createClaimedExitQueueTicketSystemEvent,
   createNewExitQueueCaskSystemEvent,
   createNewExitQueueTicketSystemEvent,
   entityUUID,
-  eventUUID,
-  txUniqueUUID
+  eventUUID
 } from './utils/utils';
-import { BigInt } from '@graphprotocol/graph-ts';
+import { Address, BigInt, store } from '@graphprotocol/graph-ts';
 
 export function handlePrintedTicket(event: PrintedTicket): void {
   const exitQueue = vExitQueue.load(event.address);
@@ -25,7 +26,7 @@ export function handlePrintedTicket(event: PrintedTicket): void {
 
   ticket.ticketId = event.params.id;
   ticket.exitQueue = event.address;
-  ticket.owner = event.params.ticket.owner;
+  ticket.owner = event.params.owner;
   ticket.size = event.params.ticket.size;
   ticket.position = event.params.ticket.position;
   ticket.maxExitable = event.params.ticket.maxExitable;
@@ -51,8 +52,33 @@ export function handlePrintedTicket(event: PrintedTicket): void {
   se.ticket = ticketId;
   se.size = event.params.ticket.size;
   se.maxExitable = event.params.ticket.maxExitable;
-  se.owner = event.params.ticket.owner;
+  se.owner = event.params.owner;
   se.save();
+}
+
+export function handleTicketIdUpdated(event: TicketIdUpdated): void {
+  event.params.oldTicketId;
+  const oldTicketId = entityUUID(event, [event.params.oldTicketId.toString()]);
+  const ticket = Ticket.load(oldTicketId);
+  const newTicketId = entityUUID(event, [event.params.newTicketId.toString()]);
+  ticket!.id = newTicketId;
+  ticket!.editedAt = event.block.timestamp;
+  ticket!.editedAtBlock = event.block.number;
+  ticket!.save();
+  store.remove('Ticket', oldTicketId);
+}
+
+export function handleTransfer(event: Transfer): void {
+  const ticketId = entityUUID(event, [event.params.value.toString()]);
+  if (event.params.to == Address.zero()) {
+    store.remove('Ticker', ticketId);
+  } else {
+    const ticket = Ticket.load(ticketId);
+    ticket!.owner = event.params.to;
+    ticket!.editedAt = event.block.timestamp;
+    ticket!.editedAtBlock = event.block.number;
+    ticket!.save();
+  }
 }
 
 export function handleReceivedCask(event: ReceivedCask): void {

@@ -21,7 +21,6 @@ type PluggableHatcher @entity {
   cubCount: BigInt!
   upgradeCount: BigInt!
   globalPaused: Boolean!
-  hatcherRegistry: Nexus
   initialProgress: BigInt!
   globalFixesCount: BigInt!
 
@@ -113,7 +112,6 @@ type Nexus @entity {
   coverageRecipientHatcher: PluggableHatcher
   oracleAggregatorHatcher: PluggableHatcher
   factories: [vFactory!]! @derivedFrom(field: "nexus")
-  hatchers: [PluggableHatcher!]! @derivedFrom(field: "hatcherRegistry")
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -142,9 +140,10 @@ type vFactory @entity {
   operatorUrl: String!
   operatorIconUrl: String!
 
+  totalActivatedValidators: BigInt!
+
   cub: Cub!
   withdrawalChannels: [WithdrawalChannel!]! @derivedFrom(field: "factory")
-  depositors: [FactoryDepositor!]! @derivedFrom(field: "factory")
   pools: [vPool!]! @derivedFrom(field: "factory")
   nexus: Nexus
   treasury: vTreasury
@@ -166,6 +165,7 @@ type WithdrawalChannel @entity {
   keys: [ValidationKey!]! @derivedFrom(field: "withdrawalChannel")
   factory: vFactory!
   lastValidatorRequest: ValidatorRequest
+  depositors: [FactoryDepositor!]! @derivedFrom(field: "withdrawalChannel")
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -204,6 +204,19 @@ type CommonValidationKeyEntry @entity {
   editedAtBlock: BigInt!
 }
 
+type PendingKeyValidationTracker @entity {
+  id: String!
+
+  total: BigInt!
+  current: BigInt!
+}
+
+type PendingKeyValidationRequest @entity {
+  id: String!
+
+  key: String!
+}
+
 type ValidationKey @entity {
   id: String!
 
@@ -211,8 +224,9 @@ type ValidationKey @entity {
   signature: Bytes!
   index: BigInt!
 
-  validSignature: Boolean!
+  validSignature: Boolean
   validationError: String
+  validationStatus: String
 
   commonValidationKeyEntry: CommonValidationKeyEntry!
 
@@ -262,7 +276,7 @@ type FactoryDepositor @entity {
   id: String! 
   address: Bytes!
 
-  factory: vFactory!
+  withdrawalChannel: WithdrawalChannel!
   fundedValidationKeys: [FundedValidationKey!]! @derivedFrom(field: "depositor")
 
   createdAt: BigInt!

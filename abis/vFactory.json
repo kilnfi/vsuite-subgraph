@@ -184,9 +184,14 @@
         "internalType": "uint256",
         "name": "limit",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "validatorCount",
+        "type": "uint256"
       }
     ],
-    "name": "LastEditAfterSnapshot",
+    "name": "LimitExceededValidatorCount",
     "type": "error"
   },
   {
@@ -292,10 +297,16 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": true,
         "internalType": "address",
         "name": "depositor",
         "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "wc",
+        "type": "bytes32"
       },
       {
         "indexed": false,
@@ -450,6 +461,25 @@
       },
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "limit",
+        "type": "uint256"
+      }
+    ],
+    "name": "LastEditAfterSnapshot",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "withdrawalChannel",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
         "internalType": "bytes",
         "name": "publicKey",
         "type": "bytes"
@@ -475,6 +505,19 @@
       }
     ],
     "name": "SetAdmin",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "depositContract",
+        "type": "address"
+      }
+    ],
+    "name": "SetDepositContract",
     "type": "event"
   },
   {
@@ -726,6 +769,11 @@
         "type": "address"
       },
       {
+        "internalType": "bytes32",
+        "name": "wc",
+        "type": "bytes32"
+      },
+      {
         "internalType": "bool",
         "name": "allowed",
         "type": "bool"
@@ -860,6 +908,11 @@
         "internalType": "address",
         "name": "depositor",
         "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "wc",
+        "type": "bytes32"
       }
     ],
     "name": "depositors",
