@@ -2,7 +2,6 @@ specVersion: 0.0.5
 schema:
   file: ./schema.graphql
 dataSources:
-  # remove the first block for faster indexing without the deposit events
   # - kind: ethereum
   #   name: DepositContract
   #   network: goerli
@@ -652,7 +651,7 @@ templates:
         - ERC20
       abis:
         - name: Native20
-          file: ./abis/Native20.json
+          file: ./abis/Liquid20A.json
       eventHandlers:
         - event: SetName(string)
           handler: handleSetName
@@ -682,6 +681,8 @@ templates:
           handler: handleSetAdmin
         - event: SetMaxCommission(uint256)
           handler: handleSetMaxCommission
+        - event: SetPoolPercentages(uint256[])
+          handler: handleSetPoolPercentages
   - name: ERC1155
     kind: ethereum/contract
     network: goerli

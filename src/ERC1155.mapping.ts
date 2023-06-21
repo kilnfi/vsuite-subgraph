@@ -27,7 +27,7 @@ import {
   VPoolSharesReceived,
   SetAdmin
 } from '../generated/templates/ERC1155/Liquid1155';
-import { eventUUID, entityUUID } from './utils/utils';
+import { eventUUID, entityUUID, externalEntityUUID } from './utils/utils';
 
 export function handleSetName(event: SetName): void {
   const erc1155 = ERC1155Integration.load(event.address);
@@ -86,6 +86,7 @@ export function handlePoolAdded(event: PoolAdded): void {
   multiPool.fees = BigInt.zero();
   multiPool.integration = event.address;
   multiPool.poolAllocation = BigInt.zero();
+  multiPool.shares = externalEntityUUID(vPool, [event.address.toHexString()]);
 
   multiPool.createdAt = ts;
   multiPool.editedAt = ts;

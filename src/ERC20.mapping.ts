@@ -1,4 +1,4 @@
-import { Address, BigInt } from '@graphprotocol/graph-ts';
+import { Address, BigInt, log } from '@graphprotocol/graph-ts';
 import {
   ERC20,
   MultiPool,
@@ -19,12 +19,13 @@ import {
   SetFee,
   SetMaxCommission,
   SetName,
+  SetPoolPercentages,
   SetSymbol,
   Stake,
   Transfer,
   VPoolSharesReceived
 } from '../generated/templates/ERC20/Native20';
-import { eventUUID, txUniqueUUID, entityUUID } from './utils/utils';
+import { eventUUID, txUniqueUUID, entityUUID, externalEntityUUID } from './utils/utils';
 
 export function handleSetName(event: SetName): void {
   const erc20 = ERC20.load(event.address);
@@ -68,6 +69,7 @@ export function handlePoolAdded(event: PoolAdded): void {
   multiPool.fees = BigInt.zero();
   multiPool.integration = event.address;
   multiPool.poolAllocation = BigInt.zero();
+  multiPool.shares = externalEntityUUID(vPool, [event.address.toHexString()]);
 
   multiPool.createdAt = event.block.timestamp;
   multiPool.editedAt = event.block.timestamp;
@@ -290,4 +292,12 @@ export function handleSetMaxCommission(event: SetMaxCommission): void {
   erc20!.editedAt = event.block.timestamp;
   erc20!.editedAtBlock = event.block.number;
   erc20!.save();
+}
+
+export function handleSetPoolPercentages(event: SetPoolPercentages): void {
+  for (let i = 0; i < event.params.split.length; i++) {
+    const pool = MultiPool.load(entityUUID(event, [i.toString()]));
+    pool!.poolAllocation = event.params.split[i];
+    pool!.save();
+  }
 }
