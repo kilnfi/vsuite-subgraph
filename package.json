@@ -4,10 +4,12 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
+    "build-goerli": "graph build subgraph.goerli.yaml",
     "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ vsuite-goerli",
     "create-local": "graph create --node http://localhost:8020/ vsuite-goerli",
     "remove-local": "graph remove --node http://localhost:8020/ vsuite-goerli",
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 vsuite-goerli",
+    "deploy-local-goerli": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 vsuite-goerli subgraph.goerli.yaml",
     "test": "graph test",
     "format": "prettier --config .prettierrc 'abis_ts/**/*.ts' 'src/**/*.ts' --write"
   },
