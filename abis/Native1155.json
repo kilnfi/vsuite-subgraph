@@ -17,12 +17,33 @@
   },
   {
     "inputs": [],
+    "name": "CallbackNotFromMinting",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "CommissionPaidUnderflow",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "DepositsPaused",
     "type": "error"
   },
   {
     "inputs": [],
     "name": "EmptyPoolList",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "maxFeeBps",
+        "type": "uint256"
+      }
+    ],
+    "name": "FeeOverMax",
     "type": "error"
   },
   {
@@ -91,6 +112,17 @@
   {
     "inputs": [],
     "name": "InvalidZeroAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "poolId",
+        "type": "uint256"
+      }
+    ],
+    "name": "NoSharesToExit",
     "type": "error"
   },
   {
@@ -204,6 +236,11 @@
       }
     ],
     "name": "UnequalLengths",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroSharesMint",
     "type": "error"
   },
   {
@@ -382,6 +419,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "maxCommission",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetMaxCommission",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "string",
         "name": "name",
         "type": "string"
@@ -542,6 +592,12 @@
         "internalType": "address",
         "name": "vPool",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "poolId",
+        "type": "uint256"
       },
       {
         "indexed": false,
@@ -788,13 +844,6 @@
   },
   {
     "inputs": [],
-    "name": "fix",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "getCurrentSplit",
     "outputs": [
       {
@@ -854,6 +903,16 @@
       {
         "components": [
           {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "symbol",
+            "type": "string"
+          },
+          {
             "internalType": "address",
             "name": "admin",
             "type": "address"
@@ -884,14 +943,9 @@
             "type": "string"
           },
           {
-            "internalType": "string",
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "symbol",
-            "type": "string"
+            "internalType": "uint256",
+            "name": "maxCommissionBps",
+            "type": "uint256"
           }
         ],
         "internalType": "struct Native1155Configuration",
@@ -902,6 +956,78 @@
     "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "poolId",
+        "type": "uint256"
+      }
+    ],
+    "name": "integratorCommissionOwed",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "exitQueues",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[][]",
+        "name": "ticketIds",
+        "type": "uint256[][]"
+      },
+      {
+        "internalType": "uint32[][]",
+        "name": "casksIds",
+        "type": "uint32[][]"
+      }
+    ],
+    "name": "multiClaim",
+    "outputs": [
+      {
+        "internalType": "enum IvExitQueue.ClaimStatus[][]",
+        "name": "statuses",
+        "type": "uint8[][]"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "exitQueues",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[][]",
+        "name": "ticketIds",
+        "type": "uint256[][]"
+      }
+    ],
+    "name": "multiResolve",
+    "outputs": [
+      {
+        "internalType": "int64[][]",
+        "name": "caskIdsOrErrors",
+        "type": "int64[][]"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -921,12 +1047,12 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "",
+        "name": "operator",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "",
+        "name": "from",
         "type": "address"
       },
       {

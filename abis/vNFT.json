@@ -27,6 +27,17 @@
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "CannotExitWhileRented",
+    "type": "error"
+  },
+  {
     "inputs": [],
     "name": "ClearUsershipError",
     "type": "error"
@@ -58,8 +69,30 @@
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "expiration",
+        "type": "uint64"
+      }
+    ],
+    "name": "IllegalExpirationValue",
+    "type": "error"
+  },
+  {
     "inputs": [],
     "name": "IllegalMintToZero",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "IllegalTransferOfExitedToken",
     "type": "error"
   },
   {
@@ -86,6 +119,11 @@
       }
     ],
     "name": "IllegalTransferWhileFrozen",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "IllegalTransferWhileInSoulboundMode",
     "type": "error"
   },
   {
@@ -203,6 +241,17 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "ValidatorAlreadyExited",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "requestedAmount",
         "type": "uint256"
       },
@@ -213,6 +262,11 @@
       }
     ],
     "name": "ValidatorCountUnavailable",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "WithdrawError",
     "type": "error"
   },
   {
@@ -270,18 +324,18 @@
     "inputs": [
       {
         "indexed": true,
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "freezeTimestamp",
+        "name": "amount",
         "type": "uint256"
       }
     ],
-    "name": "Freeze",
+    "name": "DebtClaimed",
     "type": "event"
   },
   {
@@ -463,6 +517,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "bool",
+        "name": "active",
+        "type": "bool"
+      }
+    ],
+    "name": "SetSoulboundMode",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "string",
         "name": "symbol",
         "type": "string"
@@ -476,25 +543,37 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "timeout",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetTimeout",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "string",
         "name": "uriPrefix",
         "type": "string"
       }
     ],
     "name": "SetURIPrefix",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "oldTokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "newTokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "validatorId",
+        "type": "uint256"
+      }
+    ],
+    "name": "TokenIdUpdated",
     "type": "event"
   },
   {
@@ -637,6 +716,13 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "claimDebt",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -645,8 +731,33 @@
       }
     ],
     "name": "clearUsership",
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "newId",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "debt",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -723,53 +834,46 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getFreezeTimestamp",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "name_",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "symbol_",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "uriPrefix_",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "extraData_",
-        "type": "string"
-      },
-      {
-        "internalType": "address[4]",
-        "name": "actors_",
-        "type": "address[4]"
-      },
-      {
-        "internalType": "uint256[3]",
-        "name": "commissionsAndTimeout_",
-        "type": "uint256[3]"
+        "components": [
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "uriPrefix",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "extraData",
+            "type": "string"
+          },
+          {
+            "internalType": "address[4]",
+            "name": "actors",
+            "type": "address[4]"
+          },
+          {
+            "internalType": "uint256[2]",
+            "name": "commissions",
+            "type": "uint256[2]"
+          },
+          {
+            "internalType": "bool",
+            "name": "soulboundMode",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct IvNFT.VNFTConfiguration",
+        "name": "config",
+        "type": "tuple"
       }
     ],
     "name": "initialize",
@@ -817,6 +921,25 @@
       }
     ],
     "name": "isApprovedForAll",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "isExited",
     "outputs": [
       {
         "internalType": "bool",
@@ -916,6 +1039,19 @@
       }
     ],
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "purchasePaused",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -1074,19 +1210,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "newTimeout",
-        "type": "uint256"
-      }
-    ],
-    "name": "setTimeout",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "string",
         "name": "newUriPrefix",
         "type": "string"
@@ -1118,6 +1241,19 @@
     "name": "setUser",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "soulboundMode",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -1160,19 +1296,6 @@
         "internalType": "string",
         "name": "",
         "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "timeout",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1318,8 +1441,37 @@
       }
     ],
     "name": "withdraw",
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_id",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_publicKey",
+        "type": "bytes"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdrawCallback",
+    "outputs": [],
+    "stateMutability": "payable",
     "type": "function"
   }
 ]

@@ -2,28 +2,27 @@ specVersion: 0.0.5
 schema:
   file: ./schema.graphql
 dataSources:
-  # remove the first block for faster indexing without the deposit events
-  # - kind: ethereum
-  #   name: DepositContract
-  #   network: goerli
-  #   source:
-  #     address: "0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b"
-  #     abi: DepositContract 
-  #     startBlock: 4367320
-  #   mapping:
-  #     kind: ethereum/events
-  #     apiVersion: 0.0.7
-  #     language: wasm/assemblyscript
-  #     entities:
-  #       - vFactory
-  #       - vTreasury
-  #     abis:
-  #       - name: DepositContract
-  #         file: ./abis/DepositContract.json
-  #     eventHandlers:
-  #       - event: DepositEvent(bytes,bytes,bytes,bytes,bytes)
-  #         handler: handleDepositEvent
-  #     file: ./src/DepositContract.mapping.ts
+  - kind: ethereum
+    name: DepositContract
+    network: goerli
+    source:
+      address: "0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b"
+      abi: DepositContract 
+      startBlock: 4367320
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vFactory
+        - vTreasury
+      abis:
+        - name: DepositContract
+          file: ./abis/DepositContract.json
+      eventHandlers:
+        - event: DepositEvent(bytes,bytes,bytes,bytes,bytes)
+          handler: handleDepositEvent
+      file: ./src/DepositContract.mapping.ts
   - kind: ethereum
     name: Nexus
     network: goerli
@@ -366,28 +365,28 @@ dataSources:
           handler: handleAppliedFix
       file: ./src/PluggableHatcher.mapping.ts
   
-  # - kind: ethereum
-  #   name: IntegrationRouter
-  #   network: goerli
-  #   source:
-  #     address: "0xde7e0da11f92f192c13851ad419d60c410e18f05"
-  #     abi: IntegrationRouter
-  #     startBlock: 8812000
-  #   mapping:
-  #     kind: ethereum/events
-  #     apiVersion: 0.0.7
-  #     language: wasm/assemblyscript
-  #     entities:
-  #       - IntegrationChannel
-  #     abis:
-  #       - name: IntegrationRouter
-  #         file: ./abis/IntegrationRouter.json
-  #     eventHandlers:
-  #       - event: ChannelImplementationUpdated(indexed bytes32,address)
-  #         handler: handleChannelImplementationUpdated
-  #       - event: ProxyFactoryDeployed(indexed bytes32,address)
-  #         handler: handleProxyFactoryDeployed
-  #     file: ./src/IntegrationRouter.mapping.ts
+  - kind: ethereum
+    name: IntegrationRouter
+    network: goerli
+    source:
+      address: "0x4E17213b2317B1DD37143335FF7D9E929F4f3926"
+      abi: IntegrationRouter
+      startBlock: 9183000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - IntegrationChannel
+      abis:
+        - name: IntegrationRouter
+          file: ./abis/IntegrationRouter.json
+      eventHandlers:
+        - event: ChannelImplementationUpdated(indexed bytes32,address,bool)
+          handler: handleChannelImplementationUpdated
+        - event: ProxyFactoryDeployed(indexed bytes32,address)
+          handler: handleProxyFactoryDeployed
+      file: ./src/IntegrationRouter.mapping.ts
 
 templates:
   - name: Cub
@@ -652,7 +651,7 @@ templates:
         - ERC20
       abis:
         - name: Native20
-          file: ./abis/Native20.json
+          file: ./abis/Liquid20A.json
       eventHandlers:
         - event: SetName(string)
           handler: handleSetName
@@ -666,7 +665,7 @@ templates:
           handler: handleSetFee
         - event: PoolActivation(address,uint256,bool)
           handler: handlePoolActivation
-        - event: VPoolSharesReceived(address,uint256)
+        - event: VPoolSharesReceived(address,uint256,uint256)
           handler: handleVPoolSharesReceived
         - event: NewCommissionSplit(address[],uint256[])
           handler: handleNewCommissionSplit
@@ -678,7 +677,12 @@ templates:
           handler: handleTransfer
         - event: Approval(indexed address,indexed address,uint256)
           handler: handleApproval
-
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetMaxCommission(uint256)
+          handler: handleSetMaxCommission
+        - event: SetPoolPercentages(uint256[])
+          handler: handleSetPoolPercentages
   - name: ERC1155
     kind: ethereum/contract
     network: goerli
@@ -709,7 +713,7 @@ templates:
           handler: handleSetFee
         - event: PoolActivation(address,uint256,bool)
           handler: handlePoolActivation
-        - event: VPoolSharesReceived(address,uint256)
+        - event: VPoolSharesReceived(address,uint256,uint256)
           handler: handleVPoolSharesReceived
         - event: NewCommissionSplit(address[],uint256[])
           handler: handleNewCommissionSplit
@@ -723,6 +727,10 @@ templates:
           handler: handleTransferBatch
         - event: ApprovalForAll(indexed address,indexed address,bool)
           handler: handleApprovalForAll
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetMaxCommission(uint256)
+          handler: handleSetMaxCommission
   - kind: ethereum
     name: vNFT
     network: goerli
@@ -741,6 +749,8 @@ templates:
         - name: vNFT
           file: ./abis/vNFT.json
       eventHandlers:
+        - event: TokenIdUpdated(indexed uint256,indexed uint256,uint256)
+          handler: handleTokenIdUpdated
         - event: SetName(string)
           handler: handleSetName
         - event: SetSymbol(string)
@@ -753,8 +763,6 @@ templates:
           handler: handleSetDepositsPaused
         - event: SetFactory(address)
           handler: handleSetFactory
-        - event: SetTimeout(uint256)
-          handler: handleSetTimeout
         - event: PurchasedValidator(indexed address,uint256,uint256)
           handler: handlePurchasedValidator
         - event: Transfer(indexed address,indexed address,indexed uint256)
@@ -771,12 +779,14 @@ templates:
           handler: handleApproval
         - event: UsershipCleared(indexed uint256)
           handler: handleUsershipCleared
-        - event: Freeze(indexed uint256,uint256)
-          handler: handleFreeze
         - event: ApprovalForAll(indexed address,indexed address,bool)
           handler: handleApprovalForAll
         - event: SetExecLayerVault(address)
           handler: handleSetExecLayerVault
+        - event: SetSoulboundMode(bool)
+          handler: handleSetSoulboundMode
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
       file: ./src/vNFT.mapping.ts
   - kind: ethereum
     name: ProxyFactory

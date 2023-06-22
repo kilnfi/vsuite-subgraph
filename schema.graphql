@@ -870,6 +870,7 @@ interface Integration {
   symbol: String!
 
   paused: Boolean!
+  admin: Bytes!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -927,6 +928,7 @@ type ERC20 implements vPoolIntegration & Integration @entity {
   balances: [ERC20Balance!]! @derivedFrom(field: "integration")
   transfers: [ERC20Transfer!]! @derivedFrom(field: "integration")
   approvals: [ERC20Approval!]! @derivedFrom(field: "integration")
+  maxCommission: BigInt!
 
   # vPoolIntegration
   pools: [MultiPool!]! @derivedFrom(field: "integration")
@@ -940,6 +942,7 @@ type ERC20 implements vPoolIntegration & Integration @entity {
   symbol: String!
 
   paused: Boolean!
+  admin: Bytes!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -1100,7 +1103,8 @@ type ERC1155Integration implements vPoolIntegration & Integration @entity {
   # vPoolIntegration
   pools: [MultiPool!]! @derivedFrom(field: "integration")
   commissions: [Commission!]! @derivedFrom(field: "vPoolIntegration")
-
+  maxCommission: BigInt!
+  
   # Integration
   id: Bytes!
   address: Bytes!
@@ -1109,6 +1113,7 @@ type ERC1155Integration implements vPoolIntegration & Integration @entity {
   symbol: String!
 
   paused: Boolean!
+  admin: Bytes!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -1178,10 +1183,10 @@ type vNFTIntegration implements Integration @entity {
   integratorCommission: BigInt!
   integrator: Bytes!
 
+  soulboundMode: Boolean!
   extraData: String!
   uriPrefix: String!
   supply: BigInt!
-  timeout: BigInt!
 
   vnfts: [vNFT!]! @derivedFrom(field: "integration")
   approvals: [vNFTApprovals!]! @derivedFrom(field: "integration")
@@ -1194,6 +1199,7 @@ type vNFTIntegration implements Integration @entity {
   symbol: String!
 
   paused: Boolean!
+  admin: Bytes!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -1202,13 +1208,13 @@ type vNFTIntegration implements Integration @entity {
 }
 
 type vNFT @entity {
-  id: ID! # integrationAddress+tokenId
+  id: ID! # integrationAddress+internalTokenId
   tokenId: BigInt!
+  internalTokenId: BigInt!
   integration: vNFTIntegration!
 
   owner: Bytes!
   validator: FundedValidationKey!
-  freezeTimestamp: BigInt!
 
   transfers: [vNFTTransfer!]! @derivedFrom(field: "vNFT")
   user: vNFTUser @derivedFrom(field: "vNFT")
@@ -1218,6 +1224,13 @@ type vNFT @entity {
   editedAt: BigInt!
   createdAtBlock: BigInt!
   editedAtBlock: BigInt!
+}
+
+type vNFTidsMapping @entity {
+  id: ID! # integrationAddress+tokenId
+
+  externalTokenId: BigInt!
+  internalTokenId: BigInt!
 }
 
 type vNFTTransfer @entity {

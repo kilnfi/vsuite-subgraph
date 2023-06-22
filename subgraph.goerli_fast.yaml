@@ -1,0 +1,832 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  # - kind: ethereum
+  #   name: DepositContract
+  #   network: goerli
+  #   source:
+  #     address: "0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b"
+  #     abi: DepositContract 
+  #     startBlock: 4367320
+  #   mapping:
+  #     kind: ethereum/events
+  #     apiVersion: 0.0.7
+  #     language: wasm/assemblyscript
+  #     entities:
+  #       - vFactory
+  #       - vTreasury
+  #     abis:
+  #       - name: DepositContract
+  #         file: ./abis/DepositContract.json
+  #     eventHandlers:
+  #       - event: DepositEvent(bytes,bytes,bytes,bytes,bytes)
+  #         handler: handleDepositEvent
+  #     file: ./src/DepositContract.mapping.ts
+  - kind: ethereum
+    name: Nexus
+    network: goerli
+    source:
+      address: "0xdd3a1663ecd120ae1048e26d6d095779a0a459d2"
+      abi: Nexus
+      startBlock: 9182259
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vFactory
+        - vTreasury
+      abis:
+        - name: Nexus
+          file: ./abis/Nexus.json
+      eventHandlers:
+        - event: SpawnedFactory(indexed address,address)
+          handler: handleSpawnedFactory
+        - event: SpawnedPool(indexed address,address,address,address,address,address,address)
+          handler: handleSpawnedPool
+        - event: Initialized(uint256,bytes)
+          handler: handleInitialized
+        - event: SetCoreHatchers(address,address,address,address,address,address,address,address)
+          handler: handleSetCoreHatchers
+        - event: SetGlobalRecipient(address)
+          handler: handleSetGlobalRecipient
+        - event: SetGlobalOracle(address)
+          handler: handleSetGlobalOracle
+        - event: SetMinimalRecipientImplementation(address)
+          handler: handleSetMinimalRecipientImplementation
+        - event: SetDepositContract(address)
+          handler: handleSetDepositContract
+        - event: SetGlobalConsensusLayerSpec(uint64,uint64,uint64,uint64)
+          handler: handlerSetGlobalConsensusLayerSpec
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+      file: ./src/Nexus.mapping.ts
+
+  - kind: ethereum
+    name: FactoryHatcher
+    network: goerli
+    source:
+      address: "0xEa3B82a826Aa20D9bD41f4D61f7C24Ce5Fd997C5"
+      abi: PluggableHatcher
+      startBlock: 9182259
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vFactory
+        - vTreasury
+      abis:
+        - name: PluggableHatcher
+          file: ./abis/PluggableHatcher.json
+      eventHandlers:
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+        - event: Hatched(indexed address,bytes)
+          handler: handleHatched
+        - event: Pause(address)
+          handler: handlePause
+        - event: Unpause(address)
+          handler: handleUnpause
+        - event: GlobalPause()
+          handler: handleGlobalPause
+        - event: GlobalUnpause()
+          handler: handleGlobalUnpause
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetPauser(address)
+          handler: handleSetPauser
+        - event: SetInitialProgress(uint256)
+          handler: handleSetInitialProgress
+        - event: RegisteredGlobalFix(address,uint256)
+          handler: handleRegisteredGlobalFix
+        - event: DeletedGlobalFix(uint256)
+          handler: handleDeletedGlobalFix
+        - event: AppliedFix(address,address)
+          handler: handleAppliedFix
+      file: ./src/PluggableHatcher.mapping.ts
+  - kind: ethereum
+    name: TreasuryHatcher
+    network: goerli
+    source:
+      address: "0xFa3095F191439BC9F9e656b294c905F812093e1C"
+      abi: PluggableHatcher
+      startBlock: 9182259
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vFactory
+        - vTreasury
+      abis:
+        - name: PluggableHatcher
+          file: ./abis/PluggableHatcher.json
+      eventHandlers:
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+        - event: Hatched(indexed address,bytes)
+          handler: handleHatched
+        - event: Pause(address)
+          handler: handlePause
+        - event: Unpause(address)
+          handler: handleUnpause
+        - event: GlobalPause()
+          handler: handleGlobalPause
+        - event: GlobalUnpause()
+          handler: handleGlobalUnpause
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetPauser(address)
+          handler: handleSetPauser
+        - event: SetInitialProgress(uint256)
+          handler: handleSetInitialProgress
+        - event: RegisteredGlobalFix(address,uint256)
+          handler: handleRegisteredGlobalFix
+        - event: DeletedGlobalFix(uint256)
+          handler: handleDeletedGlobalFix
+        - event: AppliedFix(address,address)
+          handler: handleAppliedFix
+      file: ./src/PluggableHatcher.mapping.ts
+  - kind: ethereum
+    name: PoolHatcher
+    network: goerli
+    source:
+      address: "0xB74cdB944f5dFd3CAfaCA852b5f6cEFF6174D42B"
+      abi: PluggableHatcher
+      startBlock: 9182259
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vFactory
+        - vTreasury
+      abis:
+        - name: PluggableHatcher
+          file: ./abis/PluggableHatcher.json
+      eventHandlers:
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+        - event: Hatched(indexed address,bytes)
+          handler: handleHatched
+        - event: Pause(address)
+          handler: handlePause
+        - event: Unpause(address)
+          handler: handleUnpause
+        - event: GlobalPause()
+          handler: handleGlobalPause
+        - event: GlobalUnpause()
+          handler: handleGlobalUnpause
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetPauser(address)
+          handler: handleSetPauser
+        - event: SetInitialProgress(uint256)
+          handler: handleSetInitialProgress
+        - event: RegisteredGlobalFix(address,uint256)
+          handler: handleRegisteredGlobalFix
+        - event: DeletedGlobalFix(uint256)
+          handler: handleDeletedGlobalFix
+        - event: AppliedFix(address,address)
+          handler: handleAppliedFix
+      file: ./src/PluggableHatcher.mapping.ts
+  - kind: ethereum
+    name: WithdrawalRecipientHatcher
+    network: goerli
+    source:
+      address: "0xE04052d35011ceE0f0d6f185727dA52cb7fACb0B"
+      abi: PluggableHatcher
+      startBlock: 9182259
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vFactory
+        - vTreasury
+      abis:
+        - name: PluggableHatcher
+          file: ./abis/PluggableHatcher.json
+      eventHandlers:
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+        - event: Hatched(indexed address,bytes)
+          handler: handleHatched
+        - event: Pause(address)
+          handler: handlePause
+        - event: Unpause(address)
+          handler: handleUnpause
+        - event: GlobalPause()
+          handler: handleGlobalPause
+        - event: GlobalUnpause()
+          handler: handleGlobalUnpause
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetPauser(address)
+          handler: handleSetPauser
+        - event: SetInitialProgress(uint256)
+          handler: handleSetInitialProgress
+        - event: RegisteredGlobalFix(address,uint256)
+          handler: handleRegisteredGlobalFix
+        - event: DeletedGlobalFix(uint256)
+          handler: handleDeletedGlobalFix
+        - event: AppliedFix(address,address)
+          handler: handleAppliedFix
+      file: ./src/PluggableHatcher.mapping.ts
+  - kind: ethereum
+    name: ExecLayerRecipientHatcher
+    network: goerli
+    source:
+      address: "0x96c53b4446c64420892FC50d922C60713Ba32EBA"
+      abi: PluggableHatcher
+      startBlock: 9182259
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vFactory
+        - vTreasury
+      abis:
+        - name: PluggableHatcher
+          file: ./abis/PluggableHatcher.json
+      eventHandlers:
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+        - event: Hatched(indexed address,bytes)
+          handler: handleHatched
+        - event: Pause(address)
+          handler: handlePause
+        - event: Unpause(address)
+          handler: handleUnpause
+        - event: GlobalPause()
+          handler: handleGlobalPause
+        - event: GlobalUnpause()
+          handler: handleGlobalUnpause
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetPauser(address)
+          handler: handleSetPauser
+        - event: SetInitialProgress(uint256)
+          handler: handleSetInitialProgress
+        - event: RegisteredGlobalFix(address,uint256)
+          handler: handleRegisteredGlobalFix
+        - event: DeletedGlobalFix(uint256)
+          handler: handleDeletedGlobalFix
+        - event: AppliedFix(address,address)
+          handler: handleAppliedFix
+      file: ./src/PluggableHatcher.mapping.ts
+  - kind: ethereum
+    name: CoverageRecipientHatcher
+    network: goerli
+    source:
+      address: "0x17199E7E8a30a725f15718BBeE708889b3c1795b"
+      abi: PluggableHatcher
+      startBlock: 9182259
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vFactory
+        - vTreasury
+      abis:
+        - name: PluggableHatcher
+          file: ./abis/PluggableHatcher.json
+      eventHandlers:
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+        - event: Hatched(indexed address,bytes)
+          handler: handleHatched
+        - event: Pause(address)
+          handler: handlePause
+        - event: Unpause(address)
+          handler: handleUnpause
+        - event: GlobalPause()
+          handler: handleGlobalPause
+        - event: GlobalUnpause()
+          handler: handleGlobalUnpause
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetPauser(address)
+          handler: handleSetPauser
+        - event: SetInitialProgress(uint256)
+          handler: handleSetInitialProgress
+        - event: RegisteredGlobalFix(address,uint256)
+          handler: handleRegisteredGlobalFix
+        - event: DeletedGlobalFix(uint256)
+          handler: handleDeletedGlobalFix
+        - event: AppliedFix(address,address)
+          handler: handleAppliedFix
+      file: ./src/PluggableHatcher.mapping.ts
+  - kind: ethereum
+    name: OracleAggregatorHatcher
+    network: goerli
+    source:
+      address: "0xa0dC6D628d255a595fE2FF9Cfa41543B3E9ed661"
+      abi: PluggableHatcher
+      startBlock: 9182259
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vFactory
+        - vTreasury
+      abis:
+        - name: PluggableHatcher
+          file: ./abis/PluggableHatcher.json
+      eventHandlers:
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+        - event: Hatched(indexed address,bytes)
+          handler: handleHatched
+        - event: Pause(address)
+          handler: handlePause
+        - event: Unpause(address)
+          handler: handleUnpause
+        - event: GlobalPause()
+          handler: handleGlobalPause
+        - event: GlobalUnpause()
+          handler: handleGlobalUnpause
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetPauser(address)
+          handler: handleSetPauser
+        - event: SetInitialProgress(uint256)
+          handler: handleSetInitialProgress
+        - event: RegisteredGlobalFix(address,uint256)
+          handler: handleRegisteredGlobalFix
+        - event: DeletedGlobalFix(uint256)
+          handler: handleDeletedGlobalFix
+        - event: AppliedFix(address,address)
+          handler: handleAppliedFix
+      file: ./src/PluggableHatcher.mapping.ts
+  
+  - kind: ethereum
+    name: IntegrationRouter
+    network: goerli
+    source:
+      address: "0x4E17213b2317B1DD37143335FF7D9E929F4f3926"
+      abi: IntegrationRouter
+      startBlock: 9183000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - IntegrationChannel
+      abis:
+        - name: IntegrationRouter
+          file: ./abis/IntegrationRouter.json
+      eventHandlers:
+        - event: ChannelImplementationUpdated(indexed bytes32,address,bool)
+          handler: handleChannelImplementationUpdated
+        - event: ProxyFactoryDeployed(indexed bytes32,address)
+          handler: handleProxyFactoryDeployed
+      file: ./src/IntegrationRouter.mapping.ts
+
+templates:
+  - name: Cub
+    kind: ethereum/contract
+    network: goerli
+    source:
+      abi: Cub
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/Cub.mapping.ts
+      entities:
+        - Cub
+      abis:
+        - name: Cub
+          file: ./abis/Cub.json
+      eventHandlers:
+        - event: AppliedFixes(address[])
+          handler: handleAppliedFixes
+  - name: vFactory
+    kind: ethereum/contract
+    network: goerli
+    source:
+      abi: vFactory
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/vFactory.mapping.ts
+      entities:
+        - vFactory
+      abis:
+        - name: vFactory
+          file: ./abis/vFactory.json
+      # blockHandlers:
+      #   - handler: handleBlock
+      eventHandlers:
+        - event: AddedValidators(indexed bytes32,bytes)
+          handler: handleAddedValidators
+        - event: UpdatedLimit(indexed bytes32,uint256)
+          handler: handleUpdatedLimit
+        - event: FundedValidator(indexed bytes32,indexed address,indexed address,bytes,uint256,uint256)
+          handler: handleFundedValidator
+        - event: ExitValidator(indexed bytes32,bytes,uint256)
+          handler: handleExitValidator
+        - event: ValidatorRequest(indexed bytes32,uint256)
+          handler: handleValidatorRequest
+        - event: SetValidatorOwner(indexed uint256,address)
+          handler: handleSetValidatorOwner
+        - event: SetValidatorFeeRecipient(indexed uint256,address)
+          handler: handleSetValidatorFeeRecipient
+        - event: SetValidatorExtraData(indexed uint256,string)
+          handler: handleSetValidatorExtraData
+        - event: SetMetadata(string,string,string)
+          handler: handleSetMetadata
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: ChangedOperator(address)
+          handler: handleChangedOperator
+        - event: ChangedTreasury(address)
+          handler: handleChangedTreasury
+        - event: SetMinimalRecipientImplementation(address)
+          handler: handleSetMinimalRecipientImplementation
+        - event: SetHatcherRegistry(address)
+          handler: handleSetHatcherRegistry
+        - event: ApproveDepositor(indexed address,indexed bytes32,bool)
+          handler: handleApproveDepositor
+  - name: vTreasury
+    kind: ethereum/contract
+    network: goerli
+    source:
+      abi: vTreasury
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/vTreasury.mapping.ts
+      entities:
+        - vTreasury
+      abis:
+        - name: vTreasury
+          file: ./abis/vTreasury.json
+      eventHandlers:
+        - event: SetOperator(address)
+          handler: handleSetOperator
+        - event: SetFee(uint256)
+          handler: handleSetFee
+        - event: SetAutoCover(indexed address,uint256)
+          handler: handleSetAutoCover
+        - event: Withdraw(indexed address,indexed address,uint256,uint256)
+          handler: handleWithdraw
+        - event: VoteChanged(address,uint256,uint256)
+          handler: handleVoteChanged
+
+  - name: vPool
+    kind: ethereum/contract
+    network: goerli
+    source:
+      abi: vPool
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/vPool.mapping.ts
+      entities:
+        - vPool
+      abis:
+        - name: vPool
+          file: ./abis/vPool.json
+      eventHandlers:
+        - event: Deposit(indexed address,uint256,uint256)
+          handler: handleDeposit
+        - event: Mint(indexed address,uint256,uint256)
+          handler: handleMint
+        - event: Burn(address,uint256,uint256)
+          handler: handleBurn
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+        - event: Approval(indexed address,indexed address,uint256)
+          handler: handleApproval
+        - event: PurchasedValidators(uint256[])
+          handler: handlePurchasedValidators
+        - event: SetReportBounds(uint64,uint64,uint64)
+          handler: handleSetReportBounds
+        - event: SetEpochsPerFrame(uint256)
+          handler: handleSetEpochsPerFrame
+        - event: SetOperatorFee(uint256)
+          handler: handleSetOperatorFee
+        - event: SetContractLinks(address,address,address,address,address,address)
+          handler: handleSetContractLinks
+        - event: ApproveDepositor(address,bool)
+          handler: handleApproveDepositor
+        - event: ProcessedReport(indexed uint256,(uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32),(uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,int128,int128,uint128,uint128,uint128,int128,uint128,uint128,uint128))
+          handler: handleProcessedReport
+        - event: SetCommittedEthers(uint256)
+          handler: handleSetCommittedEthers
+        - event: SetDepositedEthers(uint256)
+          handler: handleSetDepositedEthers
+        - event: SetRequestedExits(uint32)
+          handler: handleSetRequestedExits
+
+  - name: vExitQueue
+    kind: ethereum/contract
+    network: goerli
+    source:
+      abi: vExitQueue
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/vExitQueue.mapping.ts
+      entities:
+        - vPool
+      abis:
+        - name: vExitQueue 
+          file: ./abis/vExitQueue.json
+      eventHandlers:
+        - event: PrintedTicket(indexed address,uint32,uint256,(uint128,uint128,uint128))
+          handler: handlePrintedTicket
+        - event: TicketIdUpdated(indexed uint256,indexed uint256,indexed uint32)
+          handler: handleTicketIdUpdated
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: ReceivedCask(uint32,(uint128,uint128,uint128))
+          handler: handleReceivedCask
+        - event: SetPool(address)
+          handler: handleSetPool
+        - event: FilledTicket(indexed uint256,indexed uint32,uint128,uint256,uint256)
+          handler: handleFilledTicket
+        - event: Payment(indexed address,uint256)
+          handler: handlePayment
+        - event: SuppliedEther(uint256)
+          handler: handleSuppliedEther
+
+  - name: vExecLayerRecipient
+    kind: ethereum/contract
+    network: goerli
+    source:
+      abi: vExecLayerRecipient
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/vExecLayerRecipient.mapping.ts
+      entities:
+        - vExecLayerRecipient
+      abis:
+        - name: vExecLayerRecipient
+          file: ./abis/vExecLayerRecipient.json
+      eventHandlers:
+        - event: SuppliedEther(uint256)
+          handler: handleSuppliedEther
+
+  - name: vCoverageRecipient
+    kind: ethereum/contract
+    network: goerli
+    source:
+      abi: vCoverageRecipient
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/vCoverageRecipient.mapping.ts
+      entities:
+        - vCoverageRecipient
+      abis:
+        - name: vCoverageRecipient
+          file: ./abis/vCoverageRecipient.json
+      eventHandlers:
+        - event: SuppliedEther(uint256)
+          handler: handleSuppliedEther
+        - event: VoidedShares(uint256)
+          handler: handleVoidedShares
+        - event: UpdatedEtherForCoverage(uint256)
+          handler: handleUpdatedEtherForCoverage
+        - event: UpdatedSharesForCoverage(uint256)
+          handler: handleUpdatedSharesForCoverage
+        - event: AllowedDonor(address,bool)
+          handler: handleAllowedDonor
+
+  - name: vOracleAggregator
+    kind: ethereum/contract
+    network: goerli
+    source:
+      abi: vOracleAggregator
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/vOracleAggregator.mapping.ts
+      entities:
+        - vOracleAggregator
+      abis:
+        - name: vOracleAggregator
+          file: ./abis/vOracleAggregator.json
+      eventHandlers:
+        - event: AddedOracleAggregatorMember(address)
+          handler: handleAddedOracleAggregatorMember
+        - event: RemovedOracleAggregatorMember(address)
+          handler: handleRemovedOracleAggregatorMember
+        - event: MemberVoted(indexed address,indexed bytes32,(uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32))
+          handler: handleMemberVoted
+        - event: GlobalMemberVoted(indexed address,indexed bytes32,(uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32))
+          handler: handlerGlobalMemberVoted
+        - event: SubmittedReport((uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32),bytes32,uint256,uint256)
+          handler: handleSubmittedReport
+        - event: SetHighestReportedEpoch(uint256)
+          handler: handleSetHighestReportedEpoch
+
+  - name: ERC20
+    kind: ethereum/contract
+    network: goerli
+    source:
+      abi: Native20
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/ERC20.mapping.ts
+      entities:
+        - ERC20
+      abis:
+        - name: Native20
+          file: ./abis/Liquid20A.json
+      eventHandlers:
+        - event: SetName(string)
+          handler: handleSetName
+        - event: SetSymbol(string)
+          handler: handleSetSymbol
+        - event: SetDepositsPaused(bool)
+          handler: handleSetDepositsPaused
+        - event: PoolAdded(address,uint256)
+          handler: handlePoolAdded
+        - event: SetFee(uint256,uint256)
+          handler: handleSetFee
+        - event: PoolActivation(address,uint256,bool)
+          handler: handlePoolActivation
+        - event: VPoolSharesReceived(address,uint256,uint256)
+          handler: handleVPoolSharesReceived
+        - event: NewCommissionSplit(address[],uint256[])
+          handler: handleNewCommissionSplit
+        - event: CommissionWithdrawn(indexed address,uint256)
+          handler: handleCommissionWithdrawn
+        - event: Stake(indexed address,uint256,uint256,uint256)
+          handler: handleStake
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+        - event: Approval(indexed address,indexed address,uint256)
+          handler: handleApproval
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetMaxCommission(uint256)
+          handler: handleSetMaxCommission
+        - event: SetPoolPercentages(uint256[])
+          handler: handleSetPoolPercentages
+  - name: ERC1155
+    kind: ethereum/contract
+    network: goerli
+    source:
+      abi: Liquid1155
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/ERC1155.mapping.ts
+      entities:
+        - ERC1155
+      abis:
+        - name: Liquid1155
+          file: ./abis/Liquid1155.json
+      eventHandlers:
+        - event:  SetURIPrefix(string)
+          handler: handleSetURIPrefix
+        - event: SetName(string)
+          handler: handleSetName
+        - event: SetSymbol(string)
+          handler: handleSetSymbol
+        - event: SetDepositsPaused(bool)
+          handler: handleSetDepositsPaused
+        - event: PoolAdded(address,uint256)
+          handler: handlePoolAdded
+        - event: SetFee(uint256,uint256)
+          handler: handleSetFee
+        - event: PoolActivation(address,uint256,bool)
+          handler: handlePoolActivation
+        - event: VPoolSharesReceived(address,uint256,uint256)
+          handler: handleVPoolSharesReceived
+        - event: NewCommissionSplit(address[],uint256[])
+          handler: handleNewCommissionSplit
+        - event: CommissionWithdrawn(indexed address,uint256)
+          handler: handleCommissionWithdrawn
+        - event: Stake(indexed address,uint256,uint256,uint256)
+          handler: handleStake
+        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleTransferSingle
+        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
+          handler: handleTransferBatch
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetMaxCommission(uint256)
+          handler: handleSetMaxCommission
+  - kind: ethereum
+    name: vNFT
+    network: goerli
+    source:
+      abi: vNFT
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vNFT
+        - vNFTIntegration
+        - vNFTTransfer
+        - vNFTUser
+      abis:
+        - name: vNFT
+          file: ./abis/vNFT.json
+      eventHandlers:
+        - event: TokenIdUpdated(indexed uint256,indexed uint256,uint256)
+          handler: handleTokenIdUpdated
+        - event: SetName(string)
+          handler: handleSetName
+        - event: SetSymbol(string)
+          handler: handleSetSymbol
+        - event: SetExtraData(string)
+          handler: handleSetExtraData
+        - event: SetURIPrefix(string)
+          handler: handleSetURIPrefix
+        - event: SetPurchasePause(bool)
+          handler: handleSetDepositsPaused
+        - event: SetFactory(address)
+          handler: handleSetFactory
+        - event: PurchasedValidator(indexed address,uint256,uint256)
+          handler: handlePurchasedValidator
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+        - event: SetOperatorCommission(uint256)
+          handler: handleSetOperatorCommission
+        - event: SetIntegratorCommission(uint256)
+          handler: handleSetIntegratorCommission
+        - event: SetIntegrator(address)
+          handler: handleSetIntegrator
+        - event: UpdateUser(indexed uint256,indexed address,uint64)
+          handler: handleUpdateUser
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
+        - event: UsershipCleared(indexed uint256)
+          handler: handleUsershipCleared
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
+        - event: SetExecLayerVault(address)
+          handler: handleSetExecLayerVault
+        - event: SetSoulboundMode(bool)
+          handler: handleSetSoulboundMode
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+      file: ./src/vNFT.mapping.ts
+  - kind: ethereum
+    name: ProxyFactory
+    network: goerli
+    source:
+      abi: ProxyFactory
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ERC20
+        - ERC1155Integration
+        - vNFTIntegration
+      abis:
+        - name: ProxyFactory
+          file: ./abis/ProxyFactory.json
+      eventHandlers:
+        - event: DeployedProxy(bytes32,address,address,bytes,address)
+          handler: handleDeployedProxy
+      file: ./src/ProxyFactory.mapping.ts
+  - kind: ethereum
+    name: MerkleVault
+    network: goerli
+    source:
+      abi: MerkleVault
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - MerkleVault
+      abis:
+        - name: MerkleVault
+          file: ./abis/MerkleVault.json
+      eventHandlers:
+        - event: SetFrameSize(uint256)
+          handler: handleSetFrameSize
+        - event: SetRootAndIpfsHash(bytes32,string)
+          handler: handleSetRootAndIpfshash
+        - event: Claimed(address,uint256,uint256)
+          handler: handleClaimed
+      file: ./src/MerkleVault.mapping.ts

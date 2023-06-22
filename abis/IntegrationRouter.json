@@ -16,13 +16,14 @@
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "InvalidZeroAddress",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "NotAnAllowedDeployer",
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "channel",
+        "type": "bytes32"
+      }
+    ],
+    "name": "ChannelNotInitialized",
     "type": "error"
   },
   {
@@ -33,7 +34,17 @@
         "type": "bytes32"
       }
     ],
-    "name": "RouterUpdateRequired",
+    "name": "FactoryUpdateRequired",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidZeroAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotAnAllowedDeployer",
     "type": "error"
   },
   {
@@ -66,6 +77,12 @@
         "internalType": "address",
         "name": "implem",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "updateRequired",
+        "type": "bool"
       }
     ],
     "name": "ChannelImplementationUpdated",
@@ -184,6 +201,16 @@
       {
         "components": [
           {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "symbol",
+            "type": "string"
+          },
+          {
             "internalType": "address",
             "name": "admin",
             "type": "address"
@@ -214,14 +241,9 @@
             "type": "string"
           },
           {
-            "internalType": "string",
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "symbol",
-            "type": "string"
+            "internalType": "uint256",
+            "name": "maxCommissionBps",
+            "type": "uint256"
           }
         ],
         "internalType": "struct Native1155Configuration",
@@ -299,11 +321,6 @@
             "type": "uint256[]"
           },
           {
-            "internalType": "uint256[]",
-            "name": "poolPercentages",
-            "type": "uint256[]"
-          },
-          {
             "internalType": "address[]",
             "name": "commissionRecipients",
             "type": "address[]"
@@ -312,6 +329,21 @@
             "internalType": "uint256[]",
             "name": "commissionDistribution",
             "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "poolPercentages",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxCommissionBps",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "monoTicketThreshold",
+            "type": "uint256"
           }
         ],
         "internalType": "struct Native20Configuration",
@@ -413,11 +445,6 @@
             "type": "uint256[]"
           },
           {
-            "internalType": "uint256[]",
-            "name": "poolPercentages",
-            "type": "uint256[]"
-          },
-          {
             "internalType": "address[]",
             "name": "commissionRecipients",
             "type": "address[]"
@@ -426,6 +453,21 @@
             "internalType": "uint256[]",
             "name": "commissionDistribution",
             "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "poolPercentages",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxCommissionBps",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "monoTicketThreshold",
+            "type": "uint256"
           }
         ],
         "internalType": "struct Native20Configuration",
@@ -452,31 +494,17 @@
         "type": "address"
       },
       {
-        "internalType": "bytes",
-        "name": "cdata",
-        "type": "bytes"
-      }
-    ],
-    "name": "deployNative1155vPoolIntegration",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "proxyOwner",
-        "type": "address"
-      },
-      {
         "components": [
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "symbol",
+            "type": "string"
+          },
           {
             "internalType": "address",
             "name": "admin",
@@ -508,19 +536,38 @@
             "type": "string"
           },
           {
-            "internalType": "string",
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "symbol",
-            "type": "string"
+            "internalType": "uint256",
+            "name": "maxCommissionBps",
+            "type": "uint256"
           }
         ],
         "internalType": "struct Native1155Configuration",
         "name": "config",
         "type": "tuple"
+      }
+    ],
+    "name": "deployNative1155vPoolIntegration",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "proxyOwner",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "cdata",
+        "type": "bytes"
       }
     ],
     "name": "deployNative1155vPoolIntegration",
@@ -569,11 +616,6 @@
             "type": "uint256[]"
           },
           {
-            "internalType": "uint256[]",
-            "name": "poolPercentages",
-            "type": "uint256[]"
-          },
-          {
             "internalType": "address[]",
             "name": "commissionRecipients",
             "type": "address[]"
@@ -582,6 +624,21 @@
             "internalType": "uint256[]",
             "name": "commissionDistribution",
             "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "poolPercentages",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxCommissionBps",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "monoTicketThreshold",
+            "type": "uint256"
           }
         ],
         "internalType": "struct Native20Configuration",
@@ -589,7 +646,7 @@
         "type": "tuple"
       }
     ],
-    "name": "deployNativeVPoolIntegration",
+    "name": "deployNative20vPoolIntegration",
     "outputs": [
       {
         "internalType": "address",
@@ -613,7 +670,7 @@
         "type": "bytes"
       }
     ],
-    "name": "deployNativeVPoolIntegration",
+    "name": "deployNative20vPoolIntegration",
     "outputs": [
       {
         "internalType": "address",
@@ -659,12 +716,17 @@
             "type": "address[4]"
           },
           {
-            "internalType": "uint256[3]",
-            "name": "commissionsAndTimeout",
-            "type": "uint256[3]"
+            "internalType": "uint256[2]",
+            "name": "commissions",
+            "type": "uint256[2]"
+          },
+          {
+            "internalType": "bool",
+            "name": "soulboundMode",
+            "type": "bool"
           }
         ],
-        "internalType": "struct IIntegrationRouter.VNFTConfiguration",
+        "internalType": "struct IvNFT.VNFTConfiguration",
         "name": "config",
         "type": "tuple"
       }
@@ -753,6 +815,25 @@
     "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "channel",
+        "type": "bytes32"
+      }
+    ],
+    "name": "outdated",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

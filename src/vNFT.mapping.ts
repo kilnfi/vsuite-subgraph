@@ -1,9 +1,16 @@
 import { Address, BigInt, Bytes } from '@graphprotocol/graph-ts';
-import { MerkleVault, vNFT, vNFTApprovals, vNFTIntegration, vNFTTransfer, vNFTUser } from '../generated/schema';
+import {
+  MerkleVault,
+  vNFT,
+  vNFTApprovals,
+  vNFTIntegration,
+  vNFTTransfer,
+  vNFTUser,
+  vNFTidsMapping
+} from '../generated/schema';
 import {
   Approval,
   ApprovalForAll,
-  Freeze,
   PurchasedValidator,
   SetExecLayerVault,
   SetExtraData,
@@ -13,15 +20,23 @@ import {
   SetName,
   SetOperatorCommission,
   SetPurchasePause,
+  SetSoulboundMode,
   SetSymbol,
-  SetTimeout,
   SetURIPrefix,
+  TokenIdUpdated,
   Transfer,
   UpdateUser,
-  UsershipCleared
+  UsershipCleared,
+  SetAdmin
 } from '../generated/templates/vNFT/vNFT';
 import { MerkleVault as MerkleVaultTemplate } from '../generated/templates';
 import { entityUUID, eventUUID, externalEntityUUID } from './utils/utils';
+import { store } from '@graphprotocol/graph-ts';
+
+function getInternalTokenId(vnftIntegrationAddress: Address, externalTokenId: BigInt): BigInt {
+  const mapping = vNFTidsMapping.load(externalEntityUUID(vnftIntegrationAddress, [externalTokenId.toString()]));
+  return mapping!.internalTokenId;
+}
 
 export function handleSetName(event: SetName): void {
   const vnftIntegration = vNFTIntegration.load(event.address);
@@ -113,31 +128,22 @@ export function handleSetIntegrator(event: SetIntegrator): void {
   vnftIntegration!.save();
 }
 
-export function handleSetTimeout(event: SetTimeout): void {
-  const vnftIntegration = vNFTIntegration.load(event.address);
-
-  vnftIntegration!.timeout = event.params.timeout;
-
-  vnftIntegration!.editedAt = event.block.timestamp;
-  vnftIntegration!.editedAtBlock = event.block.number;
-  vnftIntegration!.save();
-}
-
 export function handlePurchasedValidator(event: PurchasedValidator): void {
   const vnftIntegrationAddress = event.address;
   const tokenId = event.params.tokenId;
+  const internalTokenId = event.params.validatorId;
   const ts = event.block.timestamp;
   const blockId = event.block.number;
 
   const vFactoryAddres = vNFTIntegration.load(vnftIntegrationAddress)!.vFactory;
 
-  const id = entityUUID(event, [tokenId.toString()]);
+  const id = entityUUID(event, [internalTokenId.toString()]);
   const vnft = new vNFT(id);
   vnft.tokenId = tokenId;
+  vnft.internalTokenId = internalTokenId;
   vnft.integration = vnftIntegrationAddress;
   vnft.owner = event.params.owner;
-  vnft.validator = externalEntityUUID(Address.fromBytes(vFactoryAddres), [event.params.validatorId.toString()]);
-  vnft.freezeTimestamp = BigInt.zero();
+  vnft.validator = externalEntityUUID(Address.fromBytes(vFactoryAddres), [internalTokenId.toString()]);
 
   vnft.editedAt = ts;
   vnft.editedAtBlock = blockId;
@@ -151,14 +157,19 @@ export function handlePurchasedValidator(event: PurchasedValidator): void {
   vnftIntegration!.editedAt = ts;
   vnftIntegration!.editedAtBlock = blockId;
   vnftIntegration!.save();
+
+  const mapping = new vNFTidsMapping(entityUUID(event, [tokenId.toString()]));
+  mapping.internalTokenId = internalTokenId;
+  mapping.externalTokenId = tokenId;
+  mapping.save();
 }
 
 export function handleTransfer(event: Transfer): void {
-  const tokenId = event.params.tokenId;
+  const internalTokenId = getInternalTokenId(event.address, event.params.tokenId);
   const ts = event.block.timestamp;
   const blockId = event.block.number;
 
-  const id = eventUUID(event, [tokenId.toString()]);
+  const id = eventUUID(event, [internalTokenId.toString()]);
   const transfer = new vNFTTransfer(id);
   transfer.from = event.params.from;
   transfer.to = event.params.to;
@@ -168,7 +179,7 @@ export function handleTransfer(event: Transfer): void {
   transfer.createdAt = ts;
   transfer.createdAtBlock = blockId;
 
-  const vnft = vNFT.load(entityUUID(event, [tokenId.toString()]));
+  const vnft = vNFT.load(entityUUID(event, [internalTokenId.toString()]));
   vnft!.owner = event.params.to;
   vnft!.editedAt = ts;
   vnft!.editedAtBlock = blockId;
@@ -225,18 +236,6 @@ export function handleUsershipCleared(event: UsershipCleared): void {
   vnftUser!.save();
 }
 
-export function handleFreeze(event: Freeze): void {
-  const ts = event.block.timestamp;
-  const blockId = event.block.number;
-
-  const vnft = vNFT.load(entityUUID(event, [event.params.tokenId.toString()]));
-  vnft!.freezeTimestamp = event.params.freezeTimestamp;
-
-  vnft!.editedAt = ts;
-  vnft!.editedAtBlock = blockId;
-  vnft!.save();
-}
-
 export function handleSetExecLayerVault(event: SetExecLayerVault): void {
   const ts = event.block.timestamp;
   const blockId = event.block.number;
@@ -285,4 +284,47 @@ export function handleApprovalForAll(event: ApprovalForAll): void {
   approval.editedAtBlock = blockId;
 
   approval.save();
+}
+
+export function handleTokenIdUpdated(event: TokenIdUpdated): void {
+  const ts = event.block.timestamp;
+  const blockId = event.block.number;
+
+  const vnft = vNFT.load(entityUUID(event, [event.params.validatorId.toString()]));
+  vnft!.tokenId = event.params.newTokenId;
+
+  vnft!.editedAt = ts;
+  vnft!.editedAtBlock = blockId;
+  vnft!.save();
+
+  const mapping = new vNFTidsMapping(entityUUID(event, [event.params.newTokenId.toString()]));
+  mapping.internalTokenId = event.params.validatorId;
+  mapping.externalTokenId = event.params.newTokenId;
+  mapping.save();
+
+  store.remove('vNFTidsMapping', entityUUID(event, [event.params.oldTokenId.toString()]));
+}
+
+export function handleSetSoulboundMode(event: SetSoulboundMode): void {
+  const ts = event.block.timestamp;
+  const blockId = event.block.number;
+
+  const vnftIntegration = vNFTIntegration.load(event.address);
+  vnftIntegration!.soulboundMode = event.params.active;
+
+  vnftIntegration!.editedAt = ts;
+  vnftIntegration!.editedAtBlock = blockId;
+  vnftIntegration!.save();
+}
+
+export function handleSetAdmin(event: SetAdmin): void {
+  const ts = event.block.timestamp;
+  const blockId = event.block.number;
+
+  const vnftIntegration = vNFTIntegration.load(event.address);
+  vnftIntegration!.admin = event.params.admin;
+
+  vnftIntegration!.editedAt = ts;
+  vnftIntegration!.editedAtBlock = blockId;
+  vnftIntegration!.save();
 }
