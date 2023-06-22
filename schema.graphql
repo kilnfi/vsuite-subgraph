@@ -890,6 +890,31 @@ interface Integration {
 # ██      ██  ██████  ███████    ██    ██ ██       ██████   ██████  ███████ ███████ 
 #                                                                                                                                                                            
 
+type IntegrationList @entity {
+  id: ID!
+  integrations: [Integration!]!
+}
+
+type MultiPoolBalanceSnapshot @entity {
+  id: ID!
+  pool: MultiPool!
+  snapshot: IntegrationSnapshot!
+  poolSharesBalance: BigInt!
+  poolSupply: BigInt!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type IntegrationSnapshot @entity {
+  id: ID!
+  totalSupply: BigInt!
+  balances: [MultiPoolBalanceSnapshot!]! @derivedFrom(field: "snapshot")
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
 type MultiPool @entity {
   id: String! # integrationAddress+poolId
 

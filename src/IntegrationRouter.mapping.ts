@@ -1,7 +1,25 @@
-import { ChannelImplementationUpdated, ProxyFactoryDeployed } from '../generated/IntegrationRouter/IntegrationRouter';
-import { IntegrationChannel } from '../generated/schema';
+import { Bytes } from '@graphprotocol/graph-ts';
+import {
+  ChannelImplementationUpdated,
+  Initialized,
+  ProxyFactoryDeployed
+} from '../generated/IntegrationRouter/IntegrationRouter';
+import { ERC20, IntegrationChannel, IntegrationList } from '../generated/schema';
 import { ProxyFactory } from '../generated/templates';
 import { existsChannel, getChannelName, getMetaContractForChannel } from './utils/IntegrationChannel.utils';
+
+export function getAllIntegrations(): ERC20[] {
+  const list = IntegrationList.load('integrationList');
+  if (list) {
+    let loaded: ERC20[] = [];
+    for (let i = 0; i < list.integrations.length; i++) {
+      loaded.push(ERC20.load(list.integrations[i])!);
+    }
+    return loaded;
+  } else {
+    return [];
+  }
+}
 
 export function handleChannelImplementationUpdated(event: ChannelImplementationUpdated): void {
   const channel = event.params.channel;
@@ -32,4 +50,10 @@ export function handleProxyFactoryDeployed(event: ProxyFactoryDeployed): void {
   if (existsChannel(channel)) {
     ProxyFactory.create(event.params.factory);
   }
+}
+
+export function handleInitialized(event: Initialized): void {
+  const list = new IntegrationList('integrationList');
+  list.integrations = [];
+  list.save();
 }
