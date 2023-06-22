@@ -25,7 +25,8 @@ import {
   TransferBatch,
   TransferSingle,
   VPoolSharesReceived,
-  SetAdmin
+  SetAdmin,
+  CommissionSharesSold
 } from '../generated/templates/ERC1155/Liquid1155';
 import { eventUUID, entityUUID, externalEntityUUID } from './utils/utils';
 
@@ -71,6 +72,13 @@ export function handleSetDepositsPaused(event: SetDepositsPaused): void {
   erc1155!.save();
 }
 
+export function handleCommissionSharesSold(event: CommissionSharesSold): void {
+  const erc1155 = ERC1155Integration.load(externalEntityUUID(event.address, []));
+  const multiPoolId = erc1155!._poolsDerived[event.params.id.toU32()];
+  const multiPool = MultiPool.load(multiPoolId);
+  multiPool!.soldEth = multiPool!.soldEth.plus(event.params.amountSold);
+}
+
 export function handlePoolAdded(event: PoolAdded): void {
   const vPool = event.params.poolAddress;
   const poolId = event.params.id;
@@ -86,6 +94,7 @@ export function handlePoolAdded(event: PoolAdded): void {
   multiPool.fees = BigInt.zero();
   multiPool.integration = entityUUID(event, []);
   multiPool.poolAllocation = BigInt.zero();
+  multiPool.soldEth = BigInt.zero();
   multiPool.shares = externalEntityUUID(vPool, [event.address.toHexString()]);
 
   multiPool.createdAt = ts;

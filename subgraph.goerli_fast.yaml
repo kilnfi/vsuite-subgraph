@@ -669,6 +669,8 @@ templates:
           handler: handleVPoolSharesReceived
         - event: NewCommissionSplit(address[],uint256[])
           handler: handleNewCommissionSplit
+        - event: CommissionSharesSold(uint256,uint256,uint256)
+          handler: handleCommissionSharesSold
         - event: CommissionWithdrawn(indexed address,uint256)
           handler: handleCommissionWithdrawn
         - event: Stake(indexed address,uint256,uint256,uint256)
@@ -717,6 +719,8 @@ templates:
           handler: handleVPoolSharesReceived
         - event: NewCommissionSplit(address[],uint256[])
           handler: handleNewCommissionSplit
+        - event: CommissionSharesSold(uint256,uint256,uint256)
+          handler: handleCommissionSharesSold
         - event: CommissionWithdrawn(indexed address,uint256)
           handler: handleCommissionWithdrawn
         - event: Stake(indexed address,uint256,uint256,uint256)

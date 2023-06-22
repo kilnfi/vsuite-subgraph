@@ -41,6 +41,7 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     integration.decimals = BigInt.fromI32(18);
     integration.admin = Address.empty();
     integration.maxCommission = BigInt.zero();
+    integration._poolsDerived = [];
 
     integration.createdAt = event.block.timestamp;
     integration.editedAt = event.block.timestamp;
@@ -63,6 +64,7 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     integration.uriPrefix = '';
     integration.totalSupply = BigInt.zero();
     integration.totalUnderlyingSupply = BigInt.zero();
+    integration._poolsDerived = [];
 
     integration.createdAt = event.block.timestamp;
     integration.editedAt = event.block.timestamp;
