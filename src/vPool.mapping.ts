@@ -297,10 +297,10 @@ export function handleProcessedReport(event: ProcessedReport): void {
   report.editedAtBlock = event.block.number;
   report.save();
 
-  const preTotalSupply = pool!.totalSupply;
-  const preTotalUnderlyingSupply = pool!.totalUnderlyingSupply;
-  const postTotalSupply = event.params.traces.postSupply;
-  const postTotalUnderlyingSupply = event.params.traces.postUnderlyingSupply;
+  const pool_pre_supply = pool!.totalSupply;
+  const pool_pre_underlying_supply = pool!.totalUnderlyingSupply;
+  const pool_post_supply = event.params.traces.postSupply;
+  const pool_post_underlying_supply = event.params.traces.postUnderlyingSupply;
 
   pool!.totalSupply = event.params.traces.postSupply;
   pool!.totalUnderlyingSupply = event.params.traces.postUnderlyingSupply;
@@ -313,11 +313,11 @@ export function handleProcessedReport(event: ProcessedReport): void {
 
   //
   // pre_raw_underlying = (owned_pool_shares * pool_pre_underlying_supply) / pool_pre_supply
-  // pre_commission = max(0, ((max(0, pre_raw_underlying - deposited_eth) * integrator_fee_bps) / 10_000) - withdrawn_eth)
+  // pre_commission = max(0, ((max(0, pre_raw_underlying - deposited_eth) * integrator_fee_bps) / 10_000) - sold_eth)
   // pre_underlying = pre_raw_underlying - pre_commission
   //
   // post_raw_underlying = (owned_pool_shares * pool_post_underlying_supply) / pool_post_supply
-  // post_commission = max(0, ((max(0, post_raw_underlying - deposited_eth) * integrator_fee_bps) / 10_000) - withdrawn_eth)
+  // post_commission = max(0, ((max(0, post_raw_underlying - deposited_eth) * integrator_fee_bps) / 10_000) - sold_eth)
   // post_underlying = post_raw_underlying - post_commission
   //
   // integration_contract_report_rewards = max(0, post_underlying - pre_underlying)
@@ -325,49 +325,51 @@ export function handleProcessedReport(event: ProcessedReport): void {
   const multipools = pool!.pluggedMultiPools;
   for (let idx = 0; idx < multipools.length; ++idx) {
     const multipool = MultiPool.load(multipools[idx]);
+    let rewards = BigInt.zero();
+
     if (multipool!.shares != null) {
       const multiPoolBalance = PoolBalance.load(multipool!.shares as string);
 
-      let depositedEth = BigInt.zero();
+      let deposited_eth = BigInt.zero();
       const poolDepositor = PoolDepositor.load(multipool!.poolDepositor);
       if (poolDepositor != null) {
-        depositedEth = poolDepositor.depositedEth;
+        deposited_eth = poolDepositor.depositedEth;
       }
 
-      const preRawUnderlying = multiPoolBalance!.amount.times(preTotalUnderlyingSupply).div(preTotalSupply);
-      const preCommission = maxBigInt(
+      const pre_raw_underlying = multiPoolBalance!.amount.times(pool_pre_underlying_supply).div(pool_pre_supply);
+      const pre_commission = maxBigInt(
         BigInt.zero(),
-        maxBigInt(BigInt.zero(), preRawUnderlying.minus(depositedEth))
+        maxBigInt(BigInt.zero(), pre_raw_underlying.minus(deposited_eth))
           .times(multipool!.fees)
           .div(BigInt.fromI32(10000))
           .minus(multipool!.soldEth)
       );
-      const preUnderlying = maxBigInt(BigInt.zero(), preRawUnderlying.minus(preCommission));
-      const postRawUnderlying = multiPoolBalance!.amount.times(postTotalUnderlyingSupply).div(postTotalSupply);
-      const postCommission = maxBigInt(
+      const pre_underlying = maxBigInt(BigInt.zero(), pre_raw_underlying.minus(pre_commission));
+      const post_raw_underlying = multiPoolBalance!.amount.times(pool_post_underlying_supply).div(pool_post_supply);
+      const post_commission = maxBigInt(
         BigInt.zero(),
-        maxBigInt(BigInt.zero(), postRawUnderlying.minus(depositedEth))
+        maxBigInt(BigInt.zero(), post_raw_underlying.minus(deposited_eth))
           .times(multipool!.fees)
           .div(BigInt.fromI32(10000))
           .minus(multipool!.soldEth)
       );
-      const postUnderlying = maxBigInt(BigInt.zero(), postRawUnderlying.minus(postCommission));
+      const post_underlying = maxBigInt(BigInt.zero(), post_raw_underlying.minus(post_commission));
 
-      const rewards = maxBigInt(BigInt.zero(), postUnderlying.minus(preUnderlying));
-
-      const multiPoolRewardsSnapshot = new MultiPoolRewardsSnapshot(
-        eventUUID(event, [multipool!.id, report.epoch.toString()])
-      );
-      multiPoolRewardsSnapshot.multiPool = multipool!.id;
-      multiPoolRewardsSnapshot.report = reportId;
-      multiPoolRewardsSnapshot.rewards = rewards;
-
-      multiPoolRewardsSnapshot.createdAt = event.block.timestamp;
-      multiPoolRewardsSnapshot.editedAt = event.block.timestamp;
-      multiPoolRewardsSnapshot.createdAtBlock = event.block.number;
-      multiPoolRewardsSnapshot.editedAtBlock = event.block.number;
-      multiPoolRewardsSnapshot.save();
+      rewards = maxBigInt(BigInt.zero(), post_underlying.minus(pre_underlying));
     }
+
+    const multiPoolRewardsSnapshot = new MultiPoolRewardsSnapshot(
+      eventUUID(event, [multipool!.id, report.epoch.toString()])
+    );
+    multiPoolRewardsSnapshot.multiPool = multipool!.id;
+    multiPoolRewardsSnapshot.report = reportId;
+    multiPoolRewardsSnapshot.rewards = rewards;
+
+    multiPoolRewardsSnapshot.createdAt = event.block.timestamp;
+    multiPoolRewardsSnapshot.editedAt = event.block.timestamp;
+    multiPoolRewardsSnapshot.createdAtBlock = event.block.number;
+    multiPoolRewardsSnapshot.editedAtBlock = event.block.number;
+    multiPoolRewardsSnapshot.save();
   }
 
   const systemEvent = createReportProcessedSystemEvent(
