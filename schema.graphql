@@ -918,6 +918,7 @@ type MultiPoolRewardsSnapshot @entity {
 
   report: Report!
   rewards: BigInt!
+  commission: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!

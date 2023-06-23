@@ -326,6 +326,7 @@ export function handleProcessedReport(event: ProcessedReport): void {
   for (let idx = 0; idx < multipools.length; ++idx) {
     const multipool = MultiPool.load(multipools[idx]);
     let rewards = BigInt.zero();
+    let commission = BigInt.zero();
 
     if (multipool!.shares != null) {
       const multiPoolBalance = PoolBalance.load(multipool!.shares as string);
@@ -356,6 +357,7 @@ export function handleProcessedReport(event: ProcessedReport): void {
       const post_underlying = maxBigInt(BigInt.zero(), post_raw_underlying.minus(post_commission));
 
       rewards = maxBigInt(BigInt.zero(), post_underlying.minus(pre_underlying));
+      commission = maxBigInt(BigInt.zero(), post_commission.minus(pre_commission));
     }
 
     const multiPoolRewardsSnapshot = new MultiPoolRewardsSnapshot(
@@ -364,6 +366,7 @@ export function handleProcessedReport(event: ProcessedReport): void {
     multiPoolRewardsSnapshot.multiPool = multipool!.id;
     multiPoolRewardsSnapshot.report = reportId;
     multiPoolRewardsSnapshot.rewards = rewards;
+    multiPoolRewardsSnapshot.commission = commission;
 
     multiPoolRewardsSnapshot.createdAt = event.block.timestamp;
     multiPoolRewardsSnapshot.editedAt = event.block.timestamp;
