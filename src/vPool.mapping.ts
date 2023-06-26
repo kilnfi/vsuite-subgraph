@@ -397,6 +397,7 @@ export function handleProcessedReport(event: ProcessedReport): void {
     snapshot.totalSupply = integration.totalSupply;
     snapshot.createdAt = ts;
     snapshot.createdAtBlock = blockId;
+    snapshot.integration = integration.id;
     snapshot.save();
 
     const balances = integration.balances.load();

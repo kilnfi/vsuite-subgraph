@@ -909,6 +909,7 @@ type ERC20Snapshot @entity {
   id: String!
   totalSupply: BigInt!
   balances: [ERC20BalanceSnapshot!]! @derivedFrom(field: "snapshot")
+  integration: ERC20!
 
   createdAt: BigInt!
   createdAtBlock: BigInt!
@@ -975,6 +976,7 @@ type ERC20 implements vPoolIntegration & Integration @entity {
   transfers: [ERC20Transfer!]! @derivedFrom(field: "integration")
   approvals: [ERC20Approval!]! @derivedFrom(field: "integration")
   maxCommission: BigInt!
+  snapshots: [ERC20Snapshot!]! @derivedFrom(field: "integration")
 
   # vPoolIntegration
   pools: [MultiPool!]! @derivedFrom(field: "integration")
