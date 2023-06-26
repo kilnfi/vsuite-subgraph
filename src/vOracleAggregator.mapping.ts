@@ -16,10 +16,6 @@ import {
   vPool,
   Nexus,
   vFactory
-  IntegrationSnapshot,
-  MultiPool,
-  MultiPoolBalanceSnapshot,
-  PoolBalance
 } from '../generated/schema';
 import { Address, BigInt, Bytes, ethereum, log, store } from '@graphprotocol/graph-ts';
 import {
@@ -28,7 +24,6 @@ import {
   entityUUID,
   externalEntityUUID
 } from './utils/utils';
-import { getAllIntegrations } from './IntegrationRouter.mapping';
 
 function getQuorum(memberCount: BigInt): BigInt {
   return memberCount.plus(BigInt.fromI32(1)).times(BigInt.fromI32(3)).div(BigInt.fromI32(4)).plus(BigInt.fromI32(1));
@@ -316,40 +311,6 @@ export function handleSubmittedReport(event: SubmittedReport): void {
   oa!.editedAt = ts;
   oa!.editedAtBlock = blockId;
   oa!.save();
-
-  const integrations = getAllIntegrations();
-  for (let i = 0; i < integrations.length; i++) {
-    const integration = integrations[i];
-    const snapshotId = externalEntityUUID(Address.fromBytes(integration.address), [
-      integration.id.toHexString(),
-      blockId.toString(),
-      ts.toString()
-    ]);
-    const snapshot = new IntegrationSnapshot(snapshotId);
-    snapshot.totalSupply = integration.totalSupply;
-    snapshot.createdAt = ts;
-    snapshot.createdAtBlock = blockId;
-    snapshot.save();
-
-    //idk why but integration.pools returns null, so we have to do this
-    let j = 0;
-    let multiPool = MultiPool.load(externalEntityUUID(Address.fromBytes(integration.address), [j.toString()]));
-    while (multiPool) {
-      const balance = new MultiPoolBalanceSnapshot(
-        externalEntityUUID(Address.fromBytes(integration.address), [j.toString(), blockId.toString(), ts.toString()])
-      );
-      balance.pool = multiPool.id;
-      balance.snapshot = snapshotId;
-      balance.poolSharesBalance = PoolBalance.load(multiPool!.shares!)!.amount;
-      balance.poolSupply = vPool.load(multiPool!.pool)!.totalSupply;
-      balance.createdAt = ts;
-      balance.createdAtBlock = blockId;
-      balance.save();
-
-      j++;
-      multiPool = MultiPool.load(externalEntityUUID(Address.fromBytes(integration.address), [j.toString()]));
-    }
-  }
 }
 
 export function handleSetHighestReportedEpoch(event: SetHighestReportedEpoch): void {

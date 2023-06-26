@@ -891,25 +891,24 @@ interface Integration {
 #                                                                                                                                                                            
 
 type IntegrationList @entity {
-  id: ID!
-  integrations: [Integration!]!
+  id: String!
+  erc20s: [ERC20!]!
 }
 
-type MultiPoolBalanceSnapshot @entity {
-  id: ID!
-  pool: MultiPool!
-  snapshot: IntegrationSnapshot!
-  poolSharesBalance: BigInt!
-  poolSupply: BigInt!
+type ERC20BalanceSnapshot @entity {
+  id: String!
+  snapshot: ERC20Snapshot!
+  staker: Bytes!
+  sharesBalance: BigInt!
 
   createdAt: BigInt!
   createdAtBlock: BigInt!
 }
 
-type IntegrationSnapshot @entity {
-  id: ID!
+type ERC20Snapshot @entity {
+  id: String!
   totalSupply: BigInt!
-  balances: [MultiPoolBalanceSnapshot!]! @derivedFrom(field: "snapshot")
+  balances: [ERC20BalanceSnapshot!]! @derivedFrom(field: "snapshot")
 
   createdAt: BigInt!
   createdAtBlock: BigInt!

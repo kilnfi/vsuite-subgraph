@@ -24,7 +24,6 @@ export function handleDeployedProxy(event: DeployedProxy): void {
   checkChannel(channel);
 
   const list = IntegrationList.load('integrationList');
-  const integrations = list!.integrations;
 
   if (
     channel.equals(CHANNEL_NATIVE_20_vPOOL_BYTES32) ||
@@ -52,7 +51,9 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     integration.editedAtBlock = event.block.number;
 
     integration.save();
-    integrations.push(integration.id);
+    const erc20s = list!.erc20s;
+    erc20s.push(integration.id);
+    list!.erc20s = erc20s;
   } else if (
     channel.equals(CHANNEL_NATIVE_1155_vPOOL_BYTES32) ||
     channel.equals(CHANNEL_LIQUID_1155_vPOOL_vPOOL_BYTES32)
@@ -78,7 +79,6 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     integration.maxCommission = BigInt.zero();
 
     integration.save();
-    // integrations.push(integration.id);
   } else if (channel.equals(CHANNEL_VNFT_BYTES32)) {
     vNFTTemplate.create(event.params.proxy);
 
@@ -108,6 +108,5 @@ export function handleDeployedProxy(event: DeployedProxy): void {
   }
   // else if () {}
 
-  list!.integrations = integrations;
   list!.save();
 }

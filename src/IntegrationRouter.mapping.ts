@@ -8,12 +8,12 @@ import { ERC20, IntegrationChannel, IntegrationList } from '../generated/schema'
 import { ProxyFactory } from '../generated/templates';
 import { existsChannel, getChannelName, getMetaContractForChannel } from './utils/IntegrationChannel.utils';
 
-export function getAllIntegrations(): ERC20[] {
+export function getAllERC20Integrations(): ERC20[] {
   const list = IntegrationList.load('integrationList');
   if (list) {
     let loaded: ERC20[] = [];
-    for (let i = 0; i < list.integrations.length; i++) {
-      loaded.push(ERC20.load(list.integrations[i])!);
+    for (let i = 0; i < list.erc20s.length; i++) {
+      loaded.push(ERC20.load(list.erc20s[i])!);
     }
     return loaded;
   } else {
@@ -54,6 +54,6 @@ export function handleProxyFactoryDeployed(event: ProxyFactoryDeployed): void {
 
 export function handleInitialized(event: Initialized): void {
   const list = new IntegrationList('integrationList');
-  list.integrations = [];
+  list.erc20s = [];
   list.save();
 }
