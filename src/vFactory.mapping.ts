@@ -374,7 +374,10 @@ export function handleFundedValidator(event: FundedValidator): void {
   const channel = WithdrawalChannel.load(channelId);
   const fundedKeyId = entityUUID(event, [event.params.id.toString()]);
   const fundedKey = new FundedValidationKey(fundedKeyId);
-  const depositorId = entityUUID(event, [event.params.depositor.toHexString()]);
+  const depositorId = entityUUID(event, [
+    event.params.withdrawalChannel.toHexString(),
+    event.params.depositor.toHexString()
+  ]);
 
   key!.funded = fundedKeyId;
   key!.editedAt = event.block.timestamp;
