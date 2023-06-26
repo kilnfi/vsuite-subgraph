@@ -11,6 +11,7 @@ import {
   checkChannel
 } from './utils/IntegrationChannel.utils';
 import { Address, BigInt } from '@graphprotocol/graph-ts';
+import { externalEntityUUID } from './utils/utils';
 
 export function handleDeployedProxy(event: DeployedProxy): void {
   if (
@@ -29,9 +30,9 @@ export function handleDeployedProxy(event: DeployedProxy): void {
   ) {
     ERC20Template.create(event.params.proxy);
 
-    const integration = new ERC20(event.params.proxy);
+    const integration = new ERC20(externalEntityUUID(event.params.proxy, []));
     integration.address = event.params.proxy;
-    integration.channel = channel;
+    integration.channel = channel.toHexString();
     integration.paused = false;
     integration.name = '';
     integration.symbol = '';
@@ -53,9 +54,9 @@ export function handleDeployedProxy(event: DeployedProxy): void {
   ) {
     ERC1155Template.create(event.params.proxy);
 
-    const integration = new ERC1155Integration(event.params.proxy);
+    const integration = new ERC1155Integration(externalEntityUUID(event.params.proxy, []));
     integration.address = event.params.proxy;
-    integration.channel = channel;
+    integration.channel = channel.toHexString();
     integration.paused = false;
     integration.name = '';
     integration.symbol = '';
@@ -74,9 +75,9 @@ export function handleDeployedProxy(event: DeployedProxy): void {
   } else if (channel.equals(CHANNEL_VNFT_BYTES32)) {
     vNFTTemplate.create(event.params.proxy);
 
-    const vnft = new vNFTIntegration(event.params.proxy);
+    const vnft = new vNFTIntegration(externalEntityUUID(event.params.proxy, []));
     vnft.address = event.params.proxy;
-    vnft.channel = channel;
+    vnft.channel = channel.toHexString();
     vnft.paused = false;
     vnft.name = '';
     vnft.symbol = '';
@@ -85,9 +86,9 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     vnft.operatorCommission = BigInt.zero();
     vnft.integratorCommission = BigInt.zero();
     vnft.integrator = Address.empty();
-    vnft.vFactory = Address.empty();
+    vnft.vFactory = externalEntityUUID(Address.zero(), []);
     vnft.extraData = '';
-    vnft.execLayerVault = Address.empty();
+    vnft.execLayerVault = externalEntityUUID(Address.zero(), []);
     vnft.soulboundMode = false;
     vnft.admin = Address.empty();
 

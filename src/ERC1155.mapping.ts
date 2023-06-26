@@ -30,7 +30,7 @@ import {
 import { eventUUID, entityUUID, externalEntityUUID } from './utils/utils';
 
 export function handleSetName(event: SetName): void {
-  const erc1155 = ERC1155Integration.load(event.address);
+  const erc1155 = ERC1155Integration.load(entityUUID(event, []));
 
   erc1155!.name = event.params.name;
 
@@ -41,7 +41,7 @@ export function handleSetName(event: SetName): void {
 }
 
 export function handleSetURIPrefix(event: SetURIPrefix): void {
-  const erc1155 = ERC1155Integration.load(event.address);
+  const erc1155 = ERC1155Integration.load(entityUUID(event, []));
 
   erc1155!.uriPrefix = event.params.uri;
 
@@ -52,7 +52,7 @@ export function handleSetURIPrefix(event: SetURIPrefix): void {
 }
 
 export function handleSetSymbol(event: SetSymbol): void {
-  const erc1155 = ERC1155Integration.load(event.address);
+  const erc1155 = ERC1155Integration.load(entityUUID(event, []));
   erc1155!.symbol = event.params.symbol;
 
   erc1155!.editedAt = event.block.timestamp;
@@ -62,7 +62,7 @@ export function handleSetSymbol(event: SetSymbol): void {
 }
 
 export function handleSetDepositsPaused(event: SetDepositsPaused): void {
-  const erc1155 = ERC1155Integration.load(event.address);
+  const erc1155 = ERC1155Integration.load(entityUUID(event, []));
   erc1155!.paused = event.params.isPaused;
 
   erc1155!.editedAt = event.block.timestamp;
@@ -81,10 +81,10 @@ export function handlePoolAdded(event: PoolAdded): void {
   const tokenAndPoolId = entityUUID(event, [poolId.toString()]);
   const multiPool = new MultiPool(tokenAndPoolId);
   multiPool.number = poolId;
-  multiPool.pool = vPool;
+  multiPool.pool = externalEntityUUID(vPool, []);
   multiPool.active = true;
   multiPool.fees = BigInt.zero();
-  multiPool.integration = event.address;
+  multiPool.integration = entityUUID(event, []);
   multiPool.poolAllocation = BigInt.zero();
   multiPool.shares = externalEntityUUID(vPool, [event.address.toHexString()]);
 
@@ -97,7 +97,7 @@ export function handlePoolAdded(event: PoolAdded): void {
 
   const erc1155 = new ERC1155(tokenAndPoolId);
   erc1155.pool = tokenAndPoolId;
-  erc1155.integration = event.address;
+  erc1155.integration = entityUUID(event, []);
   erc1155.tokenId = poolId;
   erc1155.totalSupply = BigInt.zero();
   erc1155.totalUnderlyingSupply = BigInt.zero();
@@ -135,7 +135,7 @@ export function handlePoolActivation(event: PoolActivation): void {
 }
 
 export function handleNewCommissionSplit(event: NewCommissionSplit): void {
-  const erc1155 = ERC1155Integration.load(event.address);
+  const erc1155 = ERC1155Integration.load(entityUUID(event, []));
   const recipients = event.params.recipients;
   const splits = event.params.splits;
   const ts = event.block.timestamp;
@@ -170,7 +170,7 @@ export function handleNewCommissionSplit(event: NewCommissionSplit): void {
 }
 
 export function handleCommissionWithdrawn(event: CommissionWithdrawn): void {
-  const erc1155 = ERC1155Integration.load(event.address);
+  const erc1155 = ERC1155Integration.load(entityUUID(event, []));
   const ts = event.block.timestamp;
   const blockId = event.block.number;
 
@@ -189,7 +189,7 @@ export function handleCommissionWithdrawn(event: CommissionWithdrawn): void {
 export function handleStake(event: Stake): void {
   const tokenId = event.params.id;
   const erc1155 = ERC1155.load(entityUUID(event, [tokenId.toString()]));
-  const erc1155Integration = ERC1155Integration.load(event.address);
+  const erc1155Integration = ERC1155Integration.load(entityUUID(event, []));
 
   const ts = event.block.timestamp;
   const blockId = event.block.number;
@@ -324,7 +324,7 @@ export function handleApprovalForAll(event: ApprovalForAll): void {
 export function handleVPoolSharesReceived(event: VPoolSharesReceived): void {}
 
 export function handleSetAdmin(event: SetAdmin): void {
-  const erc1155Integration = ERC1155Integration.load(event.address);
+  const erc1155Integration = ERC1155Integration.load(entityUUID(event, []));
   erc1155Integration!.admin = event.params.admin;
   erc1155Integration!.editedAt = event.block.timestamp;
   erc1155Integration!.editedAtBlock = event.block.number;
@@ -332,7 +332,7 @@ export function handleSetAdmin(event: SetAdmin): void {
 }
 
 export function handleSetMaxCommission(event: SetMaxCommission): void {
-  const erc1155Integration = ERC1155Integration.load(event.address);
+  const erc1155Integration = ERC1155Integration.load(entityUUID(event, []));
   erc1155Integration!.maxCommission = event.params.maxCommission;
   erc1155Integration!.editedAt = event.block.timestamp;
   erc1155Integration!.editedAtBlock = event.block.number;

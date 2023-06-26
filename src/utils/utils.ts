@@ -71,7 +71,7 @@ export function createAddedValidationKeysSystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.factory = factoryAddress;
+    systemEvent.factory = externalEntityUUID(factoryAddress, []);
     systemEvent.withdrawalChannel = externalEntityUUID(factoryAddress, [withdrawalChannel.toHexString()]);
     systemEvent.count = BigInt.fromI32(0);
     systemEvent.newTotal = BigInt.fromI32(0);
@@ -103,7 +103,7 @@ export function createRemovedValidationKeysSystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.factory = factoryAddress;
+    systemEvent.factory = externalEntityUUID(factoryAddress, []);
     systemEvent.withdrawalChannel = externalEntityUUID(factoryAddress, [withdrawalChannel.toHexString()]);
     systemEvent.count = BigInt.fromI32(0);
     systemEvent.newTotal = BigInt.fromI32(0);
@@ -135,7 +135,7 @@ export function createUpdatedLimitSystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.factory = factoryAddress;
+    systemEvent.factory = externalEntityUUID(factoryAddress, []);
     systemEvent.withdrawalChannel = externalEntityUUID(factoryAddress, [withdrawalChannel.toHexString()]);
     systemEvent.oldLimit = null;
     systemEvent.newLimit = BigInt.fromI32(0);
@@ -167,7 +167,7 @@ export function createValidatorOwnerChangedSystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.factory = factoryAddress;
+    systemEvent.factory = externalEntityUUID(factoryAddress, []);
     systemEvent.validator = externalEntityUUID(factoryAddress, [validatorId.toString()]);
 
     systemEvent.createdAt = event.block.timestamp;
@@ -197,7 +197,7 @@ export function createValidatorFeeRecipientChangedSystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.factory = factoryAddress;
+    systemEvent.factory = externalEntityUUID(factoryAddress, []);
     systemEvent.validator = externalEntityUUID(factoryAddress, [validatorId.toString()]);
 
     systemEvent.createdAt = event.block.timestamp;
@@ -227,7 +227,7 @@ export function createValidatorExtraDataChangedSystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.factory = factoryAddress;
+    systemEvent.factory = externalEntityUUID(factoryAddress, []);
     systemEvent.validator = externalEntityUUID(factoryAddress, [validatorId.toString()]);
 
     systemEvent.createdAt = event.block.timestamp;
@@ -257,7 +257,7 @@ export function createDuplicateKeySystemAlert(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.factory = factoryAddress;
+    systemEvent.factory = externalEntityUUID(factoryAddress, []);
 
     systemEvent.createdAt = event.block.timestamp;
     systemEvent.createdAtBlock = event.block.number;
@@ -310,7 +310,7 @@ export function createFundedValidationKeySystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.factory = factoryAddress;
+    systemEvent.factory = externalEntityUUID(factoryAddress, []);
     systemEvent.depositor = externalEntityUUID(factoryAddress, [depositor.toHexString()]);
     systemEvent.withdrawalChannel = externalEntityUUID(factoryAddress, [withdrawalChannel.toHexString()]);
     systemEvent.count = BigInt.fromI32(0);
@@ -345,7 +345,7 @@ export function createChangedFactoryParameterSystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.factory = factoryAddress;
+    systemEvent.factory = externalEntityUUID(factoryAddress, []);
     systemEvent.parameter = parameter;
     systemEvent.oldValue = oldValue;
 
@@ -377,8 +377,8 @@ export function createReportProcessedSystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.pool = poolAddress;
-    systemEvent.factory = factoryAddress;
+    systemEvent.pool = externalEntityUUID(poolAddress, []);
+    systemEvent.factory = externalEntityUUID(factoryAddress, []);
 
     systemEvent.createdAt = event.block.timestamp;
     systemEvent.createdAtBlock = event.block.number;
@@ -410,9 +410,9 @@ export function createOracleMemberVotedSystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.factory = factoryAddress;
-    systemEvent.pool = poolAddress;
-    systemEvent.oracleAggregator = oracleAggregatorAddress;
+    systemEvent.factory = externalEntityUUID(factoryAddress, []);
+    systemEvent.pool = externalEntityUUID(poolAddress, []);
+    systemEvent.factory = externalEntityUUID(factoryAddress, []);
 
     systemEvent.createdAt = event.block.timestamp;
     systemEvent.createdAtBlock = event.block.number;
@@ -442,8 +442,8 @@ export function createChangedPoolParameterSystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.pool = poolAddress;
-    systemEvent.factory = factoryAddress;
+    systemEvent.pool = externalEntityUUID(poolAddress, []);
+    systemEvent.factory = externalEntityUUID(Address.fromBytes(factoryAddress), []);
     systemEvent.parameter = parameter;
     systemEvent.oldValue = oldValue;
 
@@ -477,8 +477,8 @@ export function createChangedCoverageRecipientParameterSystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.pool = poolAddress;
-    systemEvent.factory = factoryAddress;
+    systemEvent.pool = externalEntityUUID(Address.fromBytes(poolAddress), []);
+    systemEvent.factory = externalEntityUUID(Address.fromBytes(factoryAddress), []);
     systemEvent.parameter = parameter;
     systemEvent.oldValue = oldValue;
 
@@ -510,8 +510,8 @@ export function createCoverageRecipientUpdatedEthSystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.pool = poolAddress;
-    systemEvent.factory = factoryAddress;
+    systemEvent.pool = externalEntityUUID(Address.fromBytes(poolAddress), []);
+    systemEvent.factory = externalEntityUUID(Address.fromBytes(factoryAddress), []);
 
     systemEvent.delta = BigInt.fromI32(0);
     systemEvent.total = BigInt.fromI32(0);
@@ -544,8 +544,8 @@ export function createCoverageRecipientUpdatedSharesSystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.pool = poolAddress;
-    systemEvent.factory = factoryAddress;
+    systemEvent.pool = externalEntityUUID(Address.fromBytes(poolAddress), []);
+    systemEvent.factory = externalEntityUUID(Address.fromBytes(factoryAddress), []);
 
     systemEvent.delta = BigInt.fromI32(0);
     systemEvent.total = BigInt.fromI32(0);
@@ -580,9 +580,9 @@ export function createChangedOracleAggregatorParameterSystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.oracleAggregator = oracleAggregatorAddress;
-    systemEvent.pool = poolAddress;
-    systemEvent.factory = factoryAddress;
+    systemEvent.oracleAggregator = externalEntityUUID(oracleAggregatorAddress, []);
+    systemEvent.pool = externalEntityUUID(Address.fromBytes(poolAddress), []);
+    systemEvent.factory = externalEntityUUID(Address.fromBytes(factoryAddress), []);
     systemEvent.parameter = parameter;
     systemEvent.oldValue = oldValue;
 
@@ -614,8 +614,8 @@ export function createPoolDepositSystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.pool = poolAddress;
-    systemEvent.factory = factoryAddress;
+    systemEvent.pool = externalEntityUUID(Address.fromBytes(poolAddress), []);
+    systemEvent.factory = externalEntityUUID(Address.fromBytes(factoryAddress), []);
 
     systemEvent.amountEth = BigInt.fromI32(0);
     systemEvent.amountShares = BigInt.fromI32(0);
@@ -647,8 +647,8 @@ export function createPoolValidatorPurchaseSystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.pool = poolAddress;
-    systemEvent.factory = factoryAddress;
+    systemEvent.pool = externalEntityUUID(Address.fromBytes(poolAddress), []);
+    systemEvent.factory = externalEntityUUID(Address.fromBytes(factoryAddress), []);
 
     systemEvent.validatorCount = BigInt.fromI32(0);
     systemEvent.validators = [];
@@ -682,9 +682,9 @@ export function createNewExitQueueTicketSystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.exitQueue = exitQueueAddress;
-    systemEvent.pool = poolAddress;
-    systemEvent.factory = factoryAddress;
+    systemEvent.exitQueue = externalEntityUUID(exitQueueAddress, []);
+    systemEvent.pool = externalEntityUUID(Address.fromBytes(poolAddress), []);
+    systemEvent.factory = externalEntityUUID(Address.fromBytes(factoryAddress), []);
 
     systemEvent.createdAt = event.block.timestamp;
     systemEvent.createdAtBlock = event.block.number;
@@ -715,9 +715,9 @@ export function createNewExitQueueCaskSystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.exitQueue = exitQueueAddress;
-    systemEvent.pool = poolAddress;
-    systemEvent.factory = factoryAddress;
+    systemEvent.exitQueue = externalEntityUUID(exitQueueAddress, []);
+    systemEvent.pool = externalEntityUUID(Address.fromBytes(poolAddress), []);
+    systemEvent.factory = externalEntityUUID(Address.fromBytes(factoryAddress), []);
 
     systemEvent.createdAt = event.block.timestamp;
     systemEvent.createdAtBlock = event.block.number;
@@ -748,9 +748,9 @@ export function createClaimedExitQueueTicketSystemEvent(
     systemEvent.tx = event.transaction.hash;
     systemEvent.who = event.transaction.from;
 
-    systemEvent.exitQueue = exitQueueAddress;
-    systemEvent.pool = poolAddress;
-    systemEvent.factory = factoryAddress;
+    systemEvent.exitQueue = externalEntityUUID(exitQueueAddress, []);
+    systemEvent.pool = externalEntityUUID(Address.fromBytes(poolAddress), []);
+    systemEvent.factory = externalEntityUUID(Address.fromBytes(factoryAddress), []);
 
     systemEvent.remainingAmount = BigInt.fromI32(0);
     systemEvent.remainingEthAmount = BigInt.fromI32(0);

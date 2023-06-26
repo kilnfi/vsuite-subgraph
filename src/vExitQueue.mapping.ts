@@ -1,4 +1,4 @@
-import { Cask, FillTrace, Ticket, vExitQueue, Payment as PaymentEntity, vPool } from '../generated/schema';
+import { Cask, FillTrace, Ticket, vExitQueue, Payment as PaymentEntity, vPool, vFactory } from '../generated/schema';
 import { Transfer } from '../generated/templates/ERC20/Native20';
 import {
   FilledTicket,
@@ -14,18 +14,19 @@ import {
   createNewExitQueueCaskSystemEvent,
   createNewExitQueueTicketSystemEvent,
   entityUUID,
-  eventUUID
+  eventUUID,
+  externalEntityUUID
 } from './utils/utils';
 import { Address, BigInt, store } from '@graphprotocol/graph-ts';
 
 export function handlePrintedTicket(event: PrintedTicket): void {
-  const exitQueue = vExitQueue.load(event.address);
+  const exitQueue = vExitQueue.load(entityUUID(event, []));
 
   const ticketId = entityUUID(event, [event.params.id.toString()]);
   const ticket = new Ticket(ticketId);
 
   ticket.ticketId = event.params.id;
-  ticket.exitQueue = event.address;
+  ticket.exitQueue = entityUUID(event, []);
   ticket.owner = event.params.owner;
   ticket.size = event.params.ticket.size;
   ticket.position = event.params.ticket.position;
@@ -48,7 +49,13 @@ export function handlePrintedTicket(event: PrintedTicket): void {
 
   const pool = vPool.load(exitQueue!.pool);
 
-  const se = createNewExitQueueTicketSystemEvent(event, pool!.factory, exitQueue!.pool, event.address, event.params.id);
+  const se = createNewExitQueueTicketSystemEvent(
+    event,
+    vFactory.load(pool!.factory)!.address,
+    pool!.address,
+    event.address,
+    event.params.id
+  );
   se.ticket = ticketId;
   se.size = event.params.ticket.size;
   se.maxExitable = event.params.ticket.maxExitable;
@@ -82,13 +89,13 @@ export function handleTransfer(event: Transfer): void {
 }
 
 export function handleReceivedCask(event: ReceivedCask): void {
-  const exitQueue = vExitQueue.load(event.address);
+  const exitQueue = vExitQueue.load(entityUUID(event, []));
 
   const caskId = entityUUID(event, [event.params.id.toString()]);
   const cask = new Cask(caskId);
 
   cask.caskId = event.params.id;
-  cask.exitQueue = event.address;
+  cask.exitQueue = entityUUID(event, []);
   cask.size = event.params.cask.size;
   cask.position = event.params.cask.position;
   cask.value = event.params.cask.value;
@@ -110,7 +117,13 @@ export function handleReceivedCask(event: ReceivedCask): void {
   exitQueue!.save();
   const pool = vPool.load(exitQueue!.pool);
 
-  const se = createNewExitQueueCaskSystemEvent(event, pool!.factory, exitQueue!.pool, event.address, event.params.id);
+  const se = createNewExitQueueCaskSystemEvent(
+    event,
+    vFactory.load(pool!.factory)!.address,
+    pool!.address,
+    event.address,
+    event.params.id
+  );
   se.cask = caskId;
   se.size = event.params.cask.size;
   se.value = event.params.cask.value;
@@ -118,9 +131,9 @@ export function handleReceivedCask(event: ReceivedCask): void {
 }
 
 export function handleSetPool(event: SetPool): void {
-  const exitQueue = vExitQueue.load(event.address);
+  const exitQueue = vExitQueue.load(entityUUID(event, []));
 
-  exitQueue!.pool = event.params.pool;
+  exitQueue!.pool = externalEntityUUID(event.params.pool, []);
   exitQueue!.editedAt = event.block.timestamp;
   exitQueue!.editedAtBlock = event.block.number;
 
@@ -128,7 +141,7 @@ export function handleSetPool(event: SetPool): void {
 }
 
 export function handleFilledTicket(event: FilledTicket): void {
-  const exitQueue = vExitQueue.load(event.address);
+  const exitQueue = vExitQueue.load(entityUUID(event, []));
 
   exitQueue!.unclaimedFunds = exitQueue!.unclaimedFunds.plus(event.params.unclaimedEth);
   exitQueue!.editedAt = event.block.timestamp;
@@ -179,8 +192,8 @@ export function handleFilledTicket(event: FilledTicket): void {
 
   const se = createClaimedExitQueueTicketSystemEvent(
     event,
-    pool!.factory,
-    exitQueue!.pool,
+    vFactory.load(pool!.factory)!.address,
+    pool!.address,
     event.address,
     event.params.ticketId
   );
@@ -202,7 +215,7 @@ export function handlePayment(event: Payment): void {
 
   payment.recipient = event.params.recipient;
   payment.amount = event.params.amount;
-  payment.exitQueue = event.address;
+  payment.exitQueue = entityUUID(event, []);
   payment.createdAt = event.block.timestamp;
   payment.editedAt = event.block.timestamp;
   payment.createdAtBlock = event.block.number;
@@ -212,7 +225,7 @@ export function handlePayment(event: Payment): void {
 }
 
 export function handleSuppliedEther(event: SuppliedEther): void {
-  const exitQueue = vExitQueue.load(event.address);
+  const exitQueue = vExitQueue.load(entityUUID(event, []));
 
   exitQueue!.unclaimedFunds = exitQueue!.unclaimedFunds.minus(event.params.amount);
   exitQueue!.editedAt = event.block.timestamp;

@@ -3,7 +3,7 @@ import { entityUUID, eventUUID } from './utils/utils';
 import { SetAutoCover, SetFee, SetOperator, VoteChanged, Withdraw } from '../generated/templates/vTreasury/vTreasury';
 
 export function handleSetOperator(event: SetOperator): void {
-  const treasury = vTreasury.load(event.address);
+  const treasury = vTreasury.load(entityUUID(event, []));
 
   treasury!.operator = event.params.operator;
 
@@ -13,7 +13,7 @@ export function handleSetOperator(event: SetOperator): void {
 }
 
 export function handleSetFee(event: SetFee): void {
-  const treasury = vTreasury.load(event.address);
+  const treasury = vTreasury.load(entityUUID(event, []));
 
   treasury!.fee = event.params.fee;
 
@@ -26,7 +26,7 @@ export function handleSetAutoCover(event: SetAutoCover): void {
   const autoCoverId = entityUUID(event, ['auto-cover', event.params.pool.toHexString()]);
   const autoCover = new AutoCover(autoCoverId);
 
-  autoCover.treasury = event.address;
+  autoCover.treasury = entityUUID(event, []);
 
   autoCover.autoCoverBps = event.params.autoCover;
 
@@ -41,7 +41,7 @@ export function handleWithdraw(event: Withdraw): void {
   const withdrawId = eventUUID(event, ['withdraw']);
   const withdraw = new TreasuryWithdrawal(withdrawId);
 
-  withdraw.treasury = event.address;
+  withdraw.treasury = entityUUID(event, []);
 
   withdraw.operator = event.params.operator;
   withdraw.globalRecipient = event.params.globalRecipient;
@@ -59,7 +59,7 @@ export function handleVoteChanged(event: VoteChanged): void {
   const voteFeeId = eventUUID(event, ['fee-vote']);
   const vote = new TreasuryFeeVote(voteFeeId);
 
-  vote.treasury = event.address;
+  vote.treasury = entityUUID(event, []);
 
   vote.voter = event.params.voter;
   vote.operatorFeeVote = event.params.operatorFeeVote;

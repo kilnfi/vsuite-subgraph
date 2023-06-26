@@ -28,7 +28,7 @@ import {
 import { eventUUID, txUniqueUUID, entityUUID, externalEntityUUID } from './utils/utils';
 
 export function handleSetName(event: SetName): void {
-  const erc20 = ERC20.load(event.address);
+  const erc20 = ERC20.load(entityUUID(event, []));
 
   erc20!.name = event.params.name;
 
@@ -39,7 +39,7 @@ export function handleSetName(event: SetName): void {
 }
 
 export function handleSetSymbol(event: SetSymbol): void {
-  const erc20 = ERC20.load(event.address);
+  const erc20 = ERC20.load(entityUUID(event, []));
   erc20!.symbol = event.params.symbol;
 
   erc20!.editedAt = event.block.timestamp;
@@ -49,7 +49,7 @@ export function handleSetSymbol(event: SetSymbol): void {
 }
 
 export function handleSetDepositsPaused(event: SetDepositsPaused): void {
-  const erc20 = ERC20.load(event.address);
+  const erc20 = ERC20.load(entityUUID(event, []));
   erc20!.paused = event.params.isPaused;
 
   erc20!.editedAt = event.block.timestamp;
@@ -64,10 +64,10 @@ export function handlePoolAdded(event: PoolAdded): void {
 
   const multiPool = new MultiPool(entityUUID(event, [poolId.toString()]));
   multiPool.number = poolId;
-  multiPool.pool = vPool;
+  multiPool.pool = externalEntityUUID(vPool, []);
   multiPool.active = true;
   multiPool.fees = BigInt.zero();
-  multiPool.integration = event.address;
+  multiPool.integration = entityUUID(event, []);
   multiPool.poolAllocation = BigInt.zero();
   multiPool.shares = externalEntityUUID(vPool, [event.address.toHexString()]);
 
@@ -106,7 +106,7 @@ export function handlePoolActivation(event: PoolActivation): void {
 }
 
 export function handleNewCommissionSplit(event: NewCommissionSplit): void {
-  const erc20 = ERC20.load(event.address);
+  const erc20 = ERC20.load(entityUUID(event, []));
   const recipients = event.params.recipients;
   const splits = event.params.splits;
   const ts = event.block.timestamp;
@@ -141,7 +141,7 @@ export function handleNewCommissionSplit(event: NewCommissionSplit): void {
 }
 
 export function handleCommissionWithdrawn(event: CommissionWithdrawn): void {
-  const erc20 = ERC20.load(event.address);
+  const erc20 = ERC20.load(entityUUID(event, []));
   const ts = event.block.timestamp;
   const blockId = event.block.number;
 
@@ -158,7 +158,7 @@ export function handleCommissionWithdrawn(event: CommissionWithdrawn): void {
 }
 
 export function handleStake(event: Stake): void {
-  const erc20 = ERC20.load(event.address);
+  const erc20 = ERC20.load(entityUUID(event, []));
 
   const ts = event.block.timestamp;
   const blockId = event.block.number;
@@ -168,7 +168,7 @@ export function handleStake(event: Stake): void {
   let deposit = ERC20Deposit.load(depositId);
   if (!deposit) {
     deposit = new ERC20Deposit(depositId);
-    deposit.integration = event.address;
+    deposit.integration = entityUUID(event, []);
     deposit.depositAmount = BigInt.zero();
     // deposit.mintedShares = BigInt.zero();
     deposit.hash = event.transaction.hash;
@@ -194,7 +194,7 @@ export function handleTransfer(event: Transfer): void {
   const to = event.params.to;
   const value = event.params.value;
 
-  const erc20 = ERC20.load(event.address);
+  const erc20 = ERC20.load(entityUUID(event, []));
 
   const balanceFromId = entityUUID(event, [from.toHexString()]);
   const balanceToId = entityUUID(event, [to.toHexString()]);
@@ -208,7 +208,7 @@ export function handleTransfer(event: Transfer): void {
 
     if (!ERC20Balance.load(balanceToId)) {
       const balance = new ERC20Balance(balanceToId);
-      balance.integration = event.address;
+      balance.integration = entityUUID(event, []);
       balance.staker = to;
       balance.sharesBalance = BigInt.zero();
       balance.createdAt = ts;
@@ -244,7 +244,7 @@ export function handleTransfer(event: Transfer): void {
   const transferId = eventUUID(event, []);
   const transfer = new ERC20Transfer(transferId);
   transfer.from = from;
-  transfer.integration = event.address;
+  transfer.integration = entityUUID(event, []);
   transfer.to = to;
   transfer.amount = value;
   transfer.createdAt = ts;
@@ -264,7 +264,7 @@ export function handleApproval(event: Approval): void {
   let approval = ERC20Approval.load(approvalId);
   if (!approval) {
     approval = new ERC20Approval(approvalId);
-    approval.integration = event.address;
+    approval.integration = entityUUID(event, []);
     approval.spender = spender;
     approval.owner = owner;
     approval.createdAt = ts;
@@ -279,7 +279,7 @@ export function handleApproval(event: Approval): void {
 }
 
 export function handleSetAdmin(event: SetAdmin): void {
-  const erc20 = ERC20.load(event.address);
+  const erc20 = ERC20.load(entityUUID(event, []));
   erc20!.admin = event.params.admin;
   erc20!.editedAt = event.block.timestamp;
   erc20!.editedAtBlock = event.block.number;
@@ -287,7 +287,7 @@ export function handleSetAdmin(event: SetAdmin): void {
 }
 
 export function handleSetMaxCommission(event: SetMaxCommission): void {
-  const erc20 = ERC20.load(event.address);
+  const erc20 = ERC20.load(entityUUID(event, []));
   erc20!.maxCommission = event.params.maxCommission;
   erc20!.editedAt = event.block.timestamp;
   erc20!.editedAtBlock = event.block.number;
