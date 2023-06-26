@@ -8,10 +8,10 @@ export function handleChannelImplementationUpdated(event: ChannelImplementationU
   if (existsChannel(channel)) {
     const ts = event.block.timestamp;
     const blockId = event.block.number;
-    let implem = IntegrationChannel.load(channel);
+    let implem = IntegrationChannel.load(channel.toHexString());
 
     if (!implem) {
-      implem = new IntegrationChannel(channel);
+      implem = new IntegrationChannel(channel.toHexString());
       implem.createdAt = ts;
       implem.createdAtBlock = blockId;
     }

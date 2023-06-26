@@ -10,6 +10,7 @@ import {
   CoverageSuppliedEther,
   CoverageVoidedShares,
   vCoverageRecipient,
+  vFactory,
   vPool
 } from '../generated/schema';
 import { store } from '@graphprotocol/graph-ts';
@@ -24,9 +25,9 @@ import {
 export function handleSuppliedEther(event: SuppliedEther): void {
   const cseId = txUniqueUUID(event, [event.address.toHexString()]);
   const cse = new CoverageSuppliedEther(cseId);
-  const cr = vCoverageRecipient.load(event.address);
+  const cr = vCoverageRecipient.load(entityUUID(event, []));
 
-  cse.coverageRecipient = event.address;
+  cse.coverageRecipient = entityUUID(event, []);
   cse.amount = event.params.amount;
 
   cse.createdAt = event.block.timestamp;
@@ -46,9 +47,9 @@ export function handleSuppliedEther(event: SuppliedEther): void {
 export function handleVoidedShares(event: VoidedShares): void {
   const cseId = txUniqueUUID(event, [event.address.toHexString()]);
   const cvs = new CoverageVoidedShares(cseId);
-  const cr = vCoverageRecipient.load(event.address);
+  const cr = vCoverageRecipient.load(entityUUID(event, []));
 
-  cvs.coverageRecipient = event.address;
+  cvs.coverageRecipient = entityUUID(event, []);
   cvs.amount = event.params.amount;
 
   cvs.createdAt = event.block.timestamp;
@@ -66,7 +67,7 @@ export function handleVoidedShares(event: VoidedShares): void {
 }
 
 export function handleUpdatedEtherForCoverage(event: UpdatedEtherForCoverage): void {
-  const cr = vCoverageRecipient.load(event.address);
+  const cr = vCoverageRecipient.load(entityUUID(event, []));
 
   let initialAmount = cr!.totalAvailableEther;
 
@@ -78,14 +79,15 @@ export function handleUpdatedEtherForCoverage(event: UpdatedEtherForCoverage): v
   cr!.save();
 
   const pool = vPool.load(cr!.pool);
-  const se = createCoverageRecipientUpdatedEthSystemEvent(event, pool!.factory, cr!.pool, event.address);
+  const factory = vFactory.load(pool!.factory);
+  const se = createCoverageRecipientUpdatedEthSystemEvent(event, factory!.address, pool!.address, event.address);
   se.delta = se.delta.plus(event.params.amount.minus(initialAmount));
   se.total = event.params.amount;
   se.save();
 }
 
 export function handleUpdatedSharesForCoverage(event: UpdatedSharesForCoverage): void {
-  const cr = vCoverageRecipient.load(event.address);
+  const cr = vCoverageRecipient.load(entityUUID(event, []));
 
   let initialAmount = cr!.totalAvailableShares;
 
@@ -97,7 +99,8 @@ export function handleUpdatedSharesForCoverage(event: UpdatedSharesForCoverage):
   cr!.save();
 
   const pool = vPool.load(cr!.pool);
-  const se = createCoverageRecipientUpdatedSharesSystemEvent(event, pool!.factory, cr!.pool, event.address);
+  const factory = vFactory.load(pool!.factory);
+  const se = createCoverageRecipientUpdatedSharesSystemEvent(event, factory!.address, pool!.address, event.address);
   se.delta = event.params.amount.minus(initialAmount);
   se.total = event.params.amount;
   se.save();
@@ -115,7 +118,7 @@ export function handleAllowedDonor(event: AllowedDonor): void {
       donor = new CoverageDonor(donorId);
 
       donor.address = event.params.donorAddress;
-      donor.coverageRecipient = event.address;
+      donor.coverageRecipient = entityUUID(event, []);
 
       donor.createdAt = event.block.timestamp;
       donor.createdAtBlock = event.block.number;
@@ -135,12 +138,13 @@ export function handleAllowedDonor(event: AllowedDonor): void {
   }
 
   if (oldValue !== event.params.allowed) {
-    const coverageRecipient = vCoverageRecipient.load(event.address);
+    const coverageRecipient = vCoverageRecipient.load(entityUUID(event, []));
     const pool = vPool.load(coverageRecipient!.pool);
+    const factory = vFactory.load(pool!.factory);
     const se = createChangedCoverageRecipientParameterSystemEvent(
       event,
-      pool!.factory,
-      coverageRecipient!.pool,
+      factory!.address,
+      pool!.address,
       event.address,
       `donor[${event.params.donorAddress.toHexString()}]`,
       oldValue.toString()

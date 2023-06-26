@@ -12,7 +12,7 @@ type MetaContract @entity {
 # 
 
 type PluggableHatcher @entity {
-  id: Bytes!
+  id: String!
   address: Bytes!
   contract: MetaContract!
 
@@ -36,7 +36,7 @@ type PluggableHatcher @entity {
 }
 
 type Cub @entity {
-  id: Bytes!
+  id: String!
   address: Bytes!
   contract: MetaContract!
 
@@ -90,7 +90,7 @@ type PluggableHatcherImplementation @entity {
 #                                            
 
 type Nexus @entity {
-  id: Bytes!
+  id: String!
   address: Bytes!
   contract: MetaContract!
 
@@ -128,7 +128,7 @@ type Nexus @entity {
 #                                                            
 
 type vFactory @entity {
-  id: Bytes!
+  id: String!
   address: Bytes!
   contract: MetaContract!
 
@@ -188,7 +188,7 @@ type ValidatorRequest @entity {
 }
 
 type CommonValidationKeyEntry @entity {
-  id: Bytes!
+  id: String!
 
   publicKey: Bytes!
 
@@ -294,7 +294,7 @@ type FactoryDepositor @entity {
 #                                                                    
 
 type vTreasury @entity {
-  id: Bytes!
+  id: String!
   address: Bytes!
 
   cub: Cub!
@@ -362,7 +362,7 @@ type TreasuryFeeVote @entity {
 #                                   
 
 type vPool @entity {
-  id: Bytes!
+  id: String!
   address: Bytes!
   contract: MetaContract!
 
@@ -520,7 +520,7 @@ type PoolDepositor @entity {
 #                                     ▀▀                                     
 
 type vExitQueue @entity {
-  id: Bytes!
+  id: String!
   address: Bytes!
   contract: MetaContract!
 
@@ -621,7 +621,7 @@ type Cask @entity {
 #                                                                                                                                                   
 
 type vExecLayerRecipient @entity {
-  id: Bytes!
+  id: String!
   address: Bytes!
   contract: MetaContract!
 
@@ -658,7 +658,7 @@ type ExecLayerSuppliedEther @entity {
 #                                                                                                                                         
 
 type vCoverageRecipient @entity {
-  id: Bytes!
+  id: String!
   address: Bytes!
   contract: MetaContract!
 
@@ -728,7 +728,7 @@ type CoverageVoidedShares @entity {
 #                                                                                                                                                      
 
 type vWithdrawalRecipient @entity {
-  id: Bytes!
+  id: String!
   address: Bytes!
 
   withdrawalCredentials: Bytes!
@@ -751,7 +751,7 @@ type vWithdrawalRecipient @entity {
 #                                                                                                                                           
 
 type vOracleAggregator @entity {
-  id: Bytes!
+  id: String!
   address: Bytes!
   contract: MetaContract!
 
@@ -851,7 +851,7 @@ type Commission @entity {
 }
 
 type IntegrationChannel @entity {
-  id: Bytes!
+  id: String!
   name: String!
   implementation: Bytes!
   contract: MetaContract!
@@ -863,7 +863,7 @@ type IntegrationChannel @entity {
 }
 
 interface Integration {
-  id: Bytes!
+  id: String!
   address: Bytes!
   channel: IntegrationChannel!
   name: String!
@@ -887,7 +887,7 @@ interface Integration {
 #                                                                                                                                                                            
 
 type MultiPool @entity {
-  id: ID! # integrationAddress+poolId
+  id: String! # integrationAddress+poolId
 
   number: BigInt!
   pool: vPool!
@@ -905,7 +905,7 @@ type MultiPool @entity {
 }
 
 interface vPoolIntegration {
-  id: Bytes!
+  id: String!
 
   pools: [MultiPool!]! @derivedFrom(field: "integration")
   commissions: [Commission!]! @derivedFrom(field: "vPoolIntegration")
@@ -935,7 +935,7 @@ type ERC20 implements vPoolIntegration & Integration @entity {
   commissions: [Commission!]! @derivedFrom(field: "vPoolIntegration")
 
   # Integration
-  id: Bytes!
+  id: String!
   address: Bytes!
   channel: IntegrationChannel!
   name: String!
@@ -952,7 +952,7 @@ type ERC20 implements vPoolIntegration & Integration @entity {
 
 
 type ERC20Deposit @entity {
-  id: ID! # txHash+integrationAddress+stakerAddress
+  id: String! # txHash+integrationAddress+stakerAddress
   integration: ERC20!
   
   hash: Bytes!
@@ -1017,7 +1017,7 @@ type ERC20Approval @entity {
 # 
 
 type ERC1155Deposit @entity {
-  id: ID! # txHash+integrationAddress+tokenId+stakerAddress
+  id: String! # txHash+integrationAddress+tokenId+stakerAddress
   token: ERC1155!
   
   hash: Bytes!
@@ -1075,7 +1075,7 @@ type ERC1155Approval @entity {
 }
 
 type ERC1155 @entity {
-  id: ID! # integrationAddress+tokenId
+  id: String! # integrationAddress+tokenId
 
   integration: ERC1155Integration!
   tokenId: BigInt!
@@ -1106,7 +1106,7 @@ type ERC1155Integration implements vPoolIntegration & Integration @entity {
   maxCommission: BigInt!
   
   # Integration
-  id: Bytes!
+  id: String!
   address: Bytes!
   channel: IntegrationChannel!
   name: String!
@@ -1131,7 +1131,7 @@ type ERC1155Integration implements vPoolIntegration & Integration @entity {
 # 
 
 type VaultClaim @entity {
-  id: ID! # logIndex+vaultAddress
+  id: String! # logIndex+vaultAddress
   execLayerVault: MerkleVault!
   
   hash: Bytes!
@@ -1147,7 +1147,7 @@ type VaultClaim @entity {
 }
 
 type MerkleVault @entity {
-  id: Bytes!
+  id: String!
 
   root: Bytes!
   frameSize: BigInt!
@@ -1192,7 +1192,7 @@ type vNFTIntegration implements Integration @entity {
   approvals: [vNFTApprovals!]! @derivedFrom(field: "integration")
 
   # Integration
-  id: Bytes!
+  id: String!
   address: Bytes!
   channel: IntegrationChannel!
   name: String!
@@ -1208,7 +1208,7 @@ type vNFTIntegration implements Integration @entity {
 }
 
 type vNFT @entity {
-  id: ID! # integrationAddress+internalTokenId
+  id: String! # integrationAddress+internalTokenId
   tokenId: BigInt!
   internalTokenId: BigInt!
   integration: vNFTIntegration!
@@ -1227,14 +1227,14 @@ type vNFT @entity {
 }
 
 type vNFTidsMapping @entity {
-  id: ID! # integrationAddress+tokenId
+  id: String! # integrationAddress+tokenId
 
   externalTokenId: BigInt!
   internalTokenId: BigInt!
 }
 
 type vNFTTransfer @entity {
-  id: ID! # eventLog+integrationAddress+tokenId
+  id: String! # eventLog+integrationAddress+tokenId
   vNFT: vNFT!
 
   from: Bytes!
@@ -1247,7 +1247,7 @@ type vNFTTransfer @entity {
 }
 
 type vNFTUser @entity {
-  id: ID! # integrationAddress+tokenId
+  id: String! # integrationAddress+tokenId
 
   vNFT: vNFT!
   user: Bytes!

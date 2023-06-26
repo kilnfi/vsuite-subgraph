@@ -43,7 +43,8 @@ import {
   createValidatorFeeRecipientChangedSystemEvent,
   createValidatorOwnerChangedSystemEvent,
   entityUUID,
-  eventUUID
+  eventUUID,
+  externalEntityUUID
 } from './utils/utils';
 import { verify } from './bls12_381_verify';
 import {
@@ -165,7 +166,7 @@ export function handleAddedValidators(event: AddedValidators): void {
   if (entity == null) {
     entity = new WithdrawalChannel(channelId);
     entity.withdrawalChannel = event.params.withdrawalChannel;
-    entity.factory = event.address;
+    entity.factory = entityUUID(event, []);
     entity.total = BigInt.fromI32(0);
     entity.funded = BigInt.fromI32(0);
     entity.limit = BigInt.fromI32(0);
@@ -201,9 +202,9 @@ export function handleAddedValidators(event: AddedValidators): void {
     verificationRequest.key = keyId;
     verificationRequest.save();
 
-    let commonValidationKeyEntry = CommonValidationKeyEntry.load(publicKey);
+    let commonValidationKeyEntry = CommonValidationKeyEntry.load(publicKey.toHexString());
     if (commonValidationKeyEntry == null) {
-      commonValidationKeyEntry = new CommonValidationKeyEntry(publicKey);
+      commonValidationKeyEntry = new CommonValidationKeyEntry(publicKey.toHexString());
       commonValidationKeyEntry.depositEventCount = BigInt.fromI32(0);
       commonValidationKeyEntry.validationKeyCount = BigInt.fromI32(0);
       commonValidationKeyEntry.publicKey = publicKey;
@@ -217,7 +218,7 @@ export function handleAddedValidators(event: AddedValidators): void {
 
     if (commonValidationKeyEntry.validationKeyCount.gt(BigInt.fromI32(1))) {
       const se = createDuplicateKeySystemAlert(event, event.address, publicKey);
-      se.key = publicKey;
+      se.key = publicKey.toHexString();
       se.save();
     }
 
@@ -247,7 +248,7 @@ export function handleAddedValidators(event: AddedValidators): void {
       } else {
         depositEvent.validSignature = true;
         const se = createExternalFundingSystemAlert(event, publicKey);
-        se.key = publicKey;
+        se.key = publicKey.toHexString();
         se.save();
       }
       depositEvent.verified = true;
@@ -260,7 +261,7 @@ export function handleAddedValidators(event: AddedValidators): void {
       depositEvent = DepositEvent.load(depositEventId);
     }
 
-    keyEntity.commonValidationKeyEntry = publicKey;
+    keyEntity.commonValidationKeyEntry = publicKey.toHexString();
     keyEntity.createdAt = event.block.timestamp;
     keyEntity.createdAtBlock = event.block.number;
     keyEntity.editedAt = event.block.timestamp;
@@ -291,7 +292,7 @@ export function handleValidatorRequest(event: ValidatorRequest): void {
   if (entity == null) {
     entity = new WithdrawalChannel(channelId);
     entity.withdrawalChannel = event.params.withdrawalChannel;
-    entity.factory = event.address;
+    entity.factory = entityUUID(event, []);
     entity.total = BigInt.fromI32(0);
     entity.funded = BigInt.fromI32(0);
     entity.limit = BigInt.fromI32(0);
@@ -346,7 +347,7 @@ export function handleRemovedValidator(event: RemovedValidator): void {
     store.remove('ValidationKey', lastKeyId);
   }
 
-  let commonValidationKeyEntry = CommonValidationKeyEntry.load(keyToDelete!.publicKey);
+  let commonValidationKeyEntry = CommonValidationKeyEntry.load(keyToDelete!.publicKey.toHexString());
   commonValidationKeyEntry!.validationKeyCount = commonValidationKeyEntry!.validationKeyCount.minus(BigInt.fromI32(1));
   commonValidationKeyEntry!.editedAt = event.block.timestamp;
   commonValidationKeyEntry!.editedAtBlock = event.block.number;
@@ -425,7 +426,7 @@ export function handleFundedValidator(event: FundedValidator): void {
   systemEvent.fundedValidationKeys = fundedKeys;
   systemEvent.save();
 
-  const factory = vFactory.load(event.address);
+  const factory = vFactory.load(entityUUID(event, []));
   factory!.totalActivatedValidators = factory!.totalActivatedValidators.plus(BigInt.fromI32(1));
   factory!.save();
 }
@@ -552,7 +553,7 @@ export function handleSetValidatorExtraData(event: SetValidatorExtraData): void 
 }
 
 export function handleSetMetadata(event: SetMetadata): void {
-  const factory = vFactory.load(event.address);
+  const factory = vFactory.load(entityUUID(event, []));
 
   let oldValueOperatorName = factory!.operatorName;
   if (oldValueOperatorName === null) {
@@ -611,7 +612,7 @@ export function handleSetMetadata(event: SetMetadata): void {
 }
 
 export function handleSetAdmin(event: SetAdmin): void {
-  const factory = vFactory.load(event.address);
+  const factory = vFactory.load(entityUUID(event, []));
 
   let oldValue = factory!.admin;
   if (oldValue === null) {
@@ -631,7 +632,7 @@ export function handleSetAdmin(event: SetAdmin): void {
 }
 
 export function handleChangedOperator(event: ChangedOperator): void {
-  const factory = vFactory.load(event.address);
+  const factory = vFactory.load(entityUUID(event, []));
 
   let oldValue = factory!.operator;
   if (oldValue === null) {
@@ -656,32 +657,27 @@ export function handleChangedOperator(event: ChangedOperator): void {
 }
 
 export function handleChangedTreasury(event: ChangedTreasury): void {
-  const factory = vFactory.load(event.address);
+  const factory = vFactory.load(entityUUID(event, []));
 
   let oldValue = factory!.treasury;
   if (oldValue === null) {
-    oldValue = Address.zero();
+    oldValue = externalEntityUUID(Address.zero(), []);
   }
 
-  factory!.treasury = event.params.treasury;
+  factory!.treasury = externalEntityUUID(event.params.treasury, []);
 
   factory!.editedAt = event.block.timestamp;
   factory!.editedAtBlock = event.block.number;
 
   factory!.save();
 
-  const systemEvent = createChangedFactoryParameterSystemEvent(
-    event,
-    event.address,
-    `treasury`,
-    oldValue.toHexString()
-  );
+  const systemEvent = createChangedFactoryParameterSystemEvent(event, event.address, `treasury`, oldValue);
   systemEvent.newValue = event.params.treasury.toHexString();
   systemEvent.save();
 }
 
 export function handleSetMinimalRecipientImplementation(event: SetMinimalRecipientImplementation): void {
-  const factory = vFactory.load(event.address);
+  const factory = vFactory.load(entityUUID(event, []));
 
   let oldValue = factory!.minimalRecipientImplementation;
   if (oldValue === null) {
@@ -706,21 +702,21 @@ export function handleSetMinimalRecipientImplementation(event: SetMinimalRecipie
 }
 
 export function handleSetHatcherRegistry(event: SetHatcherRegistry): void {
-  const factory = vFactory.load(event.address);
+  const factory = vFactory.load(entityUUID(event, []));
 
   let oldValue = factory!.nexus;
   if (oldValue === null) {
-    oldValue = Address.zero();
+    oldValue = externalEntityUUID(Address.zero(), []);
   }
 
-  factory!.nexus = event.params.hatcherRegistry;
+  factory!.nexus = externalEntityUUID(event.params.hatcherRegistry, []);
 
   factory!.editedAt = event.block.timestamp;
   factory!.editedAtBlock = event.block.number;
 
   factory!.save();
 
-  const systemEvent = createChangedFactoryParameterSystemEvent(event, event.address, `nexus`, oldValue.toHexString());
+  const systemEvent = createChangedFactoryParameterSystemEvent(event, event.address, `nexus`, oldValue);
   systemEvent.newValue = event.params.hatcherRegistry.toHexString();
   systemEvent.save();
 }
@@ -734,7 +730,7 @@ export function handleApproveDepositor(event: ApproveDepositor): void {
   if (channel == null) {
     channel = new WithdrawalChannel(channelId);
     channel.withdrawalChannel = event.params.wc;
-    channel.factory = event.address;
+    channel.factory = externalEntityUUID(event.address, []);
     channel.total = BigInt.fromI32(0);
     channel.funded = BigInt.fromI32(0);
     channel.limit = BigInt.fromI32(0);

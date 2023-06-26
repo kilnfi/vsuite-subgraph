@@ -1,6 +1,7 @@
 import { Address, BigInt, Bytes } from '@graphprotocol/graph-ts';
 import {
   MerkleVault,
+  vFactory,
   vNFT,
   vNFTApprovals,
   vNFTIntegration,
@@ -39,7 +40,7 @@ function getInternalTokenId(vnftIntegrationAddress: Address, externalTokenId: Bi
 }
 
 export function handleSetName(event: SetName): void {
-  const vnftIntegration = vNFTIntegration.load(event.address);
+  const vnftIntegration = vNFTIntegration.load(entityUUID(event, []));
 
   vnftIntegration!.name = event.params.name;
 
@@ -49,7 +50,7 @@ export function handleSetName(event: SetName): void {
 }
 
 export function handleSetSymbol(event: SetSymbol): void {
-  const vnftIntegration = vNFTIntegration.load(event.address);
+  const vnftIntegration = vNFTIntegration.load(entityUUID(event, []));
 
   vnftIntegration!.symbol = event.params.symbol;
 
@@ -59,7 +60,7 @@ export function handleSetSymbol(event: SetSymbol): void {
 }
 
 export function handleSetExtraData(event: SetExtraData): void {
-  const vnftIntegration = vNFTIntegration.load(event.address);
+  const vnftIntegration = vNFTIntegration.load(entityUUID(event, []));
 
   vnftIntegration!.extraData = event.params.extraData;
 
@@ -69,7 +70,7 @@ export function handleSetExtraData(event: SetExtraData): void {
 }
 
 export function handleSetURIPrefix(event: SetURIPrefix): void {
-  const vnftIntegration = vNFTIntegration.load(event.address);
+  const vnftIntegration = vNFTIntegration.load(entityUUID(event, []));
 
   vnftIntegration!.uriPrefix = event.params.uriPrefix;
 
@@ -79,7 +80,7 @@ export function handleSetURIPrefix(event: SetURIPrefix): void {
 }
 
 export function handleSetPaused(event: SetPurchasePause): void {
-  const vnftIntegration = vNFTIntegration.load(event.address);
+  const vnftIntegration = vNFTIntegration.load(entityUUID(event, []));
 
   vnftIntegration!.paused = event.params.isPaused;
 
@@ -89,9 +90,9 @@ export function handleSetPaused(event: SetPurchasePause): void {
 }
 
 export function handleSetFactory(event: SetFactory): void {
-  const vnftIntegration = vNFTIntegration.load(event.address);
+  const vnftIntegration = vNFTIntegration.load(entityUUID(event, []));
 
-  vnftIntegration!.vFactory = event.params.factory;
+  vnftIntegration!.vFactory = externalEntityUUID(event.params.factory, []);
 
   vnftIntegration!.editedAt = event.block.timestamp;
   vnftIntegration!.editedAtBlock = event.block.number;
@@ -99,7 +100,7 @@ export function handleSetFactory(event: SetFactory): void {
 }
 
 export function handleSetOperatorCommission(event: SetOperatorCommission): void {
-  const vnftIntegration = vNFTIntegration.load(event.address);
+  const vnftIntegration = vNFTIntegration.load(entityUUID(event, []));
 
   vnftIntegration!.operatorCommission = event.params.operatorCommission;
 
@@ -109,7 +110,7 @@ export function handleSetOperatorCommission(event: SetOperatorCommission): void 
 }
 
 export function handleSetIntegratorCommission(event: SetIntegratorCommission): void {
-  const vnftIntegration = vNFTIntegration.load(event.address);
+  const vnftIntegration = vNFTIntegration.load(entityUUID(event, []));
 
   vnftIntegration!.integratorCommission = event.params.integratorCommission;
 
@@ -119,7 +120,7 @@ export function handleSetIntegratorCommission(event: SetIntegratorCommission): v
 }
 
 export function handleSetIntegrator(event: SetIntegrator): void {
-  const vnftIntegration = vNFTIntegration.load(event.address);
+  const vnftIntegration = vNFTIntegration.load(entityUUID(event, []));
 
   vnftIntegration!.integrator = event.params.integrator;
 
@@ -134,14 +135,15 @@ export function handlePurchasedValidator(event: PurchasedValidator): void {
   const internalTokenId = event.params.validatorId;
   const ts = event.block.timestamp;
   const blockId = event.block.number;
+  const vnftIntegration = vNFTIntegration.load(entityUUID(event, []));
 
-  const vFactoryAddres = vNFTIntegration.load(vnftIntegrationAddress)!.vFactory;
+  const vFactoryAddres = vFactory.load(vnftIntegration!.vFactory)!.address;
 
   const id = entityUUID(event, [internalTokenId.toString()]);
   const vnft = new vNFT(id);
   vnft.tokenId = tokenId;
   vnft.internalTokenId = internalTokenId;
-  vnft.integration = vnftIntegrationAddress;
+  vnft.integration = entityUUID(event, []);
   vnft.owner = event.params.owner;
   vnft.validator = externalEntityUUID(Address.fromBytes(vFactoryAddres), [internalTokenId.toString()]);
 
@@ -152,7 +154,6 @@ export function handlePurchasedValidator(event: PurchasedValidator): void {
 
   vnft.save();
 
-  const vnftIntegration = vNFTIntegration.load(vnftIntegrationAddress);
   vnftIntegration!.supply = vnftIntegration!.supply.plus(BigInt.fromI32(1));
   vnftIntegration!.editedAt = ts;
   vnftIntegration!.editedAtBlock = blockId;
@@ -241,9 +242,9 @@ export function handleSetExecLayerVault(event: SetExecLayerVault): void {
   const blockId = event.block.number;
 
   const merkleVaultAddress = event.params.execLayerVault;
-  let merkleVault = MerkleVault.load(merkleVaultAddress);
+  let merkleVault = MerkleVault.load(externalEntityUUID(merkleVaultAddress, []));
   if (!merkleVault) {
-    merkleVault = new MerkleVault(merkleVaultAddress);
+    merkleVault = new MerkleVault(externalEntityUUID(merkleVaultAddress, []));
     merkleVault.root = Bytes.empty();
     merkleVault.frameSize = BigInt.zero();
     merkleVault.ipfsHash = '';
@@ -256,8 +257,8 @@ export function handleSetExecLayerVault(event: SetExecLayerVault): void {
 
     MerkleVaultTemplate.create(merkleVaultAddress);
   }
-  const vnftIntegration = vNFTIntegration.load(event.address);
-  vnftIntegration!.execLayerVault = merkleVaultAddress;
+  const vnftIntegration = vNFTIntegration.load(entityUUID(event, []));
+  vnftIntegration!.execLayerVault = externalEntityUUID(merkleVaultAddress, []);
 
   vnftIntegration!.editedAt = ts;
   vnftIntegration!.editedAtBlock = blockId;
@@ -276,7 +277,7 @@ export function handleApprovalForAll(event: ApprovalForAll): void {
     approval.operator = event.params.operator;
     approval.createdAt = ts;
     approval.createdAtBlock = blockId;
-    approval.integration = event.address;
+    approval.integration = entityUUID(event, []);
   }
 
   approval.approval = event.params.approved;
@@ -309,7 +310,7 @@ export function handleSetSoulboundMode(event: SetSoulboundMode): void {
   const ts = event.block.timestamp;
   const blockId = event.block.number;
 
-  const vnftIntegration = vNFTIntegration.load(event.address);
+  const vnftIntegration = vNFTIntegration.load(entityUUID(event, []));
   vnftIntegration!.soulboundMode = event.params.active;
 
   vnftIntegration!.editedAt = ts;
@@ -321,7 +322,7 @@ export function handleSetAdmin(event: SetAdmin): void {
   const ts = event.block.timestamp;
   const blockId = event.block.number;
 
-  const vnftIntegration = vNFTIntegration.load(event.address);
+  const vnftIntegration = vNFTIntegration.load(entityUUID(event, []));
   vnftIntegration!.admin = event.params.admin;
 
   vnftIntegration!.editedAt = ts;
