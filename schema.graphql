@@ -890,11 +890,6 @@ interface Integration {
 # ██      ██  ██████  ███████    ██    ██ ██       ██████   ██████  ███████ ███████ 
 #                                                                                                                                                                            
 
-type IntegrationList @entity {
-  id: String!
-  erc20s: [ERC20!]!
-}
-
 type MultiPool @entity {
   id: String! # integrationAddress+poolId
 
