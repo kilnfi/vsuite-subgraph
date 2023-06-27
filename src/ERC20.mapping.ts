@@ -6,7 +6,8 @@ import {
   ERC20Deposit,
   ERC20Balance,
   ERC20Transfer,
-  ERC20Approval
+  ERC20Approval,
+  vPool
 } from '../generated/schema';
 import {
   Approval,
@@ -26,6 +27,7 @@ import {
   VPoolSharesReceived
 } from '../generated/templates/ERC20/Native20';
 import { eventUUID, txUniqueUUID, entityUUID, externalEntityUUID } from './utils/utils';
+import { CommissionSharesSold } from '../generated/templates/ERC1155/Liquid1155';
 
 export function handleSetName(event: SetName): void {
   const erc20 = ERC20.load(entityUUID(event, []));
@@ -59,17 +61,19 @@ export function handleSetDepositsPaused(event: SetDepositsPaused): void {
 }
 
 export function handlePoolAdded(event: PoolAdded): void {
-  const vPool = event.params.poolAddress;
+  const poolAddress = event.params.poolAddress;
   const poolId = event.params.id;
 
   const multiPool = new MultiPool(entityUUID(event, [poolId.toString()]));
   multiPool.number = poolId;
-  multiPool.pool = externalEntityUUID(vPool, []);
+  multiPool.pool = externalEntityUUID(poolAddress, []);
   multiPool.active = true;
   multiPool.fees = BigInt.zero();
   multiPool.integration = entityUUID(event, []);
   multiPool.poolAllocation = BigInt.zero();
-  multiPool.shares = externalEntityUUID(vPool, [event.address.toHexString()]);
+  multiPool.soldEth = BigInt.zero();
+  multiPool.shares = externalEntityUUID(poolAddress, [event.address.toHexString()]);
+  multiPool.poolDepositor = externalEntityUUID(poolAddress, [event.address.toHexString()]);
 
   multiPool.createdAt = event.block.timestamp;
   multiPool.editedAt = event.block.timestamp;
@@ -77,6 +81,30 @@ export function handlePoolAdded(event: PoolAdded): void {
   multiPool.editedAtBlock = event.block.number;
 
   multiPool.save();
+
+  const erc20 = ERC20.load(externalEntityUUID(event.address, []));
+  const pools = erc20!._poolsDerived;
+  pools.push(multiPool.id);
+  erc20!.editedAt = event.block.timestamp;
+  erc20!.editedAtBlock = event.block.number;
+  erc20!._poolsDerived = pools;
+  erc20!.save();
+
+  const pool = vPool.load(externalEntityUUID(event.params.poolAddress, []));
+
+  const multiPools = pool!.pluggedMultiPools;
+  multiPools.push(multiPool.id);
+  pool!.editedAt = event.block.timestamp;
+  pool!.editedAtBlock = event.block.number;
+  pool!.pluggedMultiPools = multiPools;
+  pool!.save();
+}
+
+export function handleCommissionSharesSold(event: CommissionSharesSold): void {
+  const erc20 = ERC20.load(externalEntityUUID(event.address, []));
+  const multiPoolId = erc20!._poolsDerived[event.params.id.toU32()];
+  const multiPool = MultiPool.load(multiPoolId);
+  multiPool!.soldEth = multiPool!.soldEth.plus(event.params.amountSold);
 }
 
 export function handleVPoolSharesReceived(event: VPoolSharesReceived): void {}

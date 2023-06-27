@@ -394,6 +394,8 @@ type vPool @entity {
   withdrawalRecipient: vWithdrawalRecipient!
   exitQueue: vExitQueue!
 
+  pluggedMultiPools: [MultiPool!]!
+
   createdAt: BigInt!
   editedAt: BigInt!
   createdAtBlock: BigInt!
@@ -503,7 +505,9 @@ type PoolDepositor @entity {
   id: String! 
   address: Bytes!
 
+  allowed: Boolean!
   pool: vPool!
+  depositedEth: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -895,8 +899,26 @@ type MultiPool @entity {
   fees: BigInt!
   shares: PoolBalance
   poolAllocation: BigInt!
+  soldEth: BigInt!
+  poolDepositor: String!
+  rewardsSnapshot: [MultiPoolRewardsSnapshot!]! @derivedFrom(field: "multiPool")
 
   integration: vPoolIntegration!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type MultiPoolRewardsSnapshot @entity {
+  id: ID!
+
+  multiPool: MultiPool!
+
+  report: Report!
+  rewards: BigInt!
+  commission: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -932,6 +954,7 @@ type ERC20 implements vPoolIntegration & Integration @entity {
 
   # vPoolIntegration
   pools: [MultiPool!]! @derivedFrom(field: "integration")
+  _poolsDerived: [MultiPool!]!
   commissions: [Commission!]! @derivedFrom(field: "vPoolIntegration")
 
   # Integration
@@ -1102,6 +1125,7 @@ type ERC1155Integration implements vPoolIntegration & Integration @entity {
 
   # vPoolIntegration
   pools: [MultiPool!]! @derivedFrom(field: "integration")
+  _poolsDerived: [MultiPool!]!
   commissions: [Commission!]! @derivedFrom(field: "vPoolIntegration")
   maxCommission: BigInt!
   

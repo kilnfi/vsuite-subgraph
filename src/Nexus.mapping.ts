@@ -118,6 +118,7 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     pool.deposited = BigInt.zero();
     pool.lastEpoch = BigInt.zero();
     pool.expectedEpoch = BigInt.zero();
+    pool.pluggedMultiPools = [];
 
     pool.oracleAggregator = Address.zero().toHexString();
     pool.coverageRecipient = Address.zero().toHexString();

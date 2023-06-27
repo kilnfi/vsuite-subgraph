@@ -23,10 +23,12 @@ import {
   PoolDepositor,
   Report,
   PoolDeposit,
-  vFactory
+  vFactory,
+  MultiPool
 } from '../generated/schema';
 import { Bytes, BigInt, Address, store } from '@graphprotocol/graph-ts';
 import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum';
+import { MultiPoolRewardsSnapshot } from '../generated/schema';
 import {
   createChangedPoolParameterSystemEvent,
   createPoolDepositSystemEvent,
@@ -34,7 +36,8 @@ import {
   createReportProcessedSystemEvent,
   entityUUID,
   eventUUID,
-  externalEntityUUID
+  externalEntityUUID,
+  txUniqueUUID
 } from './utils/utils';
 
 function getOrCreateBalance(pool: Bytes, account: Bytes, timestamp: BigInt, block: BigInt): PoolBalance {
@@ -119,12 +122,20 @@ export function handleDeposit(event: Deposit): void {
 
   pool!.save();
 
+  const depositorId = entityUUID(event, [event.params.sender.toHexString()]);
+  const depositor = PoolDepositor.load(depositorId);
+  depositor!.depositedEth = depositor!.depositedEth.plus(event.params.amount);
+  depositor!.editedAt = event.block.timestamp;
+  depositor!.editedAtBlock = event.block.number;
+  depositor!.save();
+
   const se = createPoolDepositSystemEvent(
     event,
     Address.fromBytes(vFactory.load(pool!.factory)!.address),
     event.address,
     event.params.sender
   );
+
   se.amountEth = se.amountEth.plus(event.params.amount);
   se.amountShares = se.amountShares.plus(poolDeposit.mintedShares);
   se.depositor = entityUUID(event, [event.params.sender.toHexString()]);
@@ -236,6 +247,13 @@ export function handlePurchasedValidators(event: PurchasedValidators): void {
   se.save();
 }
 
+function maxBigInt(a: BigInt, b: BigInt): BigInt {
+  if (a.gt(b)) {
+    return a;
+  }
+  return b;
+}
+
 export function handleProcessedReport(event: ProcessedReport): void {
   const pool = vPool.load(entityUUID(event, []));
 
@@ -279,6 +297,11 @@ export function handleProcessedReport(event: ProcessedReport): void {
   report.editedAtBlock = event.block.number;
   report.save();
 
+  const pool_pre_supply = pool!.totalSupply;
+  const pool_pre_underlying_supply = pool!.totalUnderlyingSupply;
+  const pool_post_supply = event.params.traces.postSupply;
+  const pool_post_underlying_supply = event.params.traces.postUnderlyingSupply;
+
   pool!.totalSupply = event.params.traces.postSupply;
   pool!.totalUnderlyingSupply = event.params.traces.postUnderlyingSupply;
   pool!.lastEpoch = event.params.epoch;
@@ -287,6 +310,70 @@ export function handleProcessedReport(event: ProcessedReport): void {
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
   pool!.save();
+
+  //
+  // pre_raw_underlying = (owned_pool_shares * pool_pre_underlying_supply) / pool_pre_supply
+  // pre_commission = max(0, ((max(0, pre_raw_underlying - deposited_eth) * integrator_fee_bps) / 10_000) - sold_eth)
+  // pre_underlying = pre_raw_underlying - pre_commission
+  //
+  // post_raw_underlying = (owned_pool_shares * pool_post_underlying_supply) / pool_post_supply
+  // post_commission = max(0, ((max(0, post_raw_underlying - deposited_eth) * integrator_fee_bps) / 10_000) - sold_eth)
+  // post_underlying = post_raw_underlying - post_commission
+  //
+  // integration_contract_report_rewards = max(0, post_underlying - pre_underlying)
+  //
+  const multipools = pool!.pluggedMultiPools;
+  for (let idx = 0; idx < multipools.length; ++idx) {
+    const multipool = MultiPool.load(multipools[idx]);
+    let rewards = BigInt.zero();
+    let commission = BigInt.zero();
+
+    if (multipool!.shares != null) {
+      const multiPoolBalance = PoolBalance.load(multipool!.shares as string);
+
+      let deposited_eth = BigInt.zero();
+      const poolDepositor = PoolDepositor.load(multipool!.poolDepositor);
+      if (poolDepositor != null) {
+        deposited_eth = poolDepositor.depositedEth;
+      }
+
+      const pre_raw_underlying = multiPoolBalance!.amount.times(pool_pre_underlying_supply).div(pool_pre_supply);
+      const pre_commission = maxBigInt(
+        BigInt.zero(),
+        maxBigInt(BigInt.zero(), pre_raw_underlying.minus(deposited_eth))
+          .times(multipool!.fees)
+          .div(BigInt.fromI32(10000))
+          .minus(multipool!.soldEth)
+      );
+      const pre_underlying = maxBigInt(BigInt.zero(), pre_raw_underlying.minus(pre_commission));
+      const post_raw_underlying = multiPoolBalance!.amount.times(pool_post_underlying_supply).div(pool_post_supply);
+      const post_commission = maxBigInt(
+        BigInt.zero(),
+        maxBigInt(BigInt.zero(), post_raw_underlying.minus(deposited_eth))
+          .times(multipool!.fees)
+          .div(BigInt.fromI32(10000))
+          .minus(multipool!.soldEth)
+      );
+      const post_underlying = maxBigInt(BigInt.zero(), post_raw_underlying.minus(post_commission));
+
+      rewards = maxBigInt(BigInt.zero(), post_underlying.minus(pre_underlying));
+      commission = maxBigInt(BigInt.zero(), post_commission.minus(pre_commission));
+    }
+
+    const multiPoolRewardsSnapshot = new MultiPoolRewardsSnapshot(
+      eventUUID(event, [multipool!.id, report.epoch.toString()])
+    );
+    multiPoolRewardsSnapshot.multiPool = multipool!.id;
+    multiPoolRewardsSnapshot.report = reportId;
+    multiPoolRewardsSnapshot.rewards = rewards;
+    multiPoolRewardsSnapshot.commission = commission;
+
+    multiPoolRewardsSnapshot.createdAt = event.block.timestamp;
+    multiPoolRewardsSnapshot.editedAt = event.block.timestamp;
+    multiPoolRewardsSnapshot.createdAtBlock = event.block.number;
+    multiPoolRewardsSnapshot.editedAtBlock = event.block.number;
+    multiPoolRewardsSnapshot.save();
+  }
 
   const systemEvent = createReportProcessedSystemEvent(
     event,
@@ -483,27 +570,23 @@ export function handleApproveDepositor(event: ApproveDepositor): void {
   let oldValue = false;
 
   if (depositor == null) {
-    if (event.params.allowed) {
-      depositor = new PoolDepositor(depositorId);
+    depositor = new PoolDepositor(depositorId);
 
-      depositor.address = event.params.depositor;
-      depositor.pool = entityUUID(event, []);
-
-      depositor.createdAt = event.block.timestamp;
-      depositor.createdAtBlock = event.block.number;
-      depositor.editedAt = event.block.timestamp;
-      depositor.editedAtBlock = event.block.number;
-      depositor.save();
-    }
+    depositor.allowed = event.params.allowed;
+    depositor.address = event.params.depositor;
+    depositor.pool = externalEntityUUID(event.address, []);
+    depositor.depositedEth = BigInt.fromI32(0);
+    depositor.createdAt = event.block.timestamp;
+    depositor.createdAtBlock = event.block.number;
+    depositor.editedAt = event.block.timestamp;
+    depositor.editedAtBlock = event.block.number;
+    depositor.save();
   } else {
     oldValue = true;
-    if (!event.params.allowed) {
-      store.remove('PoolDepositor', depositorId);
-    } else {
-      depositor.editedAt = event.block.timestamp;
-      depositor.editedAtBlock = event.block.number;
-      depositor.save();
-    }
+    depositor.allowed = event.params.allowed;
+    depositor.editedAt = event.block.timestamp;
+    depositor.editedAtBlock = event.block.number;
+    depositor.save();
   }
 
   const pool = vPool.load(entityUUID(event, []));
