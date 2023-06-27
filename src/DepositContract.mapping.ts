@@ -44,7 +44,7 @@ export function handleDepositEvent(event: DepositEvent): void {
     deposit.indexRaw = event.params.index;
   }
 
-  deposit.commonValidationKeyEntry = event.params.pubkey;
+  deposit.commonValidationKeyEntry = event.params.pubkey.toHexString();
   deposit.verified = false;
 
   deposit.createdAt = event.block.timestamp;
@@ -52,9 +52,9 @@ export function handleDepositEvent(event: DepositEvent): void {
   deposit.editedAt = event.block.timestamp;
   deposit.editedAtBlock = event.block.number;
 
-  let commonValidationKeyEntry = CommonValidationKeyEntry.load(event.params.pubkey);
+  let commonValidationKeyEntry = CommonValidationKeyEntry.load(event.params.pubkey.toHexString());
   if (commonValidationKeyEntry == null) {
-    commonValidationKeyEntry = new CommonValidationKeyEntry(event.params.pubkey);
+    commonValidationKeyEntry = new CommonValidationKeyEntry(event.params.pubkey.toHexString());
     commonValidationKeyEntry.depositEventCount = BigInt.fromI32(0);
     commonValidationKeyEntry.validationKeyCount = BigInt.fromI32(0);
     commonValidationKeyEntry.publicKey = event.params.pubkey;
@@ -90,7 +90,7 @@ export function handleDepositEvent(event: DepositEvent): void {
     } else {
       deposit.validSignature = true;
       const se = createExternalFundingSystemAlert(event, event.params.pubkey);
-      se.key = event.params.pubkey;
+      se.key = event.params.pubkey.toHexString();
       se.logIndex = event.logIndex;
       se.save();
     }
