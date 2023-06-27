@@ -1,4 +1,4 @@
-import { ERC1155Integration, ERC20, vNFT, vNFTIntegration } from '../generated/schema';
+import { ERC1155Integration, ERC20, IntegrationList, vNFT, vNFTIntegration } from '../generated/schema';
 import { ERC20 as ERC20Template, ERC1155 as ERC1155Template, vNFT as vNFTTemplate } from '../generated/templates';
 import { DeployedProxy } from '../generated/templates/ProxyFactory/ProxyFactory';
 import {
@@ -22,6 +22,8 @@ export function handleDeployedProxy(event: DeployedProxy): void {
 
   const channel = event.params.channel;
   checkChannel(channel);
+
+  const list = IntegrationList.load('integrationList');
 
   if (
     channel.equals(CHANNEL_NATIVE_20_vPOOL_BYTES32) ||
@@ -49,6 +51,9 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     integration.editedAtBlock = event.block.number;
 
     integration.save();
+    const erc20s = list!.erc20s;
+    erc20s.push(integration.id);
+    list!.erc20s = erc20s;
   } else if (
     channel.equals(CHANNEL_NATIVE_1155_vPOOL_BYTES32) ||
     channel.equals(CHANNEL_LIQUID_1155_vPOOL_vPOOL_BYTES32)
@@ -102,4 +107,6 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     vnft.save();
   }
   // else if () {}
+
+  list!.save();
 }

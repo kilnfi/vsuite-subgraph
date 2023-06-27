@@ -890,6 +890,31 @@ interface Integration {
 # ██      ██  ██████  ███████    ██    ██ ██       ██████   ██████  ███████ ███████ 
 #                                                                                                                                                                            
 
+type IntegrationList @entity {
+  id: String!
+  erc20s: [ERC20!]!
+}
+
+type ERC20BalanceSnapshot @entity {
+  id: String!
+  snapshot: ERC20Snapshot!
+  staker: Bytes!
+  sharesBalance: BigInt!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type ERC20Snapshot @entity {
+  id: String!
+  totalSupply: BigInt!
+  balances: [ERC20BalanceSnapshot!]! @derivedFrom(field: "snapshot")
+  integration: ERC20!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
 type MultiPool @entity {
   id: String! # integrationAddress+poolId
 
@@ -951,6 +976,7 @@ type ERC20 implements vPoolIntegration & Integration @entity {
   transfers: [ERC20Transfer!]! @derivedFrom(field: "integration")
   approvals: [ERC20Approval!]! @derivedFrom(field: "integration")
   maxCommission: BigInt!
+  snapshots: [ERC20Snapshot!]! @derivedFrom(field: "integration")
 
   # vPoolIntegration
   pools: [MultiPool!]! @derivedFrom(field: "integration")

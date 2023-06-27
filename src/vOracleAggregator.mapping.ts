@@ -17,7 +17,7 @@ import {
   Nexus,
   vFactory
 } from '../generated/schema';
-import { Address, BigInt, Bytes, ethereum, store } from '@graphprotocol/graph-ts';
+import { Address, BigInt, Bytes, ethereum, log, store } from '@graphprotocol/graph-ts';
 import {
   createChangedOracleAggregatorParameterSystemEvent,
   createOracleMemberVotedSystemEvent,
@@ -297,6 +297,9 @@ export function handlerGlobalMemberVoted(event: GlobalMemberVoted): void {
 
 export function handleSubmittedReport(event: SubmittedReport): void {
   const oa = vOracleAggregator.load(entityUUID(event, []));
+  const blockId = event.block.timestamp;
+  const ts = event.block.timestamp;
+
   const variantId = entityUUID(event, [event.params.variant.toHexString()]);
 
   const variant = OracleAggregatorReportVariant.load(variantId);
@@ -305,8 +308,8 @@ export function handleSubmittedReport(event: SubmittedReport): void {
   variant!.save();
 
   oa!.lastVariant = variantId;
-  oa!.editedAt = event.block.timestamp;
-  oa!.editedAtBlock = event.block.number;
+  oa!.editedAt = ts;
+  oa!.editedAtBlock = blockId;
   oa!.save();
 }
 

@@ -386,6 +386,8 @@ dataSources:
           handler: handleChannelImplementationUpdated
         - event: ProxyFactoryDeployed(indexed bytes32,address)
           handler: handleProxyFactoryDeployed
+        - event: Initialized(uint256,bytes)
+          handler: handleInitialized
       file: ./src/IntegrationRouter.mapping.ts
 
 templates:
