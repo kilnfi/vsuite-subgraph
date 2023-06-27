@@ -24,9 +24,7 @@ import {
   Report,
   PoolDeposit,
   vFactory,
-  MultiPool,
-  ERC20Snapshot,
-  ERC20BalanceSnapshot
+  MultiPool
 } from '../generated/schema';
 import { Bytes, BigInt, Address, store } from '@graphprotocol/graph-ts';
 import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum';
@@ -38,10 +36,8 @@ import {
   createReportProcessedSystemEvent,
   entityUUID,
   eventUUID,
-  externalEntityUUID,
-  txUniqueUUID
+  externalEntityUUID
 } from './utils/utils';
-import { getAllERC20Integrations } from './IntegrationRouter.mapping';
 
 function getOrCreateBalance(pool: Bytes, account: Bytes, timestamp: BigInt, block: BigInt): PoolBalance {
   const balanceId = externalEntityUUID(Address.fromBytes(pool), [account.toHexString()]);
@@ -386,37 +382,6 @@ export function handleProcessedReport(event: ProcessedReport): void {
   );
   systemEvent.report = reportId;
   systemEvent.save();
-
-  const ts = event.block.timestamp;
-  const blockId = event.block.number;
-  const integrations = getAllERC20Integrations();
-  for (let i = 0; i < integrations.length; i++) {
-    const integration = integrations[i];
-    const snapshotId = externalEntityUUID(Address.fromBytes(integration.address), [blockId.toString(), ts.toString()]);
-    const snapshot = new ERC20Snapshot(snapshotId);
-    snapshot.totalSupply = integration.totalSupply;
-    snapshot.createdAt = ts;
-    snapshot.createdAtBlock = blockId;
-    snapshot.integration = integration.id;
-    snapshot.save();
-
-    const balances = integration.balances.load();
-    for (let j = 0; j < balances.length; j++) {
-      const balance = balances[j];
-      const balanceSnapshotId = externalEntityUUID(Address.fromBytes(integration.address), [
-        balance.staker.toHexString(),
-        blockId.toString(),
-        ts.toString()
-      ]);
-      const balanceSnapshot = new ERC20BalanceSnapshot(balanceSnapshotId);
-      balanceSnapshot.snapshot = snapshotId;
-      balanceSnapshot.sharesBalance = balance.sharesBalance;
-      balanceSnapshot.staker = balance.staker;
-      balanceSnapshot.createdAt = ts;
-      balanceSnapshot.createdAtBlock = blockId;
-      balanceSnapshot.save();
-    }
-  }
 }
 
 export function handleSetContractLinks(event: SetContractLinks): void {

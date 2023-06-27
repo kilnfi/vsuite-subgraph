@@ -1,4 +1,4 @@
-import { Address, BigInt, log } from '@graphprotocol/graph-ts';
+import { Address, BigInt, ethereum, log } from '@graphprotocol/graph-ts';
 import {
   ERC20,
   MultiPool,
@@ -7,7 +7,9 @@ import {
   ERC20Balance,
   ERC20Transfer,
   ERC20Approval,
-  vPool
+  vPool,
+  ERC20BalanceSnapshot,
+  ERC20Snapshot
 } from '../generated/schema';
 import {
   Approval,
@@ -28,6 +30,36 @@ import {
 } from '../generated/templates/ERC20/Native20';
 import { eventUUID, txUniqueUUID, entityUUID, externalEntityUUID } from './utils/utils';
 import { CommissionSharesSold } from '../generated/templates/ERC1155/Liquid1155';
+
+function snapshotSupply(event: ethereum.Event): void {
+  const blockId = event.block.number;
+  const ts = event.block.timestamp;
+
+  const snapshotId = txUniqueUUID(event, [blockId.toString(), ts.toString()]);
+  const snapshot = new ERC20Snapshot(snapshotId);
+
+  const integration = ERC20.load(entityUUID(event, []));
+  snapshot.totalSupply = integration!.totalSupply;
+  snapshot.createdAt = ts;
+  snapshot.createdAtBlock = blockId;
+  snapshot.integration = entityUUID(event, []);
+  snapshot.save();
+}
+
+function snapshotBalance(event: ethereum.Event, staker: Address): void {
+  const blockId = event.block.number;
+  const ts = event.block.timestamp;
+
+  const balance = ERC20Balance.load(entityUUID(event, [staker.toHexString()]));
+  const balanceSnapshotId = txUniqueUUID(event, [staker.toHexString(), blockId.toString(), ts.toString()]);
+  const balanceSnapshot = new ERC20BalanceSnapshot(balanceSnapshotId);
+  balanceSnapshot.integration = entityUUID(event, []);
+  balanceSnapshot.staker = staker;
+  balanceSnapshot.sharesBalance = balance!.sharesBalance;
+  balanceSnapshot.createdAt = ts;
+  balanceSnapshot.createdAtBlock = blockId;
+  balanceSnapshot.save();
+}
 
 export function handleSetName(event: SetName): void {
   const erc20 = ERC20.load(entityUUID(event, []));
@@ -227,8 +259,10 @@ export function handleTransfer(event: Transfer): void {
   const balanceFromId = entityUUID(event, [from.toHexString()]);
   const balanceToId = entityUUID(event, [to.toHexString()]);
 
+  let supplyUpdated = false;
   if (Address.fromByteArray(from).equals(Address.zero())) {
     erc20!.totalSupply = erc20!.totalSupply.plus(value);
+    supplyUpdated = true;
     // const depositId = txUniqueUUID(event, [event.address.toHexString(), to.toHexString()]);
     // const deposit = ERC20Deposit.load(depositId);
     // deposit!.mintedShares = deposit!.mintedShares.plus(value);
@@ -249,9 +283,13 @@ export function handleTransfer(event: Transfer): void {
 
   if (Address.fromByteArray(to).equals(Address.zero())) {
     erc20!.totalSupply = erc20!.totalSupply.minus(value);
+    supplyUpdated = true;
   }
 
   erc20!.save();
+  if (supplyUpdated) {
+    snapshotSupply(event);
+  }
 
   const balanceFrom = ERC20Balance.load(balanceFromId);
   if (balanceFrom) {
@@ -259,6 +297,7 @@ export function handleTransfer(event: Transfer): void {
     balanceFrom.editedAt = ts;
     balanceFrom.editedAtBlock = blockId;
     balanceFrom.save();
+    snapshotBalance(event, from);
   }
 
   const balanceTo = ERC20Balance.load(balanceToId);
@@ -267,6 +306,7 @@ export function handleTransfer(event: Transfer): void {
     balanceTo.editedAt = ts;
     balanceTo.editedAtBlock = blockId;
     balanceTo.save();
+    snapshotBalance(event, to);
   }
 
   const transferId = eventUUID(event, []);
