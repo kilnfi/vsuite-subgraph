@@ -23,23 +23,21 @@ export function handlePrintedTicket(event: PrintedTicket): void {
   const exitQueue = vExitQueue.load(entityUUID(event, []));
 
   const ticketId = entityUUID(event, [event.params.id.toString()]);
-  const ticket = new Ticket(ticketId);
+  const ticket = Ticket.load(ticketId);
 
-  ticket.ticketId = event.params.id;
-  ticket.exitQueue = entityUUID(event, []);
-  ticket.owner = event.params.owner;
-  ticket.size = event.params.ticket.size;
-  ticket.position = event.params.ticket.position;
-  ticket.maxExitable = event.params.ticket.maxExitable;
-  ticket.exited = BigInt.zero();
-  ticket.exitedEth = BigInt.zero();
+  ticket!.ticketId = event.params.id;
+  ticket!.exitQueue = entityUUID(event, []);
+  ticket!.owner = event.params.owner;
+  ticket!.size = event.params.ticket.size;
+  ticket!.position = event.params.ticket.position;
+  ticket!.maxExitable = event.params.ticket.maxExitable;
+  ticket!.exited = BigInt.zero();
+  ticket!.exitedEth = BigInt.zero();
 
-  ticket.createdAt = event.block.timestamp;
-  ticket.editedAt = event.block.timestamp;
-  ticket.createdAtBlock = event.block.number;
-  ticket.editedAtBlock = event.block.number;
+  ticket!.editedAt = event.block.timestamp;
+  ticket!.editedAtBlock = event.block.number;
 
-  ticket.save();
+  ticket!.save();
 
   exitQueue!.ticketCount = exitQueue!.ticketCount.plus(BigInt.fromI32(1));
   exitQueue!.editedAt = event.block.timestamp;
@@ -79,8 +77,23 @@ export function handleTransfer(event: Transfer): void {
   const ticketId = entityUUID(event, [event.params.value.toString()]);
   if (event.params.to == Address.zero()) {
     store.remove('Ticker', ticketId);
+  } else if (event.params.from == Address.zero()) {
+    const ticket = new Ticket(ticketId);
+    ticket.ticketId = event.params.value;
+    ticket.exitQueue = entityUUID(event, []);
+    ticket.owner = Address.zero();
+    ticket.size = BigInt.zero();
+    ticket.position = BigInt.zero();
+    ticket.maxExitable = BigInt.zero();
+    ticket.exited = BigInt.zero();
+    ticket.exitedEth = BigInt.zero();
+    ticket.createdAt = event.block.timestamp;
+    ticket.editedAt = event.block.timestamp;
+    ticket.createdAtBlock = event.block.number;
+    ticket.editedAtBlock = event.block.number;
+    ticket.save();
   } else {
-    const ticket = Ticket.load(ticketId);
+    let ticket = Ticket.load(ticketId);
     ticket!.owner = event.params.to;
     ticket!.editedAt = event.block.timestamp;
     ticket!.editedAtBlock = event.block.number;
