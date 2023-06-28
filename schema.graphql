@@ -1004,12 +1004,20 @@ type ERC20Deposit @entity {
   
   staker: Bytes!
   depositAmount: BigInt!
-  # mintedShares: BigInt!
+  mintedShares: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!
   createdAtBlock: BigInt!
   editedAtBlock: BigInt!
+}
+
+type UnassignedCommissionSold @entity {
+  id: String!
+  active: Boolean!
+  amount: BigInt!
+  tx: Bytes!
+  logIndex: BigInt!
 }
 
 type ERC20Balance @entity {
@@ -1018,6 +1026,8 @@ type ERC20Balance @entity {
     
   staker: Bytes!
   sharesBalance: BigInt!
+  totalDeposited: BigInt!
+  adjustedTotalDeposited: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -1083,6 +1093,8 @@ type ERC1155Balance @entity {
     
   staker: Bytes!
   tokenBalance: BigInt!
+  totalDeposited: BigInt!
+  adjustedTotalDeposited: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!

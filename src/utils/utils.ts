@@ -19,6 +19,7 @@ import {
   PoolValidatorPurchaseSystemEvent,
   RemovedValidationKeysSystemEvent,
   ReportProcessedSystemEvent,
+  UnassignedCommissionSold,
   UpdatedLimitSystemEvent,
   ValidatorExtraDataChangedSystemEvent,
   ValidatorFeeRecipientChangedSystemEvent,
@@ -775,4 +776,17 @@ export function cancelSystemEvent(id: string, entityName: string): void {
   const g = getOrCreateG();
   g.systemLogIndex = g.systemLogIndex.minus(BigInt.fromI32(1));
   g.save();
+}
+
+export function getOrCreateUnassignedCommissionSold(): UnassignedCommissionSold {
+  let ucs = UnassignedCommissionSold.load('G');
+  if (ucs == null) {
+    ucs = new UnassignedCommissionSold('G');
+    ucs.active = false;
+    ucs.amount = BigInt.zero();
+    ucs.tx = new Bytes(0);
+    ucs.logIndex = BigInt.zero();
+    ucs.save();
+  }
+  return ucs;
 }

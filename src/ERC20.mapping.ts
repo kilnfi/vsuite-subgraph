@@ -1,4 +1,4 @@
-import { Address, BigInt, ethereum, log } from '@graphprotocol/graph-ts';
+import { Address, BigInt, Bytes, ethereum, log } from '@graphprotocol/graph-ts';
 import {
   ERC20,
   MultiPool,
@@ -9,7 +9,8 @@ import {
   ERC20Approval,
   vPool,
   ERC20BalanceSnapshot,
-  ERC20Snapshot
+  ERC20Snapshot,
+  UnassignedCommissionSold
 } from '../generated/schema';
 import {
   Approval,
@@ -28,7 +29,13 @@ import {
   Transfer,
   VPoolSharesReceived
 } from '../generated/templates/ERC20/Native20';
-import { eventUUID, txUniqueUUID, entityUUID, externalEntityUUID } from './utils/utils';
+import {
+  eventUUID,
+  txUniqueUUID,
+  entityUUID,
+  externalEntityUUID,
+  getOrCreateUnassignedCommissionSold
+} from './utils/utils';
 import { CommissionSharesSold } from '../generated/templates/ERC1155/Liquid1155';
 
 function snapshotSupply(event: ethereum.Event): void {
@@ -137,6 +144,12 @@ export function handleCommissionSharesSold(event: CommissionSharesSold): void {
   const multiPoolId = erc20!._poolsDerived[event.params.id.toU32()];
   const multiPool = MultiPool.load(multiPoolId);
   multiPool!.soldEth = multiPool!.soldEth.plus(event.params.amountSold);
+  const ucs = getOrCreateUnassignedCommissionSold();
+  ucs.amount = event.params.amountSold;
+  ucs.tx = event.transaction.hash;
+  ucs.logIndex = event.logIndex;
+  ucs.active = true;
+  ucs.save();
 }
 
 export function handleVPoolSharesReceived(event: VPoolSharesReceived): void {}
@@ -223,19 +236,19 @@ export function handleStake(event: Stake): void {
   const ts = event.block.timestamp;
   const blockId = event.block.number;
   const staker = event.params.staker;
+  const ucs = getOrCreateUnassignedCommissionSold();
 
-  const depositId = txUniqueUUID(event, [event.address.toHexString(), staker.toHexString()]);
-  let deposit = ERC20Deposit.load(depositId);
-  if (!deposit) {
-    deposit = new ERC20Deposit(depositId);
-    deposit.integration = entityUUID(event, []);
-    deposit.depositAmount = BigInt.zero();
-    // deposit.mintedShares = BigInt.zero();
-    deposit.hash = event.transaction.hash;
-    deposit.staker = staker;
-    deposit.createdAt = ts;
-    deposit.createdAtBlock = blockId;
+  const deposit = new ERC20Deposit(eventUUID(event, [event.address.toHexString(), staker.toHexString()]));
+  deposit.integration = entityUUID(event, []);
+  deposit.depositAmount = BigInt.zero();
+  if (ucs.active && ucs.tx.equals(event.transaction.hash)) {
+    deposit.depositAmount = deposit.depositAmount.plus(ucs.amount);
   }
+  deposit.mintedShares = event.params.sharesBought;
+  deposit.hash = event.transaction.hash;
+  deposit.staker = staker;
+  deposit.createdAt = ts;
+  deposit.createdAtBlock = blockId;
 
   deposit.depositAmount = deposit.depositAmount.plus(event.params.ethValue);
   erc20!.totalUnderlyingSupply = erc20!.totalUnderlyingSupply.plus(event.params.ethValue);
@@ -245,6 +258,32 @@ export function handleStake(event: Stake): void {
 
   deposit.save();
   erc20!.save();
+
+  let balance = ERC20Balance.load(entityUUID(event, [staker.toHexString()]));
+  if (balance == null) {
+    balance = new ERC20Balance(entityUUID(event, [staker.toHexString()]));
+    balance.integration = entityUUID(event, []);
+    balance.staker = staker;
+    balance.sharesBalance = BigInt.zero();
+    balance.totalDeposited = BigInt.zero();
+    balance.adjustedTotalDeposited = BigInt.zero();
+    balance.createdAt = ts;
+    balance.createdAtBlock = blockId;
+    balance.editedAt = ts;
+    balance.editedAtBlock = blockId;
+    balance.save();
+  }
+  balance.totalDeposited = balance.totalDeposited.plus(event.params.ethValue);
+  balance.adjustedTotalDeposited = balance.adjustedTotalDeposited.plus(event.params.ethValue);
+
+  if (ucs.active && ucs.tx.equals(event.transaction.hash)) {
+    balance.totalDeposited = balance.totalDeposited.plus(ucs.amount);
+    balance.adjustedTotalDeposited = balance.adjustedTotalDeposited.plus(ucs.amount);
+    ucs.active = false;
+  }
+
+  ucs.save();
+  balance.save();
 }
 
 export function handleTransfer(event: Transfer): void {
@@ -273,6 +312,8 @@ export function handleTransfer(event: Transfer): void {
       balance.integration = entityUUID(event, []);
       balance.staker = to;
       balance.sharesBalance = BigInt.zero();
+      balance.totalDeposited = BigInt.zero();
+      balance.adjustedTotalDeposited = BigInt.zero();
       balance.createdAt = ts;
       balance.createdAtBlock = blockId;
       balance.editedAt = ts;
@@ -293,15 +334,29 @@ export function handleTransfer(event: Transfer): void {
 
   const balanceFrom = ERC20Balance.load(balanceFromId);
   if (balanceFrom) {
+    const balanceBefore = balanceFrom.sharesBalance;
     balanceFrom.sharesBalance = balanceFrom.sharesBalance.minus(value);
     balanceFrom.editedAt = ts;
     balanceFrom.editedAtBlock = blockId;
+    balanceFrom.adjustedTotalDeposited = balanceFrom.adjustedTotalDeposited
+      .times(balanceFrom.sharesBalance)
+      .div(balanceBefore);
     balanceFrom.save();
     snapshotBalance(event, from);
   }
 
   const balanceTo = ERC20Balance.load(balanceToId);
   if (balanceTo) {
+    // in the case of a regular transfer (not mint), we need to adjust the total deposited values
+    if (from.notEqual(Address.zero())) {
+      const totalSupply = erc20!.totalSupply;
+      const totalUnderlyingSupply = erc20!.totalUnderlyingSupply;
+      balanceTo.totalDeposited = balanceTo.totalDeposited.plus(value.times(totalUnderlyingSupply).div(totalSupply));
+      balanceTo.adjustedTotalDeposited = balanceTo.adjustedTotalDeposited.plus(
+        value.times(totalUnderlyingSupply).div(totalSupply)
+      );
+    }
+
     balanceTo.sharesBalance = balanceTo.sharesBalance.plus(value);
     balanceTo.editedAt = ts;
     balanceTo.editedAtBlock = blockId;
