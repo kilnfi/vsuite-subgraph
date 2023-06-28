@@ -394,7 +394,74 @@ type vPool @entity {
   withdrawalRecipient: vWithdrawalRecipient!
   exitQueue: vExitQueue!
 
+  summaries: RewardSummaries!
+
   pluggedMultiPools: [MultiPool!]!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+interface RewardEntry {
+  id: String!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vPoolRewardEntry implements RewardEntry @entity {
+  id: String!
+
+  reward: BigInt!
+  report: Report!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type IntegrationRewardEntry implements RewardEntry @entity {
+  id: String!
+
+  reward: BigInt!
+  report: Report!
+  balance: BigInt!
+  totalSupply: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type RewardSummary @entity {
+  id: String!
+
+  name: String!
+  period: BigInt!
+  totalRewards: BigInt!
+  entries: [RewardEntry!]!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type RewardSummaries @entity {
+  id: String!
+
+  allTime: RewardSummary!
+  oneYear: RewardSummary!
+  sixMonths: RewardSummary!
+  threeMonths: RewardSummary!
+  oneMonth: RewardSummary!
+  oneWeek: RewardSummary!
 
   createdAt: BigInt!
   editedAt: BigInt!
