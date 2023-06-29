@@ -28,7 +28,7 @@ import {
   SetAdmin,
   CommissionSharesSold
 } from '../generated/templates/ERC1155/Liquid1155';
-import { eventUUID, entityUUID, externalEntityUUID } from './utils/utils';
+import { eventUUID, entityUUID, externalEntityUUID, getOrCreateUnassignedCommissionSold } from './utils/utils';
 
 export function handleSetName(event: SetName): void {
   const erc1155 = ERC1155Integration.load(entityUUID(event, []));
@@ -77,6 +77,12 @@ export function handleCommissionSharesSold(event: CommissionSharesSold): void {
   const multiPoolId = erc1155!._poolsDerived[event.params.id.toU32()];
   const multiPool = MultiPool.load(multiPoolId);
   multiPool!.soldEth = multiPool!.soldEth.plus(event.params.amountSold);
+  const ucs = getOrCreateUnassignedCommissionSold();
+  ucs.amount = event.params.amountSold;
+  ucs.tx = event.transaction.hash;
+  ucs.logIndex = event.logIndex;
+  ucs.active = true;
+  ucs.save();
 }
 
 export function handlePoolAdded(event: PoolAdded): void {
@@ -226,6 +232,33 @@ export function handleStake(event: Stake): void {
   deposit.save();
   erc1155!.save();
   erc1155Integration!.save();
+
+  let balance = ERC1155Balance.load(entityUUID(event, [staker.toHexString()]));
+  if (balance == null) {
+    balance = new ERC1155Balance(entityUUID(event, [staker.toHexString()]));
+    balance.token = entityUUID(event, [tokenId.toString()]);
+    balance.staker = staker;
+    balance.tokenBalance = BigInt.zero();
+    balance.totalDeposited = BigInt.zero();
+    balance.adjustedTotalDeposited = BigInt.zero();
+    balance.createdAt = ts;
+    balance.createdAtBlock = blockId;
+    balance.editedAt = ts;
+    balance.editedAtBlock = blockId;
+    balance.save();
+  }
+  balance.totalDeposited = balance.totalDeposited.plus(event.params.ethValue);
+  balance.adjustedTotalDeposited = balance.adjustedTotalDeposited.plus(event.params.ethValue);
+
+  const ucs = getOrCreateUnassignedCommissionSold();
+  if (ucs.active && ucs.tx == event.transaction.hash) {
+    balance.totalDeposited = balance.totalDeposited.plus(ucs.amount);
+    balance.adjustedTotalDeposited = balance.adjustedTotalDeposited.plus(ucs.amount);
+    ucs.active = false;
+    ucs.save();
+  }
+
+  balance.save();
 }
 
 function _transfer(
@@ -250,6 +283,8 @@ function _transfer(
       balanceTo.token = erc1155!.id;
       balanceTo.staker = to;
       balanceTo.tokenBalance = BigInt.zero();
+      balanceTo.totalDeposited = BigInt.zero();
+      balanceTo.adjustedTotalDeposited = BigInt.zero();
       balanceTo.createdAt = ts;
       balanceTo.createdAtBlock = blockId;
       balanceTo.editedAt = ts;
@@ -265,13 +300,27 @@ function _transfer(
   const balanceFrom = ERC1155Balance.load(balanceFromId);
   const balanceTo = ERC1155Balance.load(balanceToId);
   if (balanceFrom) {
+    const balanceBefore = balanceFrom.tokenBalance;
     balanceFrom.tokenBalance = balanceFrom.tokenBalance.minus(amount);
     balanceFrom.editedAt = ts;
     balanceFrom.editedAtBlock = blockId;
+    balanceFrom.adjustedTotalDeposited = balanceFrom.adjustedTotalDeposited
+      .times(balanceFrom.tokenBalance)
+      .div(balanceBefore);
     balanceFrom.save();
   }
 
   if (balanceTo) {
+    // in the case of a regular transfer (not mint), we need to adjust the total deposited values
+    if (from.notEqual(Address.zero())) {
+      const totalSupply = erc1155!.totalSupply;
+      const totalUnderlyingSupply = erc1155!.totalUnderlyingSupply;
+      balanceTo.totalDeposited = balanceTo.totalDeposited.plus(amount.times(totalUnderlyingSupply).div(totalSupply));
+      balanceTo.adjustedTotalDeposited = balanceTo.adjustedTotalDeposited.plus(
+        amount.times(totalUnderlyingSupply).div(totalSupply)
+      );
+    }
+
     balanceTo.tokenBalance = balanceTo.tokenBalance.plus(amount);
     balanceTo.editedAt = ts;
     balanceTo.editedAtBlock = blockId;
