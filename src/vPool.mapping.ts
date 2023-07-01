@@ -24,12 +24,16 @@ import {
   Report,
   PoolDeposit,
   vFactory,
-  MultiPool
+  MultiPool,
+  ERC20,
+  ERC1155,
+  vExitQueue
 } from '../generated/schema';
 import { Bytes, BigInt, Address, store } from '@graphprotocol/graph-ts';
 import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum';
 import { MultiPoolRewardsSnapshot } from '../generated/schema';
 import {
+  _computeStakedEthValue,
   createChangedPoolParameterSystemEvent,
   createPoolDepositSystemEvent,
   createPoolValidatorPurchaseSystemEvent,
@@ -38,8 +42,9 @@ import {
   eventUUID,
   externalEntityUUID
 } from './utils/utils';
+import { _recomputeERC20TotalUnderlyingSupply } from './ERC20.mapping';
 
-function getOrCreateBalance(pool: Bytes, account: Bytes, timestamp: BigInt, block: BigInt): PoolBalance {
+export function getOrCreateBalance(pool: Bytes, account: Bytes, timestamp: BigInt, block: BigInt): PoolBalance {
   const balanceId = externalEntityUUID(Address.fromBytes(pool), [account.toHexString()]);
 
   let balance = PoolBalance.load(balanceId);
@@ -185,6 +190,39 @@ export function handleTransfer(event: Transfer): void {
 
   const toBalance = getOrCreateBalance(event.address, event.params.to, event.block.timestamp, event.block.number);
 
+  const exitQueue = vExitQueue.load(externalEntityUUID(event.params.to, []));
+  const erc20Integration = ERC20.load(externalEntityUUID(event.params.from, []));
+  const erc1155Integration = ERC1155.load(externalEntityUUID(event.params.from, []));
+
+  if (
+    (exitQueue != null && exitQueue.id == pool!.exitQueue && erc20Integration != null) ||
+    erc1155Integration != null
+  ) {
+    const stakedValueBefore = _computeStakedEthValue(
+      fromBalance.amount,
+      pool!.totalSupply,
+      pool!.totalUnderlyingSupply
+    );
+    const stakedValueAfter = _computeStakedEthValue(
+      fromBalance.amount.minus(event.params.value),
+      pool!.totalSupply,
+      pool!.totalUnderlyingSupply
+    );
+    let poolId = 0;
+    let multiPool = MultiPool.load(externalEntityUUID(event.params.from, [BigInt.fromI32(poolId).toString()]));
+    while (multiPool != null && multiPool.pool != pool!.id) {
+      ++poolId;
+      multiPool = MultiPool.load(externalEntityUUID(event.params.from, [BigInt.fromI32(poolId).toString()]));
+    }
+    if (multiPool == null) {
+      throw new Error('cannot find multipool instance linked to pool');
+    }
+    multiPool.exitedEth = multiPool.exitedEth.plus(stakedValueBefore.minus(stakedValueAfter));
+    multiPool.editedAt = event.block.timestamp;
+    multiPool.editedAtBlock = event.block.number;
+    multiPool.save();
+  }
+
   fromBalance.amount = fromBalance.amount.minus(event.params.value);
   toBalance.amount = toBalance.amount.plus(event.params.value);
 
@@ -194,6 +232,15 @@ export function handleTransfer(event: Transfer): void {
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
   pool!.save();
+
+  if (exitQueue != null && exitQueue.id == pool!.exitQueue) {
+    if (erc20Integration != null) {
+      erc20Integration.totalUnderlyingSupply = _recomputeERC20TotalUnderlyingSupply(
+        Address.fromBytes(erc20Integration.address)
+      );
+      erc20Integration.save();
+    }
+  }
 }
 
 export function handlePurchasedValidators(event: PurchasedValidators): void {
@@ -372,6 +419,12 @@ export function handleProcessedReport(event: ProcessedReport): void {
     multiPoolRewardsSnapshot.createdAtBlock = event.block.number;
     multiPoolRewardsSnapshot.editedAtBlock = event.block.number;
     multiPoolRewardsSnapshot.save();
+
+    const erc20 = ERC20.load(multipool!.integration);
+    if (erc20 != null) {
+      erc20.totalUnderlyingSupply = _recomputeERC20TotalUnderlyingSupply(Address.fromBytes(erc20.address));
+      erc20.save();
+    }
   }
 
   const systemEvent = createReportProcessedSystemEvent(

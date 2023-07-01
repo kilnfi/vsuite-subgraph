@@ -22,9 +22,14 @@ import { Address, BigInt, store } from '@graphprotocol/graph-ts';
 export function handlePrintedTicket(event: PrintedTicket): void {
   const exitQueue = vExitQueue.load(entityUUID(event, []));
 
-  const ticketId = entityUUID(event, [event.params.id.toString()]);
+  const ticketId = entityUUID(event, [idToIdx(event.params.id).toString()]);
   const ticket = Ticket.load(ticketId);
 
+  if (exitQueue!.lastTicket != null) {
+    ticket!.index = Ticket.load(exitQueue!.lastTicket!)!.index.plus(BigInt.fromI32(1));
+  } else {
+    ticket!.index = BigInt.fromI32(0);
+  }
   ticket!.ticketId = event.params.id;
   ticket!.exitQueue = entityUUID(event, []);
   ticket!.owner = event.params.owner;
@@ -39,6 +44,10 @@ export function handlePrintedTicket(event: PrintedTicket): void {
 
   ticket!.save();
 
+  exitQueue!.lastTicket = ticketId;
+  const unfulfilledTickets = exitQueue!.unfulfilledTickets;
+  unfulfilledTickets.push(ticketId);
+  exitQueue!.unfulfilledTickets = unfulfilledTickets;
   exitQueue!.ticketCount = exitQueue!.ticketCount.plus(BigInt.fromI32(1));
   exitQueue!.editedAt = event.block.timestamp;
   exitQueue!.editedAtBlock = event.block.number;
@@ -62,37 +71,42 @@ export function handlePrintedTicket(event: PrintedTicket): void {
 }
 
 export function handleTicketIdUpdated(event: TicketIdUpdated): void {
-  event.params.oldTicketId;
-  const oldTicketId = entityUUID(event, [event.params.oldTicketId.toString()]);
-  const ticket = Ticket.load(oldTicketId);
-  const newTicketId = entityUUID(event, [event.params.newTicketId.toString()]);
-  ticket!.id = newTicketId;
+  const ticketId = entityUUID(event, [idToIdx(event.params.oldTicketId).toString()]);
+  const ticket = Ticket.load(ticketId);
+  ticket!.ticketId = event.params.newTicketId;
   ticket!.editedAt = event.block.timestamp;
   ticket!.editedAtBlock = event.block.number;
   ticket!.save();
-  store.remove('Ticket', oldTicketId);
+}
+
+function idToIdx(id: BigInt): BigInt {
+  return id.rightShift(128);
 }
 
 export function handleTransfer(event: Transfer): void {
-  const ticketId = entityUUID(event, [event.params.value.toString()]);
-  if (event.params.to == Address.zero()) {
-    store.remove('Ticker', ticketId);
-  } else if (event.params.from == Address.zero()) {
-    const ticket = new Ticket(ticketId);
-    ticket.ticketId = event.params.value;
-    ticket.exitQueue = entityUUID(event, []);
-    ticket.owner = Address.zero();
-    ticket.size = BigInt.zero();
-    ticket.position = BigInt.zero();
-    ticket.maxExitable = BigInt.zero();
-    ticket.exited = BigInt.zero();
-    ticket.exitedEth = BigInt.zero();
-    ticket.createdAt = event.block.timestamp;
+  const ticketId = entityUUID(event, [idToIdx(event.params.value).toString()]);
+  if (event.params.from == Address.zero()) {
+    let ticket = Ticket.load(ticketId);
+    if (ticket == null) {
+      ticket = new Ticket(ticketId);
+      ticket.index = BigInt.zero();
+      ticket.ticketId = event.params.value;
+      ticket.exitQueue = entityUUID(event, []);
+      ticket.size = BigInt.zero();
+      ticket.position = BigInt.zero();
+      ticket.maxExitable = BigInt.zero();
+      ticket.fulfillableBy = [];
+      ticket.fulfillableAmount = BigInt.zero();
+      ticket.exited = BigInt.zero();
+      ticket.exitedEth = BigInt.zero();
+      ticket.createdAt = event.block.timestamp;
+      ticket.createdAtBlock = event.block.number;
+    }
     ticket.editedAt = event.block.timestamp;
-    ticket.createdAtBlock = event.block.number;
     ticket.editedAtBlock = event.block.number;
+    ticket.owner = event.params.to;
     ticket.save();
-  } else {
+  } else if (event.params.to != Address.zero()) {
     let ticket = Ticket.load(ticketId);
     ticket!.owner = event.params.to;
     ticket!.editedAt = event.block.timestamp;
@@ -101,12 +115,24 @@ export function handleTransfer(event: Transfer): void {
   }
 }
 
+function minBI(a: BigInt, b: BigInt): BigInt {
+  if (a.lt(b)) {
+    return a;
+  }
+  return b;
+}
+
 export function handleReceivedCask(event: ReceivedCask): void {
   const exitQueue = vExitQueue.load(entityUUID(event, []));
 
   const caskId = entityUUID(event, [event.params.id.toString()]);
   const cask = new Cask(caskId);
 
+  if (exitQueue!.lastCask != null) {
+    cask.index = Cask.load(exitQueue!.lastCask!)!.index.plus(BigInt.fromI32(1));
+  } else {
+    cask.index = BigInt.fromI32(0);
+  }
   cask.caskId = event.params.id;
   cask.exitQueue = entityUUID(event, []);
   cask.size = event.params.cask.size;
@@ -123,10 +149,36 @@ export function handleReceivedCask(event: ReceivedCask): void {
 
   cask.save();
 
-  exitQueue!.ticketCount = exitQueue!.ticketCount.plus(BigInt.fromI32(1));
+  exitQueue!.lastCask = caskId;
+  exitQueue!.caskCount = exitQueue!.caskCount.plus(BigInt.fromI32(1));
   exitQueue!.editedAt = event.block.timestamp;
   exitQueue!.editedAtBlock = event.block.number;
 
+  const unfullfilledTickets = exitQueue!.unfulfilledTickets;
+  let removeCount = 0;
+  let shouldBreak = false;
+  for (let i = 0; i < unfullfilledTickets.length; i++) {
+    const ticket = Ticket.load(unfullfilledTickets[i]) as Ticket;
+    if (ticket.position.ge(cask.position) && ticket.position.lt(cask.position.plus(cask.size))) {
+      if (ticket.position.plus(ticket.size).le(cask.position.plus(cask.size))) {
+        ++removeCount;
+      } else {
+        shouldBreak = true;
+      }
+      const fulfillableBy = ticket.fulfillableBy;
+      fulfillableBy.push(caskId);
+      ticket.fulfillableBy = fulfillableBy;
+      ticket.fulfillableAmount = ticket.fulfillableAmount.plus(
+        minBI(cask.position.plus(cask.size).minus(ticket.position), cask.size)
+      );
+      ticket.save();
+    }
+    if (shouldBreak) {
+      break;
+    }
+  }
+
+  exitQueue!.unfulfilledTickets = unfullfilledTickets.slice(removeCount);
   exitQueue!.save();
   const pool = vPool.load(exitQueue!.pool);
 
@@ -162,9 +214,18 @@ export function handleFilledTicket(event: FilledTicket): void {
 
   exitQueue!.save();
 
-  const ticketId = entityUUID(event, [event.params.ticketId.toString()]);
+  const ticketId = entityUUID(event, [idToIdx(event.params.ticketId).toString()]);
+  const caskId = entityUUID(event, [event.params.caskId.toString()]);
+
   const ticket = Ticket.load(ticketId);
 
+  if (ticket!.fulfillableBy.length == 0 || ticket!.fulfillableBy[0] != caskId) {
+    throw new Error('Ticket filled but had not fulfillable casks');
+  }
+
+  const fulfillableBy = ticket!.fulfillableBy.slice(1);
+  ticket!.fulfillableBy = fulfillableBy;
+  ticket!.fulfillableAmount = ticket!.fulfillableAmount.minus(event.params.amountFilled);
   ticket!.size = ticket!.size.minus(event.params.amountFilled);
   ticket!.maxExitable = ticket!.maxExitable.minus(event.params.amountEthFilled);
   ticket!.position = ticket!.position.plus(event.params.amountFilled);
@@ -174,9 +235,12 @@ export function handleFilledTicket(event: FilledTicket): void {
   ticket!.editedAt = event.block.timestamp;
   ticket!.editedAtBlock = event.block.number;
 
-  ticket!.save();
+  if (ticket!.size.equals(BigInt.zero())) {
+    store.remove('Ticket', ticketId);
+  } else {
+    ticket!.save();
+  }
 
-  const caskId = entityUUID(event, [event.params.caskId.toString()]);
   const cask = Cask.load(caskId);
 
   cask!.provided = cask!.provided.plus(event.params.amountFilled);

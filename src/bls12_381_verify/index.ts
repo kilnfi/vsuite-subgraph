@@ -945,7 +945,7 @@ class PointG1 {
         error: isOnCurve.error
       };
     }
-    if (!isOnCurve.value!) {
+    if (!isOnCurve.value) {
       return {
         value: null,
         error: 'Invalid G1 point: not on curve Fp'
@@ -959,7 +959,7 @@ class PointG1 {
       };
     }
 
-    if (!isTorsionFree.value!) {
+    if (!isTorsionFree.value) {
       return {
         value: null,
         error: 'Invalid G1 point: must be of prime-order subgroup'
@@ -1632,7 +1632,7 @@ class PointG2 {
         error: torsionFree_res.error
       };
     }
-    if (!torsionFree_res.value!) {
+    if (!torsionFree_res.value) {
       return {
         value: null,
         error: 'Invalid G2 point: must be of prime-order subgroup'
@@ -2294,7 +2294,7 @@ function map_to_curve_simple_swu_9mod16(t: Fp2): FP2ArrayorError {
   const success_sqrtCandidateOrGamma = sqrt_div_fp2(u, v);
   const success = success_sqrtCandidateOrGamma.success;
   const sqrtCandidateOrGamma = success_sqrtCandidateOrGamma.sqrtCandidateOrGamma;
-  let y: Fp2;
+  let y: Fp2 | null = null;
   if (success) y = sqrtCandidateOrGamma;
   // Handle case where (u / v) is not square
   // sqrt_candidate(x1) = sqrt_candidate(x0) * t³
@@ -2319,7 +2319,7 @@ function map_to_curve_simple_swu_9mod16(t: Fp2): FP2ArrayorError {
     };
   }
   if (success2) numerator = numerator.multiply(iso_3_z_t2);
-  y = y! as Fp2;
+  y = y as Fp2;
   if (sgn0_fp2(t).notEqual(sgn0_fp2(y))) y = y.negate();
   const div_res = numerator.div(denominator);
   if (div_res.error !== null) {

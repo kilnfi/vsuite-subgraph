@@ -10,7 +10,8 @@ import {
   vPool,
   ERC20BalanceSnapshot,
   ERC20Snapshot,
-  UnassignedCommissionSold
+  UnassignedCommissionSold,
+  PoolBalance
 } from '../generated/schema';
 import {
   Approval,
@@ -34,9 +35,12 @@ import {
   txUniqueUUID,
   entityUUID,
   externalEntityUUID,
-  getOrCreateUnassignedCommissionSold
+  getOrCreateUnassignedCommissionSold,
+  _computeEthAfterCommission,
+  _computeIntegratorCommissionEarned
 } from './utils/utils';
 import { CommissionSharesSold } from '../generated/templates/ERC1155/Liquid1155';
+import { getOrCreateBalance } from './vPool.mapping';
 
 function snapshotSupply(event: ethereum.Event): void {
   const blockId = event.block.number;
@@ -111,7 +115,20 @@ export function handlePoolAdded(event: PoolAdded): void {
   multiPool.integration = entityUUID(event, []);
   multiPool.poolAllocation = BigInt.zero();
   multiPool.soldEth = BigInt.zero();
-  multiPool.shares = externalEntityUUID(poolAddress, [event.address.toHexString()]);
+  multiPool.commissionPaid = BigInt.zero();
+  multiPool.injectedEth = BigInt.zero();
+  multiPool.exitedEth = BigInt.zero();
+  const poolBalance = getOrCreateBalance(
+    event.params.poolAddress,
+    event.address,
+    event.block.timestamp,
+    event.block.number
+  );
+  poolBalance.editedAt = event.block.timestamp;
+  poolBalance.editedAtBlock = event.block.number;
+  multiPool.shares = poolBalance.id;
+  poolBalance.save();
+
   multiPool.poolDepositor = externalEntityUUID(poolAddress, [event.address.toHexString()]);
 
   multiPool.createdAt = event.block.timestamp;
@@ -144,12 +161,41 @@ export function handleCommissionSharesSold(event: CommissionSharesSold): void {
   const multiPoolId = erc20!._poolsDerived[event.params.id.toU32()];
   const multiPool = MultiPool.load(multiPoolId);
   multiPool!.soldEth = multiPool!.soldEth.plus(event.params.amountSold);
+  multiPool!.commissionPaid = multiPool!.commissionPaid.plus(event.params.amountSold);
+  multiPool!.save();
   const ucs = getOrCreateUnassignedCommissionSold();
   ucs.amount = event.params.amountSold;
   ucs.tx = event.transaction.hash;
   ucs.logIndex = event.logIndex;
   ucs.active = true;
   ucs.save();
+
+  erc20!.totalUnderlyingSupply = _recomputeERC20TotalUnderlyingSupply(Address.fromBytes(erc20!.address));
+  erc20!.save();
+}
+
+export function _recomputeERC20TotalUnderlyingSupply(erc20Address: Address): BigInt {
+  let idx = 0;
+  let multipool = MultiPool.load(externalEntityUUID(erc20Address, [idx.toString()]));
+  let totalUnderlyingSupply = BigInt.zero();
+  while (multipool != null) {
+    const pool = vPool.load(multipool.pool);
+    const poolBalance = PoolBalance.load(multipool.shares);
+    totalUnderlyingSupply = totalUnderlyingSupply.plus(
+      _computeEthAfterCommission(
+        poolBalance!.amount,
+        pool!.totalSupply,
+        pool!.totalUnderlyingSupply,
+        multipool.injectedEth,
+        multipool.exitedEth,
+        multipool.fees,
+        multipool.commissionPaid
+      )
+    );
+    ++idx;
+    multipool = MultiPool.load(externalEntityUUID(erc20Address, [idx.toString()]));
+  }
+  return totalUnderlyingSupply;
 }
 
 export function handleVPoolSharesReceived(event: VPoolSharesReceived): void {}
@@ -157,6 +203,31 @@ export function handleVPoolSharesReceived(event: VPoolSharesReceived): void {}
 export function handleSetFee(event: SetFee): void {
   const poolId = event.params.poolId;
   const multiPool = MultiPool.load(entityUUID(event, [poolId.toString()]));
+  const pool = vPool.load(multiPool!.pool);
+
+  if (multiPool != null) {
+    const poolBalance = PoolBalance.load(multiPool.shares);
+    if (poolBalance!.amount.gt(BigInt.zero())) {
+      const earnedBeforeFeeUpdate = _computeIntegratorCommissionEarned(
+        poolBalance!.amount,
+        pool!.totalSupply,
+        pool!.totalUnderlyingSupply,
+        multiPool.injectedEth,
+        multiPool.exitedEth,
+        multiPool.fees
+      );
+      const earnedAfterFeeUpdate = _computeIntegratorCommissionEarned(
+        poolBalance!.amount,
+        pool!.totalSupply,
+        pool!.totalUnderlyingSupply,
+        multiPool.injectedEth,
+        multiPool.exitedEth,
+        event.params.operatorFeeBps
+      );
+      const paidAndEarnedAfterFeeUpdate = multiPool.commissionPaid.plus(earnedAfterFeeUpdate);
+      multiPool.commissionPaid = paidAndEarnedAfterFeeUpdate.minus(earnedBeforeFeeUpdate);
+    }
+  }
 
   multiPool!.fees = event.params.operatorFeeBps;
 
@@ -282,8 +353,18 @@ export function handleStake(event: Stake): void {
     ucs.active = false;
   }
 
+  const poolId = event.params.id;
+  const multiPool = MultiPool.load(entityUUID(event, [poolId.toString()]));
+  multiPool!.injectedEth = multiPool!.injectedEth.plus(event.params.ethValue);
+  multiPool!.editedAt = ts;
+  multiPool!.editedAtBlock = blockId;
+  multiPool!.save();
+
   ucs.save();
   balance.save();
+
+  erc20!.totalUnderlyingSupply = _recomputeERC20TotalUnderlyingSupply(Address.fromBytes(erc20!.address));
+  erc20!.save();
 }
 
 export function handleTransfer(event: Transfer): void {
@@ -322,16 +403,6 @@ export function handleTransfer(event: Transfer): void {
     }
   }
 
-  if (Address.fromByteArray(to).equals(Address.zero())) {
-    erc20!.totalSupply = erc20!.totalSupply.minus(value);
-    supplyUpdated = true;
-  }
-
-  erc20!.save();
-  if (supplyUpdated) {
-    snapshotSupply(event);
-  }
-
   const balanceFrom = ERC20Balance.load(balanceFromId);
   if (balanceFrom) {
     const balanceBefore = balanceFrom.sharesBalance;
@@ -362,6 +433,16 @@ export function handleTransfer(event: Transfer): void {
     balanceTo.editedAtBlock = blockId;
     balanceTo.save();
     snapshotBalance(event, to);
+  }
+
+  if (Address.fromByteArray(to).equals(Address.zero())) {
+    erc20!.totalSupply = erc20!.totalSupply.minus(value);
+    supplyUpdated = true;
+  }
+
+  erc20!.save();
+  if (supplyUpdated) {
+    snapshotSupply(event);
   }
 
   const transferId = eventUUID(event, []);
