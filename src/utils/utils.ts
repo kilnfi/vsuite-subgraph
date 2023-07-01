@@ -790,3 +790,72 @@ export function getOrCreateUnassignedCommissionSold(): UnassignedCommissionSold 
   }
   return ucs;
 }
+
+export function _computeStakedEthValue(
+  ownedPoolShares: BigInt,
+  poolTotalSupply: BigInt,
+  poolTotalUnderlyingSupply: BigInt
+): BigInt {
+  return ownedPoolShares.times(poolTotalUnderlyingSupply).div(poolTotalSupply);
+}
+
+export function _computeIntegratorCommissionEarned(
+  ownedPoolShares: BigInt,
+  poolTotalSupply: BigInt,
+  poolTotalUnderlyingSupply: BigInt,
+  injectedEth: BigInt,
+  exitedEth: BigInt,
+  fee: BigInt
+): BigInt {
+  const staked = _computeStakedEthValue(ownedPoolShares, poolTotalSupply, poolTotalUnderlyingSupply);
+  if (injectedEth.ge(staked.plus(exitedEth))) {
+    return BigInt.zero();
+  }
+  const rewardsEarned = staked.plus(exitedEth).minus(injectedEth);
+  return rewardsEarned.times(fee).div(BigInt.fromI32(10000));
+}
+
+export function _computeIntegratorCommissionOwed(
+  ownedPoolShares: BigInt,
+  poolTotalSupply: BigInt,
+  poolTotalUnderlyingSupply: BigInt,
+  injectedEth: BigInt,
+  exitedEth: BigInt,
+  fee: BigInt,
+  commissionPaid: BigInt
+): BigInt {
+  const earned = _computeIntegratorCommissionEarned(
+    ownedPoolShares,
+    poolTotalSupply,
+    poolTotalUnderlyingSupply,
+    injectedEth,
+    exitedEth,
+    fee
+  );
+  if (earned.gt(commissionPaid)) {
+    return earned.minus(commissionPaid);
+  }
+  return BigInt.zero();
+}
+
+export function _computeEthAfterCommission(
+  ownedPoolShares: BigInt,
+  poolTotalSupply: BigInt,
+  poolTotalUnderlyingSupply: BigInt,
+  injectedEth: BigInt,
+  exitedEth: BigInt,
+  fee: BigInt,
+  commissionPaid: BigInt
+): BigInt {
+  return _computeStakedEthValue(ownedPoolShares, poolTotalSupply, poolTotalUnderlyingSupply).minus(
+    _computeIntegratorCommissionOwed(
+      ownedPoolShares,
+      poolTotalSupply,
+      poolTotalUnderlyingSupply,
+      injectedEth,
+      exitedEth,
+      fee,
+      commissionPaid
+    )
+  );
+}

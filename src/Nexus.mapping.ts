@@ -150,6 +150,7 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     eq.editedAt = event.block.timestamp;
     eq.createdAtBlock = event.block.number;
     eq.editedAtBlock = event.block.number;
+    eq.unfulfilledTickets = [];
     eq.ticketCount = BigInt.zero();
     eq.caskCount = BigInt.zero();
     eq.unclaimedFunds = BigInt.zero();

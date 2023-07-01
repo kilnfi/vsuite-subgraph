@@ -28,7 +28,14 @@ import {
   SetAdmin,
   CommissionSharesSold
 } from '../generated/templates/ERC1155/Liquid1155';
-import { eventUUID, entityUUID, externalEntityUUID, getOrCreateUnassignedCommissionSold } from './utils/utils';
+import {
+  eventUUID,
+  entityUUID,
+  externalEntityUUID,
+  getOrCreateUnassignedCommissionSold,
+  _computeIntegratorCommissionOwed
+} from './utils/utils';
+import { getOrCreateBalance } from './vPool.mapping';
 
 export function handleSetName(event: SetName): void {
   const erc1155 = ERC1155Integration.load(entityUUID(event, []));
@@ -77,6 +84,7 @@ export function handleCommissionSharesSold(event: CommissionSharesSold): void {
   const multiPoolId = erc1155!._poolsDerived[event.params.id.toU32()];
   const multiPool = MultiPool.load(multiPoolId);
   multiPool!.soldEth = multiPool!.soldEth.plus(event.params.amountSold);
+  multiPool!.commissionPaid = multiPool!.commissionPaid.plus(event.params.amountSold);
   const ucs = getOrCreateUnassignedCommissionSold();
   ucs.amount = event.params.amountSold;
   ucs.tx = event.transaction.hash;
@@ -98,10 +106,22 @@ export function handlePoolAdded(event: PoolAdded): void {
   multiPool.pool = externalEntityUUID(vPool, []);
   multiPool.active = true;
   multiPool.fees = BigInt.zero();
+  multiPool.commissionPaid = BigInt.zero();
+  multiPool.injectedEth = BigInt.zero();
+  multiPool.exitedEth = BigInt.zero();
   multiPool.integration = entityUUID(event, []);
   multiPool.poolAllocation = BigInt.zero();
   multiPool.soldEth = BigInt.zero();
-  multiPool.shares = externalEntityUUID(vPool, [event.address.toHexString()]);
+  const poolBalance = getOrCreateBalance(
+    event.params.poolAddress,
+    event.address,
+    event.block.timestamp,
+    event.block.number
+  );
+  poolBalance.editedAt = ts;
+  poolBalance.editedAtBlock = blockId;
+  multiPool.shares = poolBalance.id;
+  poolBalance.save();
 
   multiPool.createdAt = ts;
   multiPool.editedAt = ts;
@@ -257,6 +277,13 @@ export function handleStake(event: Stake): void {
     ucs.active = false;
     ucs.save();
   }
+
+  const poolId = event.params.id;
+  const multiPool = MultiPool.load(entityUUID(event, [poolId.toString()]));
+  multiPool!.injectedEth = multiPool!.injectedEth.plus(event.params.ethValue);
+  multiPool!.editedAt = ts;
+  multiPool!.editedAtBlock = blockId;
+  multiPool!.save();
 
   balance.save();
 }

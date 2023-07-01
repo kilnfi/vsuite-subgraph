@@ -531,8 +531,11 @@ type vExitQueue @entity {
   pool: vPool!
   tickets: [Ticket!]! @derivedFrom(field: "exitQueue")
   ticketCount: BigInt!
+  lastTicket: Ticket
+  unfulfilledTickets: [Ticket!]!
   casks: [Cask!]! @derivedFrom(field: "exitQueue")
   caskCount: BigInt!
+  lastCask: Cask
   payments: [Payment!]! @derivedFrom(field: "exitQueue")
   unclaimedFunds: BigInt!
 
@@ -573,6 +576,7 @@ type FillTrace @entity {
 
 type Ticket @entity {
   id: String!
+  index: BigInt!
 
   exitQueue: vExitQueue!
 
@@ -586,6 +590,8 @@ type Ticket @entity {
   exitedEth: BigInt!
 
   fillTraces: [FillTrace!]! @derivedFrom(field: "ticket")
+  fulfillableBy: [Cask!]!
+  fulfillableAmount: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -595,6 +601,7 @@ type Ticket @entity {
 
 type Cask @entity {
   id: String!
+  index: BigInt!
 
   exitQueue: vExitQueue!
 
@@ -897,9 +904,12 @@ type MultiPool @entity {
   pool: vPool!
   active: Boolean!
   fees: BigInt!
-  shares: PoolBalance
+  shares: PoolBalance!
   poolAllocation: BigInt!
   soldEth: BigInt!
+  commissionPaid: BigInt!
+  injectedEth: BigInt!
+  exitedEth: BigInt!
   poolDepositor: String!
   rewardsSnapshot: [MultiPoolRewardsSnapshot!]! @derivedFrom(field: "multiPool")
 
