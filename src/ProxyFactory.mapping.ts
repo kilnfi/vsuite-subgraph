@@ -12,6 +12,7 @@ import {
 } from './utils/IntegrationChannel.utils';
 import { Address, BigInt } from '@graphprotocol/graph-ts';
 import { externalEntityUUID } from './utils/utils';
+import { getOrCreateRewardSummaries } from './utils/rewards';
 
 export function handleDeployedProxy(event: DeployedProxy): void {
   if (
@@ -42,6 +43,7 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     integration.admin = Address.empty();
     integration.maxCommission = BigInt.zero();
     integration._poolsDerived = [];
+    integration.summaries = getOrCreateRewardSummaries(event, event.params.proxy).id;
 
     integration.createdAt = event.block.timestamp;
     integration.editedAt = event.block.timestamp;

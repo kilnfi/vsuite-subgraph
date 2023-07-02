@@ -374,6 +374,10 @@ type vPool @entity {
   totalUnderlyingSupply: BigInt!
   operatorFee: BigInt!
   epochsPerFrame: BigInt!
+  genesisTimestamp: BigInt!
+  epochsUntilFinal: BigInt!
+  slotsPerEpoch: BigInt!
+  secondsPerSlot: BigInt!
   maxAPRUpperBound: BigInt!
   maxAPRUpperCoverageBoost: BigInt!
   maxRelativeLowerBound: BigInt!
@@ -406,6 +410,7 @@ type vPool @entity {
 
 interface RewardEntry {
   id: String!
+  type: String!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -415,8 +420,12 @@ interface RewardEntry {
 
 type vPoolRewardEntry implements RewardEntry @entity {
   id: String!
+  type: String!
 
-  reward: BigInt!
+  netReward: BigInt!
+  netAPY: BigInt!
+  grossReward: BigInt!
+  grossAPY: BigInt!
   report: Report!
 
   createdAt: BigInt!
@@ -427,11 +436,13 @@ type vPoolRewardEntry implements RewardEntry @entity {
 
 type IntegrationRewardEntry implements RewardEntry @entity {
   id: String!
+  type: String!
 
-  reward: BigInt!
+  netReward: BigInt!
+  netAPY: BigInt!
+  grossReward: BigInt!
+  grossAPY: BigInt!
   report: Report!
-  balance: BigInt!
-  totalSupply: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -444,8 +455,15 @@ type RewardSummary @entity {
 
   name: String!
   period: BigInt!
-  totalRewards: BigInt!
+  totalNetRewards: BigInt!
+  netAPYCumulator: BigInt!
+  netAPY: BigInt!
+  totalGrossRewards: BigInt!
+  grossAPYCumulator: BigInt!
+  grossAPY: BigInt!
   entries: [RewardEntry!]!
+  entryCount: BigInt!
+  oldestEntry: RewardEntry
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -1062,6 +1080,8 @@ type ERC20 implements vPoolIntegration & Integration @entity {
   channel: IntegrationChannel!
   name: String!
   symbol: String!
+
+  summaries: RewardSummaries!
 
   paused: Boolean!
   admin: Bytes!

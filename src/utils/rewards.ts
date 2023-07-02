@@ -1,78 +1,188 @@
 import { ethereum, BigInt, Address } from '@graphprotocol/graph-ts';
-import { RewardSummary, RewardSummaries, vPoolRewardEntry, IntegrationRewardEntry } from "../../generated/schema";
-import { entityUUID, externalEntityUUID } from "./utils";
+import { RewardSummary, RewardSummaries, vPoolRewardEntry, IntegrationRewardEntry } from '../../generated/schema';
+import { entityUUID, externalEntityUUID } from './utils';
 
-export function getOrCreateRewardSummary(event: ethereum.Event, period: number, name: string): RewardSummary {
-	let rs = RewardSummary.load(entityUUID(event, ["summaries", name]));
-	if (rs == null) {
-		rs = new RewardSummary(entityUUID(event, ["summaries", name]));
-		rs.name = name;
-		rs.period = BigInt.fromI64(i64(period));
-		rs.totalRewards = BigInt.zero();
-		rs.entries = [];
-		rs.createdAt = event.block.timestamp;
-		rs.editedAt = event.block.timestamp;
-		rs.createdAtBlock = event.block.number;
-		rs.editedAtBlock = event.block.number;
+export function getOrCreateRewardSummary(
+  event: ethereum.Event,
+  addr: Address,
+  period: number,
+  name: string
+): RewardSummary {
+  let rs = RewardSummary.load(externalEntityUUID(addr, ['summaries', name]));
+  if (rs == null) {
+    rs = new RewardSummary(externalEntityUUID(addr, ['summaries', name]));
+    rs.name = name;
+    rs.period = BigInt.fromI64(i64(period));
+    rs.totalNetRewards = BigInt.zero();
+    rs.netAPY = BigInt.zero();
+    rs.netAPYCumulator = BigInt.zero();
+    rs.totalGrossRewards = BigInt.zero();
+    rs.grossAPY = BigInt.zero();
+    rs.grossAPYCumulator = BigInt.zero();
+    rs.entries = [];
+    rs.entryCount = BigInt.zero();
+    rs.createdAt = event.block.timestamp;
+    rs.editedAt = event.block.timestamp;
+    rs.createdAtBlock = event.block.number;
+    rs.editedAtBlock = event.block.number;
 
-		rs.save();
-	}
-	return rs;
+    rs.save();
+  }
+  return rs;
 }
 
-const SECOND = 1;
-const MINUTE = 60 * SECOND;
-const HOUR = 60 * MINUTE;
-const DAY = 24 * HOUR;
-const WEEK = 7 * DAY;
-const MONTH = 30 * DAY;
-const YEAR = 365 * DAY;
+export const SECOND = 1;
+export const MINUTE = 60 * SECOND;
+export const HOUR = 60 * MINUTE;
+export const DAY = 24 * HOUR;
+export const WEEK = 7 * DAY;
+export const MONTH = 30 * DAY;
+export const YEAR = 365 * DAY;
 
-export function getOrCreateRewardSummaries(event: ethereum.Event): RewardSummaries {
-	let rs = RewardSummaries.load(entityUUID(event, ["summaries"]));
-	if (rs == null) {
-		rs = new RewardSummaries(entityUUID(event, ["summaries"]));
+export function getOrCreateRewardSummaries(event: ethereum.Event, addr: Address): RewardSummaries {
+  let rs = RewardSummaries.load(externalEntityUUID(addr, ['summaries']));
+  if (rs == null) {
+    rs = new RewardSummaries(externalEntityUUID(addr, ['summaries']));
 
-		const allTime = getOrCreateRewardSummary(event, 0, "allTime");
-		const oneYear = getOrCreateRewardSummary(event, YEAR, "oneYear");
-		const sixMonths = getOrCreateRewardSummary(event, 6 * MONTH, "sixMonths");
-		const threeMonths = getOrCreateRewardSummary(event, 3 * MONTH, "threeMonths");
-		const oneMonth = getOrCreateRewardSummary(event, MONTH, "oneMonth");
-		const oneWeek = getOrCreateRewardSummary(event, WEEK, "oneWeek");
+    const allTime = getOrCreateRewardSummary(event, addr, 0, 'allTime');
+    const oneYear = getOrCreateRewardSummary(event, addr, YEAR, 'oneYear');
+    const sixMonths = getOrCreateRewardSummary(event, addr, 6 * MONTH, 'sixMonths');
+    const threeMonths = getOrCreateRewardSummary(event, addr, 3 * MONTH, 'threeMonths');
+    const oneMonth = getOrCreateRewardSummary(event, addr, MONTH, 'oneMonth');
+    const oneWeek = getOrCreateRewardSummary(event, addr, WEEK, 'oneWeek');
 
-		rs.allTime = allTime.id;
-		rs.oneYear = oneYear.id;
-		rs.sixMonths = sixMonths.id;
-		rs.threeMonths = threeMonths.id;
-		rs.oneMonth = oneMonth.id;
-		rs.oneWeek = oneWeek.id;
+    rs.allTime = allTime.id;
+    rs.oneYear = oneYear.id;
+    rs.sixMonths = sixMonths.id;
+    rs.threeMonths = threeMonths.id;
+    rs.oneMonth = oneMonth.id;
+    rs.oneWeek = oneWeek.id;
 
-		rs.createdAt = event.block.timestamp;
-		rs.editedAt = event.block.timestamp;
-		rs.createdAtBlock = event.block.number;
-		rs.editedAtBlock = event.block.number;
+    rs.createdAt = event.block.timestamp;
+    rs.editedAt = event.block.timestamp;
+    rs.createdAtBlock = event.block.number;
+    rs.editedAtBlock = event.block.number;
 
-		rs.save();
-
-	}
-	return rs;
+    rs.save();
+  }
+  return rs;
 }
 
-export function pushEntryToSummary(event: ethereum.Event, addr: Address, name: string) {
-	const rs = RewardSummary.load(externalEntityUUID(addr, ["summaries", name])) as RewardSummary;
+function cleanOutOfRangeEntries(event: ethereum.Event, rs: RewardSummary): RewardSummary {
+  const entries = rs.entries;
+  const period = rs.period;
+  let entriesToDelete = 0;
+  let oldestEntryId: string | null = '';
+  let oldestEntryTimestamp = BigInt.zero();
+  for (let i = 0; i < entries.length; ++i) {
+    const entry = entries[i];
+    if (entry.indexOf('vPoolRewardEntry') != -1) {
+      const vpoolEntry = vPoolRewardEntry.load(entry) as vPoolRewardEntry;
+      if (vpoolEntry.createdAt.lt(event.block.timestamp.minus(period)) && period.gt(BigInt.zero())) {
+        rs.totalNetRewards = rs.totalNetRewards.minus(vpoolEntry.netReward);
+        rs.totalGrossRewards = rs.totalGrossRewards.minus(vpoolEntry.grossReward);
+        rs.netAPYCumulator = rs.netAPYCumulator.minus(vpoolEntry.netAPY);
+        rs.grossAPYCumulator = rs.grossAPYCumulator.minus(vpoolEntry.grossAPY);
+        rs.entryCount = rs.entryCount.minus(BigInt.fromI32(1));
+        entriesToDelete++;
+      } else {
+        oldestEntryId = vpoolEntry.id;
+        oldestEntryTimestamp = vpoolEntry.createdAt;
+        break;
+      }
+    } else if (entry.indexOf('IntegrationRewardEntry') != -1) {
+      const integrationEntry = IntegrationRewardEntry.load(entry) as IntegrationRewardEntry;
+      if (integrationEntry.createdAt.lt(event.block.timestamp.minus(period)) && period.gt(BigInt.zero())) {
+        rs.totalNetRewards = rs.totalNetRewards.minus(integrationEntry.netReward);
+        rs.totalGrossRewards = rs.totalGrossRewards.minus(integrationEntry.grossReward);
+        rs.netAPYCumulator = rs.netAPYCumulator.minus(integrationEntry.netAPY);
+        rs.grossAPYCumulator = rs.grossAPYCumulator.minus(integrationEntry.grossAPY);
+        rs.entryCount = rs.entryCount.minus(BigInt.fromI32(1));
+        entriesToDelete++;
+      } else {
+        oldestEntryId = integrationEntry.id;
+        oldestEntryTimestamp = integrationEntry.createdAt;
+        break;
+      }
+    }
+  }
+  rs.entries = entries.slice(entriesToDelete);
+  rs.oldestEntry = oldestEntryId != null ? oldestEntryId : null;
+  return rs;
 }
 
-export function pushEntryToSummaries(event: ethereum.Event, addr: Address, entry: vPoolRewardEntry | IntegrationRewardEntry) {
-	const rs = RewardSummaries.load(externalEntityUUID(addr, ["summaries"])) as RewardSummaries;
-	pushEntryToSummary(event, addr, "allTime");
-	pushEntryToSummary(event, addr, "oneYear");
-	pushEntryToSummary(event, addr, "sixMonths");
-	pushEntryToSummary(event, addr, "threeMonths");
-	pushEntryToSummary(event, addr, "oneMonth");
-	pushEntryToSummary(event, addr, "oneWeek");
+export function pushvPoolEntryToSummary(
+  event: ethereum.Event,
+  addr: Address,
+  name: string,
+  entry: vPoolRewardEntry
+): void {
+  let rs = RewardSummary.load(externalEntityUUID(addr, ['summaries', name])) as RewardSummary;
+  rs = cleanOutOfRangeEntries(event, rs);
+  rs.totalNetRewards = rs.totalNetRewards.plus(entry.netReward);
+  rs.totalGrossRewards = rs.totalGrossRewards.plus(entry.grossReward);
+  rs.netAPYCumulator = rs.netAPYCumulator.plus(entry.netAPY);
+  rs.grossAPYCumulator = rs.grossAPYCumulator.plus(entry.grossAPY);
+  const entries = rs.entries;
+  entries.push(entry.id);
+  rs.entryCount = rs.entryCount.plus(BigInt.fromI32(1));
+  rs.entries = entries;
+  rs.netAPY = rs.netAPYCumulator.div(rs.entryCount);
+  rs.grossAPY = rs.grossAPYCumulator.div(rs.entryCount);
 
-	rs.editedAt = event.block.timestamp;
-	rs.editedAtBlock = event.block.number;
-	rs.save();
+  rs.save();
 }
 
+export function pushvPoolEntryToSummaries(event: ethereum.Event, addr: Address, entry: vPoolRewardEntry): void {
+  const rs = RewardSummaries.load(externalEntityUUID(addr, ['summaries'])) as RewardSummaries;
+  pushvPoolEntryToSummary(event, addr, 'allTime', entry);
+  pushvPoolEntryToSummary(event, addr, 'oneYear', entry);
+  pushvPoolEntryToSummary(event, addr, 'sixMonths', entry);
+  pushvPoolEntryToSummary(event, addr, 'threeMonths', entry);
+  pushvPoolEntryToSummary(event, addr, 'oneMonth', entry);
+  pushvPoolEntryToSummary(event, addr, 'oneWeek', entry);
+
+  rs.editedAt = event.block.timestamp;
+  rs.editedAtBlock = event.block.number;
+  rs.save();
+}
+
+export function pushIntegrationEntryToSummary(
+  event: ethereum.Event,
+  addr: Address,
+  name: string,
+  entry: IntegrationRewardEntry
+): void {
+  let rs = RewardSummary.load(externalEntityUUID(addr, ['summaries', name])) as RewardSummary;
+  rs = cleanOutOfRangeEntries(event, rs);
+  rs.totalNetRewards = rs.totalNetRewards.plus(entry.netReward);
+  rs.totalGrossRewards = rs.totalGrossRewards.plus(entry.grossReward);
+  rs.netAPYCumulator = rs.netAPYCumulator.plus(entry.netAPY);
+  rs.grossAPYCumulator = rs.grossAPYCumulator.plus(entry.grossAPY);
+  const entries = rs.entries;
+  entries.push(entry.id);
+  rs.entryCount = rs.entryCount.plus(BigInt.fromI32(1));
+  rs.entries = entries;
+  rs.netAPY = rs.netAPYCumulator.div(rs.entryCount);
+  rs.grossAPY = rs.grossAPYCumulator.div(rs.entryCount);
+
+  rs.save();
+}
+
+export function pushIntegrationEntryToSummaries(
+  event: ethereum.Event,
+  addr: Address,
+  entry: IntegrationRewardEntry
+): void {
+  const rs = RewardSummaries.load(externalEntityUUID(addr, ['summaries'])) as RewardSummaries;
+  pushIntegrationEntryToSummary(event, addr, 'allTime', entry);
+  pushIntegrationEntryToSummary(event, addr, 'oneYear', entry);
+  pushIntegrationEntryToSummary(event, addr, 'sixMonths', entry);
+  pushIntegrationEntryToSummary(event, addr, 'threeMonths', entry);
+  pushIntegrationEntryToSummary(event, addr, 'oneMonth', entry);
+  pushIntegrationEntryToSummary(event, addr, 'oneWeek', entry);
+
+  rs.editedAt = event.block.timestamp;
+  rs.editedAtBlock = event.block.number;
+  rs.save();
+}

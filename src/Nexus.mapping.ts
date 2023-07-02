@@ -129,11 +129,15 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     pool.exitQueue = Address.zero().toHexString();
     pool.operatorFee = BigInt.zero();
     pool.epochsPerFrame = BigInt.zero();
+    pool.genesisTimestamp = BigInt.zero();
+    pool.epochsUntilFinal = BigInt.zero();
+    pool.slotsPerEpoch = BigInt.zero();
+    pool.secondsPerSlot = BigInt.zero();
     pool.maxAPRUpperBound = BigInt.zero();
     pool.maxAPRUpperCoverageBoost = BigInt.zero();
     pool.maxRelativeLowerBound = BigInt.zero();
 
-    pool.summaries = getOrCreateRewardSummaries(event).id;
+    pool.summaries = getOrCreateRewardSummaries(event, event.params.pool).id;
 
     pool.createdAt = event.block.timestamp;
     pool.editedAt = event.block.timestamp;
