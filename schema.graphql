@@ -450,7 +450,7 @@ type IntegrationRewardEntry implements RewardEntry @entity {
   editedAtBlock: BigInt!
 }
 
-type RewardSummary @entity {
+type PeriodRewardSummary @entity {
   id: String!
 
   name: String!
@@ -474,12 +474,12 @@ type RewardSummary @entity {
 type RewardSummaries @entity {
   id: String!
 
-  allTime: RewardSummary!
-  oneYear: RewardSummary!
-  sixMonths: RewardSummary!
-  threeMonths: RewardSummary!
-  oneMonth: RewardSummary!
-  oneWeek: RewardSummary!
+  allTime: PeriodRewardSummary!
+  oneYear: PeriodRewardSummary!
+  sixMonths: PeriodRewardSummary!
+  threeMonths: PeriodRewardSummary!
+  oneMonth: PeriodRewardSummary!
+  oneWeek: PeriodRewardSummary!
 
   createdAt: BigInt!
   editedAt: BigInt!

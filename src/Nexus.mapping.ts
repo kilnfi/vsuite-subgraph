@@ -29,9 +29,7 @@ import {
   vCoverageRecipient,
   vWithdrawalRecipient,
   vOracleAggregator,
-  vExitQueue,
-  RewardSummaries,
-  RewardSummary
+  vExitQueue
 } from '../generated/schema';
 import { Address, BigInt, Bytes, ethereum } from '@graphprotocol/graph-ts';
 import { entityUUID, externalEntityUUID } from './utils/utils';

@@ -1,5 +1,5 @@
 import { ethereum, BigInt, Address } from '@graphprotocol/graph-ts';
-import { RewardSummary, RewardSummaries, vPoolRewardEntry, IntegrationRewardEntry } from '../../generated/schema';
+import { PeriodRewardSummary, RewardSummaries, vPoolRewardEntry, IntegrationRewardEntry } from '../../generated/schema';
 import { entityUUID, externalEntityUUID } from './utils';
 
 export function getOrCreateRewardSummary(
@@ -7,10 +7,10 @@ export function getOrCreateRewardSummary(
   addr: Address,
   period: number,
   name: string
-): RewardSummary {
-  let rs = RewardSummary.load(externalEntityUUID(addr, ['summaries', name]));
+): PeriodRewardSummary {
+  let rs = PeriodRewardSummary.load(externalEntityUUID(addr, ['summaries', name]));
   if (rs == null) {
-    rs = new RewardSummary(externalEntityUUID(addr, ['summaries', name]));
+    rs = new PeriodRewardSummary(externalEntityUUID(addr, ['summaries', name]));
     rs.name = name;
     rs.period = BigInt.fromI64(i64(period));
     rs.totalNetRewards = BigInt.zero();
@@ -68,7 +68,7 @@ export function getOrCreateRewardSummaries(event: ethereum.Event, addr: Address)
   return rs;
 }
 
-function cleanOutOfRangeEntries(event: ethereum.Event, rs: RewardSummary): RewardSummary {
+function cleanOutOfRangeEntries(event: ethereum.Event, rs: PeriodRewardSummary): PeriodRewardSummary {
   const entries = rs.entries;
   const period = rs.period;
   let entriesToDelete = 0;
@@ -117,7 +117,7 @@ export function pushvPoolEntryToSummary(
   name: string,
   entry: vPoolRewardEntry
 ): void {
-  let rs = RewardSummary.load(externalEntityUUID(addr, ['summaries', name])) as RewardSummary;
+  let rs = PeriodRewardSummary.load(externalEntityUUID(addr, ['summaries', name])) as PeriodRewardSummary;
   rs = cleanOutOfRangeEntries(event, rs);
   rs.totalNetRewards = rs.totalNetRewards.plus(entry.netReward);
   rs.totalGrossRewards = rs.totalGrossRewards.plus(entry.grossReward);
@@ -153,7 +153,7 @@ export function pushIntegrationEntryToSummary(
   name: string,
   entry: IntegrationRewardEntry
 ): void {
-  let rs = RewardSummary.load(externalEntityUUID(addr, ['summaries', name])) as RewardSummary;
+  let rs = PeriodRewardSummary.load(externalEntityUUID(addr, ['summaries', name])) as PeriodRewardSummary;
   rs = cleanOutOfRangeEntries(event, rs);
   rs.totalNetRewards = rs.totalNetRewards.plus(entry.netReward);
   rs.totalGrossRewards = rs.totalGrossRewards.plus(entry.grossReward);
