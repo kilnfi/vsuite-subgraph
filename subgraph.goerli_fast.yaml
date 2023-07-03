@@ -498,6 +498,8 @@ templates:
         - name: vPool
           file: ./abis/vPool.json
       eventHandlers:
+        - event: SetConsensusLayerSpec((uint64,uint64,uint64,uint64))
+          handler: handleSetConsensusLayerSpec
         - event: Deposit(indexed address,uint256,uint256)
           handler: handleDeposit
         - event: Mint(indexed address,uint256,uint256)

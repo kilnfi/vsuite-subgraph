@@ -374,6 +374,10 @@ type vPool @entity {
   totalUnderlyingSupply: BigInt!
   operatorFee: BigInt!
   epochsPerFrame: BigInt!
+  genesisTimestamp: BigInt!
+  epochsUntilFinal: BigInt!
+  slotsPerEpoch: BigInt!
+  secondsPerSlot: BigInt!
   maxAPRUpperBound: BigInt!
   maxAPRUpperCoverageBoost: BigInt!
   maxRelativeLowerBound: BigInt!
@@ -394,7 +398,88 @@ type vPool @entity {
   withdrawalRecipient: vWithdrawalRecipient!
   exitQueue: vExitQueue!
 
+  summaries: RewardSummary!
+
   pluggedMultiPools: [MultiPool!]!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+interface RewardEntry {
+  id: String!
+  type: String!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type vPoolRewardEntry implements RewardEntry @entity {
+  id: String!
+  type: String!
+
+  netReward: BigInt!
+  netAPY: BigInt!
+  grossReward: BigInt!
+  grossAPY: BigInt!
+  report: Report!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type IntegrationRewardEntry implements RewardEntry @entity {
+  id: String!
+  type: String!
+
+  netReward: BigInt!
+  netAPY: BigInt!
+  grossReward: BigInt!
+  grossAPY: BigInt!
+  report: Report!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type PeriodRewardSummary @entity {
+  id: String!
+
+  name: String!
+  period: BigInt!
+  totalNetRewards: BigInt!
+  netAPYCumulator: BigInt!
+  netAPY: BigInt!
+  totalGrossRewards: BigInt!
+  grossAPYCumulator: BigInt!
+  grossAPY: BigInt!
+  entries: [RewardEntry!]!
+  entryCount: BigInt!
+  oldestEntry: RewardEntry
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type RewardSummary @entity {
+  id: String!
+
+  allTime: PeriodRewardSummary!
+  oneYear: PeriodRewardSummary!
+  sixMonths: PeriodRewardSummary!
+  threeMonths: PeriodRewardSummary!
+  oneMonth: PeriodRewardSummary!
+  oneWeek: PeriodRewardSummary!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -995,6 +1080,8 @@ type ERC20 implements vPoolIntegration & Integration @entity {
   channel: IntegrationChannel!
   name: String!
   symbol: String!
+
+  summaries: RewardSummary!
 
   paused: Boolean!
   admin: Bytes!

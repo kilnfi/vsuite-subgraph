@@ -33,6 +33,7 @@ import {
 } from '../generated/schema';
 import { Address, BigInt, Bytes, ethereum } from '@graphprotocol/graph-ts';
 import { entityUUID, externalEntityUUID } from './utils/utils';
+import { getOrCreateRewardSummaries } from './utils/rewards';
 
 function _getOrCreateNexus(addr: Bytes, event: ethereum.Event): Nexus {
   let nexus = Nexus.load(externalEntityUUID(Address.fromBytes(addr), []));
@@ -100,7 +101,6 @@ export function handleSpawnedFactory(event: SpawnedFactory): void {
 
   vFactoryTemplate.create(event.params.factory);
 }
-
 export function handleSpawnedPool(event: SpawnedPool): void {
   {
     const pool = new vPool(externalEntityUUID(event.params.pool, []));
@@ -127,9 +127,15 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     pool.exitQueue = Address.zero().toHexString();
     pool.operatorFee = BigInt.zero();
     pool.epochsPerFrame = BigInt.zero();
+    pool.genesisTimestamp = BigInt.zero();
+    pool.epochsUntilFinal = BigInt.zero();
+    pool.slotsPerEpoch = BigInt.zero();
+    pool.secondsPerSlot = BigInt.zero();
     pool.maxAPRUpperBound = BigInt.zero();
     pool.maxAPRUpperCoverageBoost = BigInt.zero();
     pool.maxRelativeLowerBound = BigInt.zero();
+
+    pool.summaries = getOrCreateRewardSummaries(event, event.params.pool).id;
 
     pool.createdAt = event.block.timestamp;
     pool.editedAt = event.block.timestamp;
