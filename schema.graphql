@@ -398,7 +398,7 @@ type vPool @entity {
   withdrawalRecipient: vWithdrawalRecipient!
   exitQueue: vExitQueue!
 
-  summaries: RewardSummaries!
+  summaries: RewardSummary!
 
   pluggedMultiPools: [MultiPool!]!
 
@@ -471,7 +471,7 @@ type PeriodRewardSummary @entity {
   editedAtBlock: BigInt!
 }
 
-type RewardSummaries @entity {
+type RewardSummary @entity {
   id: String!
 
   allTime: PeriodRewardSummary!
@@ -1081,7 +1081,7 @@ type ERC20 implements vPoolIntegration & Integration @entity {
   name: String!
   symbol: String!
 
-  summaries: RewardSummaries!
+  summaries: RewardSummary!
 
   paused: Boolean!
   admin: Bytes!

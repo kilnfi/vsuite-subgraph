@@ -1,5 +1,5 @@
 import { ethereum, BigInt, Address } from '@graphprotocol/graph-ts';
-import { PeriodRewardSummary, RewardSummaries, vPoolRewardEntry, IntegrationRewardEntry } from '../../generated/schema';
+import { PeriodRewardSummary, RewardSummary, vPoolRewardEntry, IntegrationRewardEntry } from '../../generated/schema';
 import { entityUUID, externalEntityUUID } from './utils';
 
 export function getOrCreateRewardSummary(
@@ -39,10 +39,10 @@ export const WEEK = 7 * DAY;
 export const MONTH = 30 * DAY;
 export const YEAR = 365 * DAY;
 
-export function getOrCreateRewardSummaries(event: ethereum.Event, addr: Address): RewardSummaries {
-  let rs = RewardSummaries.load(externalEntityUUID(addr, ['summaries']));
+export function getOrCreateRewardSummaries(event: ethereum.Event, addr: Address): RewardSummary {
+  let rs = RewardSummary.load(externalEntityUUID(addr, ['summaries']));
   if (rs == null) {
-    rs = new RewardSummaries(externalEntityUUID(addr, ['summaries']));
+    rs = new RewardSummary(externalEntityUUID(addr, ['summaries']));
 
     const allTime = getOrCreateRewardSummary(event, addr, 0, 'allTime');
     const oneYear = getOrCreateRewardSummary(event, addr, YEAR, 'oneYear');
@@ -134,7 +134,7 @@ export function pushvPoolEntryToSummary(
 }
 
 export function pushvPoolEntryToSummaries(event: ethereum.Event, addr: Address, entry: vPoolRewardEntry): void {
-  const rs = RewardSummaries.load(externalEntityUUID(addr, ['summaries'])) as RewardSummaries;
+  const rs = RewardSummary.load(externalEntityUUID(addr, ['summaries'])) as RewardSummary;
   pushvPoolEntryToSummary(event, addr, 'allTime', entry);
   pushvPoolEntryToSummary(event, addr, 'oneYear', entry);
   pushvPoolEntryToSummary(event, addr, 'sixMonths', entry);
@@ -174,7 +174,7 @@ export function pushIntegrationEntryToSummaries(
   addr: Address,
   entry: IntegrationRewardEntry
 ): void {
-  const rs = RewardSummaries.load(externalEntityUUID(addr, ['summaries'])) as RewardSummaries;
+  const rs = RewardSummary.load(externalEntityUUID(addr, ['summaries'])) as RewardSummary;
   pushIntegrationEntryToSummary(event, addr, 'allTime', entry);
   pushIntegrationEntryToSummary(event, addr, 'oneYear', entry);
   pushIntegrationEntryToSummary(event, addr, 'sixMonths', entry);
