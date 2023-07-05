@@ -425,6 +425,8 @@ templates:
       blockHandlers:
         - handler: handleBlock
       eventHandlers:
+        - event: SetExitTotal(indexed bytes32,uint32)
+          handler: handleSetExitTotal
         - event: AddedValidators(indexed bytes32,bytes)
           handler: handleAddedValidators
         - event: UpdatedLimit(indexed bytes32,uint256)

@@ -26,7 +26,8 @@ import {
   ChangedOperator,
   SetHatcherRegistry,
   ChangedTreasury,
-  ApproveDepositor
+  ApproveDepositor,
+  SetExitTotal
 } from '../generated/templates/vFactory/vFactory';
 import { SetMinimalRecipientImplementation } from '../generated/Nexus/Nexus';
 import { SetValidatorExtraData } from '../generated/templates/vFactory/vFactory';
@@ -170,6 +171,7 @@ export function handleAddedValidators(event: AddedValidators): void {
     entity.total = BigInt.fromI32(0);
     entity.funded = BigInt.fromI32(0);
     entity.limit = BigInt.fromI32(0);
+    entity.lastExitTotal = BigInt.fromI32(0);
     entity.createdAt = event.block.timestamp;
     entity.createdAtBlock = event.block.number;
   }
@@ -296,6 +298,7 @@ export function handleValidatorRequest(event: ValidatorRequest): void {
     entity.total = BigInt.fromI32(0);
     entity.funded = BigInt.fromI32(0);
     entity.limit = BigInt.fromI32(0);
+    entity.lastExitTotal = BigInt.fromI32(0);
     entity.createdAt = event.block.timestamp;
     entity.createdAtBlock = event.block.number;
   }
@@ -724,6 +727,27 @@ export function handleSetHatcherRegistry(event: SetHatcherRegistry): void {
   systemEvent.save();
 }
 
+export function handleSetExitTotal(event: SetExitTotal): void {
+  const channelId = entityUUID(event, [event.params.withdrawalChannel.toHexString()]);
+  let channel = WithdrawalChannel.load(channelId);
+
+  if (channel == null) {
+    channel = new WithdrawalChannel(channelId);
+    channel.withdrawalChannel = event.params.withdrawalChannel;
+    channel.factory = externalEntityUUID(event.address, []);
+    channel.total = BigInt.fromI32(0);
+    channel.funded = BigInt.fromI32(0);
+    channel.limit = BigInt.fromI32(0);
+    channel.createdAt = event.block.timestamp;
+    channel.createdAtBlock = event.block.number;
+  }
+
+  channel.editedAt = event.block.timestamp;
+  channel.editedAtBlock = event.block.number;
+  channel.lastExitTotal = event.params.totalExited;
+  channel.save();
+}
+
 export function handleApproveDepositor(event: ApproveDepositor): void {
   const depositorId = entityUUID(event, [event.params.wc.toHexString(), event.params.depositor.toHexString()]);
   let depositor = FactoryDepositor.load(depositorId);
@@ -737,6 +761,7 @@ export function handleApproveDepositor(event: ApproveDepositor): void {
     channel.total = BigInt.fromI32(0);
     channel.funded = BigInt.fromI32(0);
     channel.limit = BigInt.fromI32(0);
+    channel.lastExitTotal = BigInt.fromI32(0);
     channel.editedAt = event.block.timestamp;
     channel.editedAtBlock = event.block.number;
     channel.createdAt = event.block.timestamp;

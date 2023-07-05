@@ -166,6 +166,7 @@ type WithdrawalChannel @entity {
   factory: vFactory!
   lastValidatorRequest: ValidatorRequest
   depositors: [FactoryDepositor!]! @derivedFrom(field: "withdrawalChannel")
+  lastExitTotal: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!
