@@ -235,11 +235,7 @@ export function handleFilledTicket(event: FilledTicket): void {
   ticket!.editedAt = event.block.timestamp;
   ticket!.editedAtBlock = event.block.number;
 
-  if (ticket!.size.equals(BigInt.zero())) {
-    store.remove('Ticket', ticketId);
-  } else {
-    ticket!.save();
-  }
+  ticket!.save();
 
   const cask = Cask.load(caskId);
 
@@ -251,7 +247,7 @@ export function handleFilledTicket(event: FilledTicket): void {
 
   cask!.save();
 
-  const fillTraceId = entityUUID(event, [event.params.ticketId.toString(), event.params.caskId.toString()]);
+  const fillTraceId = entityUUID(event, [idToIdx(event.params.ticketId).toString(), event.params.caskId.toString()]);
   const fillTrace = new FillTrace(fillTraceId);
 
   fillTrace.ticket = ticketId;

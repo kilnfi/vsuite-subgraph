@@ -30,9 +30,10 @@ import {
   ERC1155,
   vExitQueue,
   vPoolRewardEntry,
-  IntegrationRewardEntry
+  IntegrationRewardEntry,
+  PeriodRewardSummary
 } from '../generated/schema';
-import { Bytes, BigInt, Address, store } from '@graphprotocol/graph-ts';
+import { Bytes, BigInt, Address, store, log } from '@graphprotocol/graph-ts';
 import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum';
 import { MultiPoolRewardsSnapshot } from '../generated/schema';
 import {
@@ -317,6 +318,25 @@ export function handleSetConsensusLayerSpec(event: SetConsensusLayerSpec): void 
   pool!.save();
 }
 
+function _computeTotalUnderlyingSupply(pool: vPool, lastReport: Report | null): BigInt {
+  let totalUnderlyingSupply = BigInt.fromI32(0);
+  totalUnderlyingSupply = totalUnderlyingSupply.plus(pool.deposited);
+  totalUnderlyingSupply = totalUnderlyingSupply.plus(pool.committed);
+  let activatedCount = BigInt.fromI32(0);
+  let consensusLayerBalanceSum = BigInt.fromI32(0);
+  if (lastReport != null) {
+    activatedCount = lastReport.activatedCount;
+    consensusLayerBalanceSum = lastReport.balanceSum;
+  }
+  if (pool.purchasedValidatorCount.gt(activatedCount)) {
+    totalUnderlyingSupply = totalUnderlyingSupply.plus(
+      pool.purchasedValidatorCount.minus(activatedCount).times(BigInt.fromString('32000000000000000000'))
+    );
+  }
+  totalUnderlyingSupply = totalUnderlyingSupply.plus(consensusLayerBalanceSum);
+  return totalUnderlyingSupply;
+}
+
 export function handleProcessedReport(event: ProcessedReport): void {
   const pool = vPool.load(entityUUID(event, []));
 
@@ -361,13 +381,14 @@ export function handleProcessedReport(event: ProcessedReport): void {
   report.editedAtBlock = event.block.number;
   report.save();
 
-  const pool_pre_supply = pool!.totalSupply;
-  const pool_pre_underlying_supply = pool!.totalUnderlyingSupply;
-  const pool_post_supply = event.params.traces.postSupply;
-  const pool_post_underlying_supply = event.params.traces.postUnderlyingSupply;
+  const pool_pre_supply = event.params.traces.preSupply;
+  const pool_pre_underlying_supply = event.params.traces.preUnderlyingSupply;
+  const pool_post_supply = event.params.traces.postSupply.minus(report.exitBurnedShares); // TOFIX
+  const pool_post_underlying_supply = _computeTotalUnderlyingSupply(pool!, report);
 
-  pool!.totalSupply = event.params.traces.postSupply;
-  pool!.totalUnderlyingSupply = event.params.traces.postUnderlyingSupply;
+  pool!.totalSupply = pool_post_supply;
+  pool!.totalUnderlyingSupply = pool_post_underlying_supply;
+  event.params.traces.postUnderlyingSupply;
   pool!.lastEpoch = event.params.epoch;
   pool!.expectedEpoch = event.params.epoch.plus(pool!.epochsPerFrame);
 
@@ -470,6 +491,32 @@ export function handleProcessedReport(event: ProcessedReport): void {
           .minus(BigInt.fromString('1000000000000000000'))
           .times(BigInt.fromI64(YEAR))
           .div(period);
+
+        if (grossAPY.lt(BigInt.zero())) {
+          log.info('GROSS NEGATIVE', []);
+
+          log.info(pool_pre_underlying_supply.toString(), []);
+          log.info(pool_pre_supply.toString(), []);
+          log.info(pool_post_underlying_supply.toString(), []);
+          log.info(pool_post_supply.toString(), []);
+
+          log.info(preRawUnderlyingSupply.toString(), []);
+          log.info(preGrossRate.toString(), []);
+
+          log.info(postRawUnderlyingSupply.toString(), []);
+          log.info(postGrossRate.toString(), []);
+
+          log.info(preUnderlyingSupply.toString(), []);
+          log.info(postUnderlyingSupply.toString(), []);
+          const rs = PeriodRewardSummary.load(
+            externalEntityUUID(Address.fromBytes(erc20.address), ['summaries', 'allTime'])
+          );
+          if (rs != null) {
+            if (rs.grossAPY.lt(BigInt.zero())) {
+              throw new Error('GLOBAL APY IS NEGATIVE');
+            }
+          }
+        }
 
         const integrationRewardEntry = new IntegrationRewardEntry(eventUUID(event, ['IntegrationRewardEntry']));
         integrationRewardEntry.type = 'IntegrationRewardEntry';
