@@ -45,7 +45,7 @@ export function handleWithdraw(event: Withdraw): void {
 
   withdraw.operator = event.params.operator;
   withdraw.globalRecipient = event.params.globalRecipient;
-  withdraw.revenue = event.params.revenue;
+  withdraw.rewards = event.params.rewards;
   withdraw.commission = event.params.commission;
 
   withdraw.createdAt = event.block.timestamp;

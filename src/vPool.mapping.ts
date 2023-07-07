@@ -365,7 +365,7 @@ export function handleProcessedReport(event: ProcessedReport): void {
   report.exitBoostEthers = event.params.traces.exitBoostEthers;
   report.exitFedEthers = event.params.traces.exitFedEthers;
   report.exitBurnedShares = event.params.traces.exitBurnedShares;
-  report.revenue = event.params.traces.revenue;
+  report.rewards = event.params.traces.rewards;
   report.delta = event.params.traces.delta;
   report.increaseLimit = event.params.traces.increaseLimit;
   report.coverageIncreaseLimit = event.params.traces.coverageIncreaseLimit;
@@ -383,7 +383,17 @@ export function handleProcessedReport(event: ProcessedReport): void {
 
   const pool_pre_supply = event.params.traces.preSupply;
   const pool_pre_underlying_supply = event.params.traces.preUnderlyingSupply;
-  const pool_post_supply = event.params.traces.postSupply.minus(report.exitBurnedShares); // TOFIX
+  let pool_post_supply: BigInt;
+  if (
+    event.block.number.lt(BigInt.fromI64(9305795)) &&
+    (event.address.equals(Address.fromString('0xdd354898622a972416876b59f179f992f2a4e93d')) ||
+      event.address.equals(Address.fromString('0x182e3d45efc4436edb183f4278838505a1847e21')))
+  ) {
+    // edge case for testnet pools before the traces fix was introduces
+    pool_post_supply = event.params.traces.postSupply.minus(report.exitBurnedShares);
+  } else {
+    pool_post_supply = event.params.traces.postSupply;
+  }
   const pool_post_underlying_supply = _computeTotalUnderlyingSupply(pool!, report);
 
   pool!.totalSupply = pool_post_supply;
@@ -402,13 +412,13 @@ export function handleProcessedReport(event: ProcessedReport): void {
   vpoolRewardEntry.type = 'vPoolRewardEntry';
   vpoolRewardEntry.grossReward = report.delta.gt(BigInt.fromI32(0)) ? report.delta : BigInt.fromI32(0);
   vpoolRewardEntry.netReward = (report.delta.gt(BigInt.fromI32(0)) ? report.delta : BigInt.fromI32(0)).minus(
-    report.revenue.times(pool!.operatorFee).div(BigInt.fromI32(10000))
+    report.rewards.times(pool!.operatorFee).div(BigInt.fromI32(10000))
   );
-  vpoolRewardEntry.netAPY = vpoolRewardEntry.netReward
+  vpoolRewardEntry.netRewardRate = vpoolRewardEntry.netReward
     .times(BigInt.fromString('1000000000000000000'))
     .times(BigInt.fromI64(YEAR))
     .div(report.preUnderlyingSupply.times(period));
-  vpoolRewardEntry.grossAPY = vpoolRewardEntry.grossReward
+  vpoolRewardEntry.grossRewardRate = vpoolRewardEntry.grossReward
     .times(BigInt.fromString('1000000000000000000'))
     .times(BigInt.fromI64(YEAR))
     .div(report.preUnderlyingSupply.times(period));
@@ -417,8 +427,10 @@ export function handleProcessedReport(event: ProcessedReport): void {
   vpoolRewardEntry.editedAt = event.block.timestamp;
   vpoolRewardEntry.createdAtBlock = event.block.number;
   vpoolRewardEntry.editedAtBlock = event.block.number;
-  pushvPoolEntryToSummaries(event, event.address, vpoolRewardEntry);
-  vpoolRewardEntry.save();
+  if (vpoolRewardEntry.grossReward.gt(BigInt.fromI32(0))) {
+    pushvPoolEntryToSummaries(event, event.address, vpoolRewardEntry);
+    vpoolRewardEntry.save();
+  }
 
   const multipools = pool!.pluggedMultiPools;
   for (let idx = 0; idx < multipools.length; ++idx) {
@@ -512,7 +524,7 @@ export function handleProcessedReport(event: ProcessedReport): void {
             externalEntityUUID(Address.fromBytes(erc20.address), ['summaries', 'allTime'])
           );
           if (rs != null) {
-            if (rs.grossAPY.lt(BigInt.zero())) {
+            if (rs.grossRewardRate.lt(BigInt.zero())) {
               throw new Error('GLOBAL APY IS NEGATIVE');
             }
           }
@@ -522,15 +534,17 @@ export function handleProcessedReport(event: ProcessedReport): void {
         integrationRewardEntry.type = 'IntegrationRewardEntry';
         integrationRewardEntry.grossReward = rewards.plus(commission);
         integrationRewardEntry.netReward = rewards;
-        integrationRewardEntry.netAPY = netAPY;
-        integrationRewardEntry.grossAPY = grossAPY;
+        integrationRewardEntry.netRewardRate = netAPY;
+        integrationRewardEntry.grossRewardRate = grossAPY;
         integrationRewardEntry.report = report.id;
         integrationRewardEntry.createdAt = event.block.timestamp;
         integrationRewardEntry.editedAt = event.block.timestamp;
         integrationRewardEntry.createdAtBlock = event.block.number;
         integrationRewardEntry.editedAtBlock = event.block.number;
-        pushIntegrationEntryToSummaries(event, Address.fromBytes(erc20.address), integrationRewardEntry);
-        integrationRewardEntry.save();
+        if (integrationRewardEntry.grossReward.gt(BigInt.zero())) {
+          pushIntegrationEntryToSummaries(event, Address.fromBytes(erc20.address), integrationRewardEntry);
+          integrationRewardEntry.save();
+        }
 
         erc20.save();
       }

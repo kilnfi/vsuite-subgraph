@@ -228,7 +228,7 @@
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "revenue",
+				"name": "rewards",
 				"type": "uint256"
 			},
 			{

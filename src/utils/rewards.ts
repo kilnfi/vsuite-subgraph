@@ -14,11 +14,11 @@ export function getOrCreateRewardSummary(
     rs.name = name;
     rs.period = BigInt.fromI64(i64(period));
     rs.totalNetRewards = BigInt.zero();
-    rs.netAPY = BigInt.zero();
-    rs.netAPYCumulator = BigInt.zero();
+    rs.netRewardRate = BigInt.zero();
+    rs.netRewardRateCumulator = BigInt.zero();
     rs.totalGrossRewards = BigInt.zero();
-    rs.grossAPY = BigInt.zero();
-    rs.grossAPYCumulator = BigInt.zero();
+    rs.grossRewardRate = BigInt.zero();
+    rs.grossRewardRateCumulator = BigInt.zero();
     rs.entries = [];
     rs.entryCount = BigInt.zero();
     rs.createdAt = event.block.timestamp;
@@ -81,8 +81,8 @@ function cleanOutOfRangeEntries(event: ethereum.Event, rs: PeriodRewardSummary):
       if (vpoolEntry.createdAt.lt(event.block.timestamp.minus(period)) && period.gt(BigInt.zero())) {
         rs.totalNetRewards = rs.totalNetRewards.minus(vpoolEntry.netReward);
         rs.totalGrossRewards = rs.totalGrossRewards.minus(vpoolEntry.grossReward);
-        rs.netAPYCumulator = rs.netAPYCumulator.minus(vpoolEntry.netAPY);
-        rs.grossAPYCumulator = rs.grossAPYCumulator.minus(vpoolEntry.grossAPY);
+        rs.netRewardRateCumulator = rs.netRewardRateCumulator.minus(vpoolEntry.netRewardRate);
+        rs.grossRewardRateCumulator = rs.grossRewardRateCumulator.minus(vpoolEntry.grossRewardRate);
         rs.entryCount = rs.entryCount.minus(BigInt.fromI32(1));
         entriesToDelete++;
       } else {
@@ -95,8 +95,8 @@ function cleanOutOfRangeEntries(event: ethereum.Event, rs: PeriodRewardSummary):
       if (integrationEntry.createdAt.lt(event.block.timestamp.minus(period)) && period.gt(BigInt.zero())) {
         rs.totalNetRewards = rs.totalNetRewards.minus(integrationEntry.netReward);
         rs.totalGrossRewards = rs.totalGrossRewards.minus(integrationEntry.grossReward);
-        rs.netAPYCumulator = rs.netAPYCumulator.minus(integrationEntry.netAPY);
-        rs.grossAPYCumulator = rs.grossAPYCumulator.minus(integrationEntry.grossAPY);
+        rs.netRewardRateCumulator = rs.netRewardRateCumulator.minus(integrationEntry.netRewardRate);
+        rs.grossRewardRateCumulator = rs.grossRewardRateCumulator.minus(integrationEntry.grossRewardRate);
         rs.entryCount = rs.entryCount.minus(BigInt.fromI32(1));
         entriesToDelete++;
       } else {
@@ -121,14 +121,14 @@ export function pushvPoolEntryToSummary(
   rs = cleanOutOfRangeEntries(event, rs);
   rs.totalNetRewards = rs.totalNetRewards.plus(entry.netReward);
   rs.totalGrossRewards = rs.totalGrossRewards.plus(entry.grossReward);
-  rs.netAPYCumulator = rs.netAPYCumulator.plus(entry.netAPY);
-  rs.grossAPYCumulator = rs.grossAPYCumulator.plus(entry.grossAPY);
+  rs.netRewardRateCumulator = rs.netRewardRateCumulator.plus(entry.netRewardRate);
+  rs.grossRewardRateCumulator = rs.grossRewardRateCumulator.plus(entry.grossRewardRate);
   const entries = rs.entries;
   entries.push(entry.id);
   rs.entryCount = rs.entryCount.plus(BigInt.fromI32(1));
   rs.entries = entries;
-  rs.netAPY = rs.netAPYCumulator.div(rs.entryCount);
-  rs.grossAPY = rs.grossAPYCumulator.div(rs.entryCount);
+  rs.netRewardRate = rs.netRewardRateCumulator.div(rs.entryCount);
+  rs.grossRewardRate = rs.grossRewardRateCumulator.div(rs.entryCount);
 
   rs.save();
 }
@@ -157,14 +157,14 @@ export function pushIntegrationEntryToSummary(
   rs = cleanOutOfRangeEntries(event, rs);
   rs.totalNetRewards = rs.totalNetRewards.plus(entry.netReward);
   rs.totalGrossRewards = rs.totalGrossRewards.plus(entry.grossReward);
-  rs.netAPYCumulator = rs.netAPYCumulator.plus(entry.netAPY);
-  rs.grossAPYCumulator = rs.grossAPYCumulator.plus(entry.grossAPY);
+  rs.netRewardRateCumulator = rs.netRewardRateCumulator.plus(entry.netRewardRate);
+  rs.grossRewardRateCumulator = rs.grossRewardRateCumulator.plus(entry.grossRewardRate);
   const entries = rs.entries;
   entries.push(entry.id);
   rs.entryCount = rs.entryCount.plus(BigInt.fromI32(1));
   rs.entries = entries;
-  rs.netAPY = rs.netAPYCumulator.div(rs.entryCount);
-  rs.grossAPY = rs.grossAPYCumulator.div(rs.entryCount);
+  rs.netRewardRate = rs.netRewardRateCumulator.div(rs.entryCount);
+  rs.grossRewardRate = rs.grossRewardRateCumulator.div(rs.entryCount);
 
   rs.save();
 }

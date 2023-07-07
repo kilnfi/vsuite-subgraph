@@ -716,7 +716,7 @@
           },
           {
             "internalType": "int128",
-            "name": "revenue",
+            "name": "rewards",
             "type": "int128"
           },
           {

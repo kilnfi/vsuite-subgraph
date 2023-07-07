@@ -319,7 +319,7 @@ type TreasuryWithdrawal @entity {
 
   operator: Bytes!
   globalRecipient: Bytes!
-  revenue: BigInt!
+  rewards: BigInt!
   commission: BigInt!
 
   createdAt: BigInt!
@@ -424,9 +424,9 @@ type vPoolRewardEntry implements RewardEntry @entity {
   type: String!
 
   netReward: BigInt!
-  netAPY: BigInt!
+  netRewardRate: BigInt!
   grossReward: BigInt!
-  grossAPY: BigInt!
+  grossRewardRate: BigInt!
   report: Report!
 
   createdAt: BigInt!
@@ -440,9 +440,9 @@ type IntegrationRewardEntry implements RewardEntry @entity {
   type: String!
 
   netReward: BigInt!
-  netAPY: BigInt!
+  netRewardRate: BigInt!
   grossReward: BigInt!
-  grossAPY: BigInt!
+  grossRewardRate: BigInt!
   report: Report!
 
   createdAt: BigInt!
@@ -457,11 +457,11 @@ type PeriodRewardSummary @entity {
   name: String!
   period: BigInt!
   totalNetRewards: BigInt!
-  netAPYCumulator: BigInt!
-  netAPY: BigInt!
+  netRewardRateCumulator: BigInt!
+  netRewardRate: BigInt!
   totalGrossRewards: BigInt!
-  grossAPYCumulator: BigInt!
-  grossAPY: BigInt!
+  grossRewardRateCumulator: BigInt!
+  grossRewardRate: BigInt!
   entries: [RewardEntry!]!
   entryCount: BigInt!
   oldestEntry: RewardEntry
@@ -569,7 +569,7 @@ type Report @entity {
   exitBoostEthers: BigInt!
   exitFedEthers: BigInt!
   exitBurnedShares: BigInt!
-  revenue: BigInt!
+  rewards: BigInt!
   delta: BigInt!
   increaseLimit: BigInt!
   coverageIncreaseLimit: BigInt!
