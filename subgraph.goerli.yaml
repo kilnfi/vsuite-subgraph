@@ -61,6 +61,8 @@ dataSources:
           handler: handlerSetGlobalConsensusLayerSpec
         - event: SetAdmin(address)
           handler: handleSetAdmin
+      blockHandlers:
+        - handler: handleBlock
       file: ./src/Nexus.mapping.ts
 
   - kind: ethereum
@@ -422,8 +424,6 @@ templates:
       abis:
         - name: vFactory
           file: ./abis/vFactory.json
-      blockHandlers:
-        - handler: handleBlock
       eventHandlers:
         - event: SetExitTotal(indexed bytes32,uint32)
           handler: handleSetExitTotal
@@ -500,6 +500,8 @@ templates:
         - name: vPool
           file: ./abis/vPool.json
       eventHandlers:
+        - event: SetConsensusLayerSpec((uint64,uint64,uint64,uint64))
+          handler: handleSetConsensusLayerSpec
         - event: Deposit(indexed address,uint256,uint256)
           handler: handleDeposit
         - event: Mint(indexed address,uint256,uint256)
@@ -671,6 +673,8 @@ templates:
           handler: handleVPoolSharesReceived
         - event: NewCommissionSplit(address[],uint256[])
           handler: handleNewCommissionSplit
+        - event: CommissionSharesSold(uint256,uint256,uint256)
+          handler: handleCommissionSharesSold
         - event: CommissionWithdrawn(indexed address,uint256)
           handler: handleCommissionWithdrawn
         - event: Stake(indexed address,uint256,uint256,uint256)
@@ -719,6 +723,8 @@ templates:
           handler: handleVPoolSharesReceived
         - event: NewCommissionSplit(address[],uint256[])
           handler: handleNewCommissionSplit
+        - event: CommissionSharesSold(uint256,uint256,uint256)
+          handler: handleCommissionSharesSold
         - event: CommissionWithdrawn(indexed address,uint256)
           handler: handleCommissionWithdrawn
         - event: Stake(indexed address,uint256,uint256,uint256)

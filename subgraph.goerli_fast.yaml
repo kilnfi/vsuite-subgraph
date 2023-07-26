@@ -61,6 +61,8 @@ dataSources:
           handler: handlerSetGlobalConsensusLayerSpec
         - event: SetAdmin(address)
           handler: handleSetAdmin
+      # blockHandlers:
+      #   - handler: handleBlock
       file: ./src/Nexus.mapping.ts
 
   - kind: ethereum
@@ -422,8 +424,6 @@ templates:
       abis:
         - name: vFactory
           file: ./abis/vFactory.json
-      # blockHandlers:
-      #   - handler: handleBlock
       eventHandlers:
         - event: SetExitTotal(indexed bytes32,uint32)
           handler: handleSetExitTotal

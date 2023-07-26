@@ -48,6 +48,7 @@ import {
   externalEntityUUID
 } from './utils/utils';
 import { verify } from './bls12_381_verify';
+import { getOrLoadVerificationTracker } from './Nexus.mapping';
 import {
   FORK_VERSIONS,
   generateDepositDomain,
@@ -58,107 +59,6 @@ import {
 const PUBLIC_KEY_LENGTH = 48;
 const SIGNATURE_LENGTH = 96;
 const KEY_PACK_LENGTH = PUBLIC_KEY_LENGTH + SIGNATURE_LENGTH;
-
-function concat(b: ByteArray[]): ByteArray {
-  let res = new ByteArray(0);
-  for (let i = 0; i < b.length; i++) {
-    res = res.concat(b[i]);
-  }
-  return res;
-}
-
-// due to an issue with the heap when verify a lot of signatures, we need this
-// workaround to very the keys in an async manner. This is suboptimal and an
-// alternative should be found as it slows down the whole indexing process
-export function handleBlock(block: ethereum.Block): void {
-  const verificationTracker = getOrLoadVerificationTracker();
-
-  if (verificationTracker.current.lt(verificationTracker.total)) {
-    log.info('Found pending verifications !', []);
-    const from = verificationTracker.current;
-    let to = verificationTracker.total;
-    if (to.minus(from).gt(BigInt.fromI32(10))) {
-      to = from.plus(BigInt.fromI32(10));
-    }
-    for (let i = from; i.lt(to); i = i.plus(BigInt.fromI32(1))) {
-      const keyReq = PendingKeyValidationRequest.load(i.toString());
-      const key = ValidationKey.load(keyReq!.key);
-      const wc = WithdrawalChannel.load(key!.withdrawalChannel);
-      const factory = vFactory.load(wc!.factory);
-      let withdrawalCredentials: Bytes;
-      if (wc!.withdrawalChannel.toHexString() == '0x0000000000000000000000000000000000000000000000000000000000000000') {
-        withdrawalCredentials = Bytes.fromByteArray(
-          concat([
-            ByteArray.fromHexString('0x010000000000000000000000'),
-            Bytes.fromUint8Array(
-              crypto
-                .keccak256(
-                  concat([
-                    Bytes.fromHexString('0xff'),
-                    factory!.address,
-                    crypto.keccak256(key!.publicKey),
-                    crypto.keccak256(
-                      concat([
-                        Bytes.fromHexString('0x3d602d80600a3d3981f3363d3d373d3d3d363d73'),
-                        factory!.minimalRecipientImplementation as Bytes,
-                        Bytes.fromHexString('0x5af43d82803e903d91602b57fd5bf3')
-                      ])
-                    )
-                  ])
-                )
-                .slice(12, 32)
-            )
-          ])
-        );
-      } else {
-        withdrawalCredentials = wc!.withdrawalChannel;
-      }
-
-      log.info('Starting verification for {}', [key!.publicKey.toHexString()]);
-
-      const depositMessageRoot = hashTreeRootDepositMessage({
-        pubkey: key!.publicKey,
-        withdrawalCredentials: withdrawalCredentials,
-        amount: 32000000000
-      });
-
-      const forkVersion: Uint8Array = FORK_VERSIONS[dataSource.network() == 'mainnet' ? 0 : 1];
-      const depositDomain: Uint8Array = generateDepositDomain(forkVersion);
-
-      const signingRoot = hashTreeRootSigningData({
-        objectRoot: depositMessageRoot,
-        domain: depositDomain
-      });
-
-      const signature_verification = verify(key!.signature, signingRoot, key!.publicKey);
-
-      if (signature_verification.error != null || signature_verification.value == false) {
-        key!.validSignature = false;
-        key!.validationError = signature_verification.error;
-      } else {
-        key!.validSignature = true;
-      }
-
-      key!.validationStatus = 'done';
-      key!.save();
-
-      log.info('Finished verification for {}', [key!.publicKey.toHexString()]);
-    }
-    verificationTracker.current = to;
-    verificationTracker.save();
-  }
-}
-
-function getOrLoadVerificationTracker(): PendingKeyValidationTracker {
-  let tracker = PendingKeyValidationTracker.load('global');
-  if (tracker == null) {
-    tracker = new PendingKeyValidationTracker('global');
-    tracker.total = BigInt.fromI32(0);
-    tracker.current = BigInt.fromI32(0);
-    tracker.save();
-  }
-  return tracker;
-}
 
 export function handleAddedValidators(event: AddedValidators): void {
   const channelId = entityUUID(event, [event.params.withdrawalChannel.toHexString()]);

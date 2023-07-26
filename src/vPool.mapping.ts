@@ -504,32 +504,6 @@ export function handleProcessedReport(event: ProcessedReport): void {
           .times(BigInt.fromI64(YEAR))
           .div(period);
 
-        if (grossAPY.lt(BigInt.zero())) {
-          log.info('GROSS NEGATIVE', []);
-
-          log.info(pool_pre_underlying_supply.toString(), []);
-          log.info(pool_pre_supply.toString(), []);
-          log.info(pool_post_underlying_supply.toString(), []);
-          log.info(pool_post_supply.toString(), []);
-
-          log.info(preRawUnderlyingSupply.toString(), []);
-          log.info(preGrossRate.toString(), []);
-
-          log.info(postRawUnderlyingSupply.toString(), []);
-          log.info(postGrossRate.toString(), []);
-
-          log.info(preUnderlyingSupply.toString(), []);
-          log.info(postUnderlyingSupply.toString(), []);
-          const rs = PeriodRewardSummary.load(
-            externalEntityUUID(Address.fromBytes(erc20.address), ['summaries', 'allTime'])
-          );
-          if (rs != null) {
-            if (rs.grossRewardRate.lt(BigInt.zero())) {
-              throw new Error('GLOBAL APY IS NEGATIVE');
-            }
-          }
-        }
-
         const integrationRewardEntry = new IntegrationRewardEntry(eventUUID(event, ['IntegrationRewardEntry']));
         integrationRewardEntry.type = 'IntegrationRewardEntry';
         integrationRewardEntry.grossReward = rewards.plus(commission);
