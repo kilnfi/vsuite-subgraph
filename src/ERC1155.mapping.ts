@@ -9,6 +9,7 @@ import {
   ERC1155Transfer,
   ERC1155Approval
 } from '../generated/schema';
+import { Stake as Stake_1_0_0_rc4 } from '../generated/templates/ERC1155_1_0_0_rc4/Liquid1155';
 import {
   ApprovalForAll,
   CommissionWithdrawn,
@@ -221,7 +222,7 @@ export function handleCommissionWithdrawn(event: CommissionWithdrawn): void {
   erc1155!.save();
 }
 
-export function handleStake(event: Stake): void {
+export function handleStake_1_0_0_rc4(event: Stake_1_0_0_rc4): void {
   const tokenId = event.params.id;
   const erc1155 = ERC1155.load(entityUUID(event, [tokenId.toString()]));
   const erc1155Integration = ERC1155Integration.load(entityUUID(event, []));
@@ -281,6 +282,73 @@ export function handleStake(event: Stake): void {
   const poolId = event.params.id;
   const multiPool = MultiPool.load(entityUUID(event, [poolId.toString()]));
   multiPool!.injectedEth = multiPool!.injectedEth.plus(event.params.ethValue);
+  multiPool!.editedAt = ts;
+  multiPool!.editedAtBlock = blockId;
+  multiPool!.save();
+
+  balance.save();
+}
+
+export function handleStake(event: Stake): void {
+  const tokenId = event.params.stakeDetails[0].poolId;
+  const erc1155 = ERC1155.load(entityUUID(event, [tokenId.toString()]));
+  const erc1155Integration = ERC1155Integration.load(entityUUID(event, []));
+
+  const ts = event.block.timestamp;
+  const blockId = event.block.number;
+  const staker = event.params.staker;
+  const value = event.params.depositedEth;
+
+  const depositId = eventUUID(event, [event.address.toHexString(), tokenId.toString(), staker.toHexString()]);
+  const deposit = new ERC1155Deposit(depositId);
+  deposit.token = erc1155!.id;
+  deposit.depositAmount = BigInt.zero();
+  // deposit.mintedShares = BigInt.zero();
+  deposit.hash = event.transaction.hash;
+  deposit.staker = staker;
+
+  deposit.depositAmount = value;
+
+  deposit.editedAt = ts;
+  deposit.editedAtBlock = blockId;
+  deposit.createdAt = ts;
+  deposit.createdAtBlock = blockId;
+
+  erc1155!.totalUnderlyingSupply = erc1155!.totalUnderlyingSupply.plus(value);
+  erc1155Integration!.totalUnderlyingSupply = erc1155Integration!.totalUnderlyingSupply.plus(value);
+
+  deposit.save();
+  erc1155!.save();
+  erc1155Integration!.save();
+
+  let balance = ERC1155Balance.load(entityUUID(event, [staker.toHexString()]));
+  if (balance == null) {
+    balance = new ERC1155Balance(entityUUID(event, [staker.toHexString()]));
+    balance.token = entityUUID(event, [tokenId.toString()]);
+    balance.staker = staker;
+    balance.tokenBalance = BigInt.zero();
+    balance.totalDeposited = BigInt.zero();
+    balance.adjustedTotalDeposited = BigInt.zero();
+    balance.createdAt = ts;
+    balance.createdAtBlock = blockId;
+    balance.editedAt = ts;
+    balance.editedAtBlock = blockId;
+    balance.save();
+  }
+  balance.totalDeposited = balance.totalDeposited.plus(event.params.depositedEth);
+  balance.adjustedTotalDeposited = balance.adjustedTotalDeposited.plus(event.params.depositedEth);
+
+  const ucs = getOrCreateUnassignedCommissionSold();
+  if (ucs.active && ucs.tx == event.transaction.hash) {
+    balance.totalDeposited = balance.totalDeposited.plus(ucs.amount);
+    balance.adjustedTotalDeposited = balance.adjustedTotalDeposited.plus(ucs.amount);
+    ucs.active = false;
+    ucs.save();
+  }
+
+  const poolId = event.params.stakeDetails[0].poolId;
+  const multiPool = MultiPool.load(entityUUID(event, [poolId.toString()]));
+  multiPool!.injectedEth = multiPool!.injectedEth.plus(event.params.depositedEth);
   multiPool!.editedAt = ts;
   multiPool!.editedAtBlock = blockId;
   multiPool!.save();

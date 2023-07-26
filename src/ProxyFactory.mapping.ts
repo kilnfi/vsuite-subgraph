@@ -1,5 +1,11 @@
 import { ERC1155Integration, ERC20, vNFTIntegration } from '../generated/schema';
-import { ERC20 as ERC20Template, ERC1155 as ERC1155Template, vNFT as vNFTTemplate } from '../generated/templates';
+import {
+  ERC20 as ERC20Template,
+  ERC1155 as ERC1155Template,
+  vNFT as vNFTTemplate,
+  ERC20_1_0_0_rc4 as ERC20_1_0_0_rc4Template,
+  ERC1155_1_0_0_rc4 as ERC1155_1_0_0_rc4Template
+} from '../generated/templates';
 import { DeployedProxy } from '../generated/templates/ProxyFactory/ProxyFactory';
 import {
   CHANNEL_LIQUID_1155_vPOOL_vPOOL_BYTES32,
@@ -30,6 +36,7 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     channel.equals(CHANNEL_LIQUID_20_C_vPOOL_BYTES32)
   ) {
     ERC20Template.create(event.params.proxy);
+    ERC20_1_0_0_rc4Template.create(event.params.proxy);
 
     const integration = new ERC20(externalEntityUUID(event.params.proxy, []));
     integration.address = event.params.proxy;
@@ -56,6 +63,7 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     channel.equals(CHANNEL_LIQUID_1155_vPOOL_vPOOL_BYTES32)
   ) {
     ERC1155Template.create(event.params.proxy);
+    ERC1155_1_0_0_rc4Template.create(event.params.proxy);
 
     const integration = new ERC1155Integration(externalEntityUUID(event.params.proxy, []));
     integration.address = event.params.proxy;

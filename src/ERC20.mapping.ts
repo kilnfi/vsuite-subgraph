@@ -13,6 +13,7 @@ import {
   UnassignedCommissionSold,
   PoolBalance
 } from '../generated/schema';
+import { Stake as Stake_1_0_0_rc4 } from '../generated/templates/ERC20_1_0_0_rc4/Native20';
 import {
   Approval,
   CommissionWithdrawn,
@@ -301,7 +302,7 @@ export function handleCommissionWithdrawn(event: CommissionWithdrawn): void {
   erc20!.save();
 }
 
-export function handleStake(event: Stake): void {
+export function handleStake_1_0_0_rc4(event: Stake_1_0_0_rc4): void {
   const erc20 = ERC20.load(entityUUID(event, []));
 
   const ts = event.block.timestamp;
@@ -359,6 +360,69 @@ export function handleStake(event: Stake): void {
   multiPool!.editedAt = ts;
   multiPool!.editedAtBlock = blockId;
   multiPool!.save();
+
+  ucs.save();
+  balance.save();
+
+  erc20!.totalUnderlyingSupply = _recomputeERC20TotalUnderlyingSupply(Address.fromBytes(erc20!.address));
+  erc20!.save();
+}
+
+export function handleStake(event: Stake): void {
+  const erc20 = ERC20.load(entityUUID(event, []));
+
+  const ts = event.block.timestamp;
+  const blockId = event.block.number;
+  const staker = event.params.staker;
+  const ucs = getOrCreateUnassignedCommissionSold();
+
+  const deposit = new ERC20Deposit(eventUUID(event, [event.address.toHexString(), staker.toHexString()]));
+  deposit.integration = entityUUID(event, []);
+  deposit.depositAmount = BigInt.zero();
+  if (ucs.active && ucs.tx.equals(event.transaction.hash)) {
+    deposit.depositAmount = deposit.depositAmount.plus(ucs.amount);
+  }
+  deposit.mintedShares = event.params.mintedTokens;
+  deposit.hash = event.transaction.hash;
+  deposit.staker = staker;
+  deposit.createdAt = ts;
+  deposit.createdAtBlock = blockId;
+
+  deposit.depositAmount = deposit.depositAmount.plus(event.params.depositedEth);
+  erc20!.totalUnderlyingSupply = erc20!.totalUnderlyingSupply.plus(event.params.depositedEth);
+
+  deposit.editedAt = ts;
+  deposit.editedAtBlock = blockId;
+
+  deposit.save();
+  erc20!.save();
+
+  let balance = ERC20Balance.load(entityUUID(event, [staker.toHexString()]));
+  if (balance == null) {
+    balance = new ERC20Balance(entityUUID(event, [staker.toHexString()]));
+    balance.integration = entityUUID(event, []);
+    balance.staker = staker;
+    balance.sharesBalance = BigInt.zero();
+    balance.totalDeposited = BigInt.zero();
+    balance.adjustedTotalDeposited = BigInt.zero();
+    balance.createdAt = ts;
+    balance.createdAtBlock = blockId;
+    balance.editedAt = ts;
+    balance.editedAtBlock = blockId;
+    balance.save();
+  }
+  balance.totalDeposited = balance.totalDeposited.plus(event.params.depositedEth);
+  balance.adjustedTotalDeposited = balance.adjustedTotalDeposited.plus(event.params.depositedEth);
+
+  for (let i = 0; i < event.params.stakeDetails.length; i++) {
+    const stakeDetail = event.params.stakeDetails[i];
+    const poolId = stakeDetail.poolId;
+    const multiPool = MultiPool.load(entityUUID(event, [poolId.toString()]));
+    multiPool!.injectedEth = multiPool!.injectedEth.plus(stakeDetail.ethToPool);
+    multiPool!.editedAt = ts;
+    multiPool!.editedAtBlock = blockId;
+    multiPool!.save();
+  }
 
   ucs.save();
   balance.save();

@@ -384,6 +384,74 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
+        "internalType": "address",
+        "name": "staker",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint128",
+        "name": "exitedTokens",
+        "type": "uint128"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint128",
+            "name": "poolId",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exitedPoolShares",
+            "type": "uint128"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct PoolExitDetails[]",
+        "name": "exitDetails",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "Exit",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "poolId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "shares",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "weights",
+        "type": "uint256[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "address[]",
+        "name": "recipients",
+        "type": "address[]"
+      }
+    ],
+    "name": "ExitedCommissionShares",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": false,
         "internalType": "uint256",
         "name": "version",
@@ -583,21 +651,48 @@
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "ethValue",
-        "type": "uint256"
+        "internalType": "uint128",
+        "name": "depositedEth",
+        "type": "uint128"
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "sharesBought",
-        "type": "uint256"
+        "internalType": "uint128",
+        "name": "mintedTokens",
+        "type": "uint128"
       },
       {
+        "components": [
+          {
+            "internalType": "uint128",
+            "name": "poolId",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "ethToPool",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "ethToIntegrator",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "pSharesFromPool",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "pSharesFromIntegrator",
+            "type": "uint128"
+          }
+        ],
         "indexed": false,
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
+        "internalType": "struct PoolStakeDetails[]",
+        "name": "stakeDetails",
+        "type": "tuple[]"
       }
     ],
     "name": "Stake",

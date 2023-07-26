@@ -641,6 +641,26 @@ templates:
         - event: SetHighestReportedEpoch(uint256)
           handler: handleSetHighestReportedEpoch
 
+  - name: ERC20_1_0_0_rc4
+    kind: ethereum/contract
+    network: goerli
+    source:
+      abi: Native20
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/ERC20.mapping.ts
+      entities:
+        - ERC20
+      abis:
+        - name: Native20
+          file: ./abis/Liquid20A_1_0_0_rc4.json
+      eventHandlers:
+        # old stake event from 1.0.0-rc4
+        - event: Stake(indexed address,uint256,uint256,uint256)
+          handler: handleStake_1_0_0_rc4
+
   - name: ERC20
     kind: ethereum/contract
     network: goerli
@@ -657,6 +677,8 @@ templates:
         - name: Native20
           file: ./abis/Liquid20A.json
       eventHandlers:
+        - event: Stake(indexed address,uint128,uint128,(uint128,uint128,uint128,uint128,uint128)[])
+          handler: handleStake
         - event: SetName(string)
           handler: handleSetName
         - event: SetSymbol(string)
@@ -677,8 +699,6 @@ templates:
           handler: handleCommissionSharesSold
         - event: CommissionWithdrawn(indexed address,uint256)
           handler: handleCommissionWithdrawn
-        - event: Stake(indexed address,uint256,uint256,uint256)
-          handler: handleStake
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
         - event: Approval(indexed address,indexed address,uint256)
@@ -689,6 +709,24 @@ templates:
           handler: handleSetMaxCommission
         - event: SetPoolPercentages(uint256[])
           handler: handleSetPoolPercentages
+  - name: ERC1155_1_0_0_rc4
+    kind: ethereum/contract
+    network: goerli
+    source:
+      abi: Liquid1155
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/ERC1155.mapping.ts
+      entities:
+        - ERC1155
+      abis:
+        - name: Liquid1155
+          file: ./abis/Liquid1155_1_0_0_rc4.json
+      eventHandlers:
+        - event: Stake(indexed address,uint256,uint256,uint256)
+          handler: handleStake_1_0_0_rc4
   - name: ERC1155
     kind: ethereum/contract
     network: goerli
@@ -705,6 +743,8 @@ templates:
         - name: Liquid1155
           file: ./abis/Liquid1155.json
       eventHandlers:
+        - event: Stake(indexed address,uint128,uint128,(uint128,uint128,uint128,uint128,uint128)[])
+          handler: handleStake
         - event:  SetURIPrefix(string)
           handler: handleSetURIPrefix
         - event: SetName(string)
@@ -727,8 +767,6 @@ templates:
           handler: handleCommissionSharesSold
         - event: CommissionWithdrawn(indexed address,uint256)
           handler: handleCommissionWithdrawn
-        - event: Stake(indexed address,uint256,uint256,uint256)
-          handler: handleStake
         - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleTransferSingle
         - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
