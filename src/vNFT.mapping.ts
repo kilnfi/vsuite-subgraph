@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes } from '@graphprotocol/graph-ts';
+import { Address, BigInt, Bytes, log } from '@graphprotocol/graph-ts';
 import {
   MerkleVault,
   vFactory,
@@ -130,7 +130,6 @@ export function handleSetIntegrator(event: SetIntegrator): void {
 }
 
 export function handlePurchasedValidator(event: PurchasedValidator): void {
-  const vnftIntegrationAddress = event.address;
   const tokenId = event.params.tokenId;
   const internalTokenId = event.params.validatorId;
   const ts = event.block.timestamp;
@@ -166,6 +165,10 @@ export function handlePurchasedValidator(event: PurchasedValidator): void {
 }
 
 export function handleTransfer(event: Transfer): void {
+  if (event.params.to.equals(Address.zero()) || event.params.from.equals(Address.zero())) {
+    return;
+  }
+
   const internalTokenId = getInternalTokenId(event.address, event.params.tokenId);
   const ts = event.block.timestamp;
   const blockId = event.block.number;
@@ -229,7 +232,7 @@ export function handleUsershipCleared(event: UsershipCleared): void {
   const blockId = event.block.number;
 
   const vnftUser = vNFTUser.load(entityUUID(event, [event.params.tokenId.toString()]));
-  vnftUser!.user = Address.empty();
+  vnftUser!.user = Address.zero();
   vnftUser!.expiry = BigInt.zero();
 
   vnftUser!.editedAt = ts;

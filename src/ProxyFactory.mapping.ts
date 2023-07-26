@@ -40,7 +40,7 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     integration.totalSupply = BigInt.zero();
     integration.totalUnderlyingSupply = BigInt.zero();
     integration.decimals = BigInt.fromI32(18);
-    integration.admin = Address.empty();
+    integration.admin = Address.zero();
     integration.maxCommission = BigInt.zero();
     integration._poolsDerived = [];
     integration.summaries = getOrCreateRewardSummaries(event, event.params.proxy).id;
@@ -72,7 +72,7 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     integration.editedAt = event.block.timestamp;
     integration.createdAtBlock = event.block.number;
     integration.editedAtBlock = event.block.number;
-    integration.admin = Address.empty();
+    integration.admin = Address.zero();
     integration.maxCommission = BigInt.zero();
 
     integration.save();
@@ -89,12 +89,12 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     vnft.supply = BigInt.zero();
     vnft.operatorCommission = BigInt.zero();
     vnft.integratorCommission = BigInt.zero();
-    vnft.integrator = Address.empty();
+    vnft.integrator = Address.zero();
     vnft.vFactory = externalEntityUUID(Address.zero(), []);
     vnft.extraData = '';
     vnft.execLayerVault = externalEntityUUID(Address.zero(), []);
     vnft.soulboundMode = false;
-    vnft.admin = Address.empty();
+    vnft.admin = Address.zero();
 
     vnft.createdAt = event.block.timestamp;
     vnft.editedAt = event.block.timestamp;
