@@ -32,7 +32,6 @@ import {
 } from '../generated/templates/vNFT/vNFT';
 import { MerkleVault as MerkleVaultTemplate } from '../generated/templates';
 import { entityUUID, eventUUID, externalEntityUUID } from './utils/utils';
-import { store } from '@graphprotocol/graph-ts';
 
 function getInternalTokenId(vnftIntegrationAddress: Address, externalTokenId: BigInt): BigInt {
   const mapping = vNFTidsMapping.load(externalEntityUUID(vnftIntegrationAddress, [externalTokenId.toString()]));
@@ -197,7 +196,7 @@ export function handleTransfer(event: Transfer): void {
 
 export function handleUpdateUser(event: UpdateUser): void {
   const tokenId = event.params.tokenId;
-  const id = entityUUID(event, [tokenId.toString()]);
+  const id = entityUUID(event, [getInternalTokenId(event.address, tokenId).toString()]);
   const ts = event.block.timestamp;
   const blockId = event.block.number;
 
@@ -220,7 +219,7 @@ export function handleApproval(event: Approval): void {
   const ts = event.block.timestamp;
   const blockId = event.block.number;
 
-  const vnft = vNFT.load(entityUUID(event, [event.params.tokenId.toString()]));
+  const vnft = vNFT.load(entityUUID(event, [getInternalTokenId(event.address, event.params.tokenId).toString()]));
   vnft!.editedAt = ts;
   vnft!.editedAtBlock = blockId;
   vnft!.approval = event.params.approved;
@@ -231,7 +230,9 @@ export function handleUsershipCleared(event: UsershipCleared): void {
   const ts = event.block.timestamp;
   const blockId = event.block.number;
 
-  const vnftUser = vNFTUser.load(entityUUID(event, [event.params.tokenId.toString()]));
+  const vnftUser = vNFTUser.load(
+    entityUUID(event, [getInternalTokenId(event.address, event.params.tokenId).toString()])
+  );
   vnftUser!.user = Address.zero();
   vnftUser!.expiry = BigInt.zero();
 
@@ -305,8 +306,6 @@ export function handleTokenIdUpdated(event: TokenIdUpdated): void {
   mapping.internalTokenId = event.params.validatorId;
   mapping.externalTokenId = event.params.newTokenId;
   mapping.save();
-
-  store.remove('vNFTidsMapping', entityUUID(event, [event.params.oldTokenId.toString()]));
 }
 
 export function handleSetSoulboundMode(event: SetSoulboundMode): void {
