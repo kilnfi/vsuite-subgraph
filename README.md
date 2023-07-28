@@ -40,14 +40,14 @@ docker-compose up
 ### 5. Register this subgraph on the `graph-node`
 
 ```
-graph codegen
+graph codegen subgraph.goerli_fast.yaml
 graph create --node http://localhost:8020 vsuite-goerli
 ```
 
 ### 6. Deploy this subgraph
 
 ```
-graph deploy vsuite-goerli --node http://localhost:8020 --ipfs http://localhost:5001
+graph deploy vsuite-goerli --node http://localhost:8020 --ipfs http://localhost:5001 subgraph.goerli_fast.yaml
 ```
 
 ### 7. Visit the [web UI](http://localhost:8000/subgraphs/name/vsuite-goerli/graphql)
