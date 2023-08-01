@@ -367,28 +367,28 @@ dataSources:
           handler: handleAppliedFix
       file: ./src/PluggableHatcher.mapping.ts
   
-  # - kind: ethereum
-  #   name: IntegrationRouter
-  #   network: mainnet
-  #   source:
-  #     address: "0x4E17213b2317B1DD37143335FF7D9E929F4f3926"
-  #     abi: IntegrationRouter
-  #     startBlock: 9183000
-  #   mapping:
-  #     kind: ethereum/events
-  #     apiVersion: 0.0.7
-  #     language: wasm/assemblyscript
-  #     entities:
-  #       - IntegrationChannel
-  #     abis:
-  #       - name: IntegrationRouter
-  #         file: ./abis/IntegrationRouter.json
-  #     eventHandlers:
-  #       - event: ChannelImplementationUpdated(indexed bytes32,address,bool)
-  #         handler: handleChannelImplementationUpdated
-  #       - event: ProxyFactoryDeployed(indexed bytes32,address)
-  #         handler: handleProxyFactoryDeployed
-  #     file: ./src/IntegrationRouter.mapping.ts
+  - kind: ethereum
+    name: IntegrationRouter
+    network: mainnet
+    source:
+      address: "0x4F13231eB0F3Ddf6aF9729491Fc7229BD6A32d70"
+      abi: IntegrationRouter
+      startBlock: 17813720
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - IntegrationChannel
+      abis:
+        - name: IntegrationRouter
+          file: ./abis/IntegrationRouter.json
+      eventHandlers:
+        - event: ChannelImplementationUpdated(indexed bytes32,address,bool)
+          handler: handleChannelImplementationUpdated
+        - event: ProxyFactoryDeployed(indexed bytes32,address)
+          handler: handleProxyFactoryDeployed
+      file: ./src/IntegrationRouter.mapping.ts
 
 templates:
   - name: Cub
