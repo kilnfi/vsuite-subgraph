@@ -414,14 +414,19 @@ export function handleProcessedReport(event: ProcessedReport): void {
   vpoolRewardEntry.netReward = (report.delta.gt(BigInt.fromI32(0)) ? report.delta : BigInt.fromI32(0)).minus(
     report.rewards.times(pool!.operatorFee).div(BigInt.fromI32(10000))
   );
-  vpoolRewardEntry.netRewardRate = vpoolRewardEntry.netReward
-    .times(BigInt.fromString('1000000000000000000'))
-    .times(BigInt.fromI64(YEAR))
-    .div(report.preUnderlyingSupply.times(period));
-  vpoolRewardEntry.grossRewardRate = vpoolRewardEntry.grossReward
-    .times(BigInt.fromString('1000000000000000000'))
-    .times(BigInt.fromI64(YEAR))
-    .div(report.preUnderlyingSupply.times(period));
+  if (report.preUnderlyingSupply.gt(BigInt.fromI32(0))) {
+    vpoolRewardEntry.netRewardRate = vpoolRewardEntry.netReward
+      .times(BigInt.fromString('1000000000000000000'))
+      .times(BigInt.fromI64(YEAR))
+      .div(report.preUnderlyingSupply.times(period));
+    vpoolRewardEntry.grossRewardRate = vpoolRewardEntry.grossReward
+      .times(BigInt.fromString('1000000000000000000'))
+      .times(BigInt.fromI64(YEAR))
+      .div(report.preUnderlyingSupply.times(period));
+  } else {
+    vpoolRewardEntry.netRewardRate = BigInt.fromI32(0);
+    vpoolRewardEntry.grossRewardRate = BigInt.fromI32(0);
+  }
   vpoolRewardEntry.report = report.id;
   vpoolRewardEntry.createdAt = event.block.timestamp;
   vpoolRewardEntry.editedAt = event.block.timestamp;
@@ -438,7 +443,7 @@ export function handleProcessedReport(event: ProcessedReport): void {
     let rewards = BigInt.zero();
     let commission = BigInt.zero();
 
-    if (multipool!.shares != null) {
+    if (multipool!.shares != null && pool_pre_supply.gt(BigInt.fromI32(0)) && pool_post_supply.gt(BigInt.fromI32(0))) {
       const multiPoolBalance = PoolBalance.load(multipool!.shares as string);
 
       let deposited_eth = BigInt.zero();
@@ -474,53 +479,52 @@ export function handleProcessedReport(event: ProcessedReport): void {
       const erc20 = ERC20.load(multipool!.integration);
       if (erc20 != null) {
         const multiPoolBalance = PoolBalance.load(multipool!.shares as string);
+        if (multiPoolBalance!.amount.gt(BigInt.zero())) {
+          const preNetRate = multiPoolBalance!.amount.gt(BigInt.zero())
+            ? preUnderlyingSupply.times(BigInt.fromString('1000000000000000000')).div(multiPoolBalance!.amount)
+            : BigInt.zero();
+          const preGrossRate = multiPoolBalance!.amount.gt(BigInt.zero())
+            ? preRawUnderlyingSupply.times(BigInt.fromString('1000000000000000000')).div(multiPoolBalance!.amount)
+            : BigInt.zero();
 
-        const preNetRate = multiPoolBalance!.amount.gt(BigInt.zero())
-          ? preUnderlyingSupply.times(BigInt.fromString('1000000000000000000')).div(multiPoolBalance!.amount)
-          : BigInt.zero();
-        const preGrossRate = multiPoolBalance!.amount.gt(BigInt.zero())
-          ? preRawUnderlyingSupply.times(BigInt.fromString('1000000000000000000')).div(multiPoolBalance!.amount)
-          : BigInt.zero();
+          erc20.totalUnderlyingSupply = _recomputeERC20TotalUnderlyingSupply(Address.fromBytes(erc20.address));
 
-        erc20.totalUnderlyingSupply = _recomputeERC20TotalUnderlyingSupply(Address.fromBytes(erc20.address));
+          const postNetRate = multiPoolBalance!.amount.gt(BigInt.zero())
+            ? postUnderlyingSupply.times(BigInt.fromString('1000000000000000000')).div(multiPoolBalance!.amount)
+            : BigInt.zero();
+          const postGrossRate = multiPoolBalance!.amount.gt(BigInt.zero())
+            ? postRawUnderlyingSupply.times(BigInt.fromString('1000000000000000000')).div(multiPoolBalance!.amount)
+            : BigInt.zero();
 
-        const postNetRate = multiPoolBalance!.amount.gt(BigInt.zero())
-          ? postUnderlyingSupply.times(BigInt.fromString('1000000000000000000')).div(multiPoolBalance!.amount)
-          : BigInt.zero();
-        const postGrossRate = multiPoolBalance!.amount.gt(BigInt.zero())
-          ? postRawUnderlyingSupply.times(BigInt.fromString('1000000000000000000')).div(multiPoolBalance!.amount)
-          : BigInt.zero();
+          const netAPY = postNetRate
+            .times(BigInt.fromString('1000000000000000000'))
+            .div(preNetRate)
+            .minus(BigInt.fromString('1000000000000000000'))
+            .times(BigInt.fromI64(YEAR))
+            .div(period);
+          const grossAPY = postGrossRate
+            .times(BigInt.fromString('1000000000000000000'))
+            .div(preGrossRate)
+            .minus(BigInt.fromString('1000000000000000000'))
+            .times(BigInt.fromI64(YEAR))
+            .div(period);
 
-        const netAPY = postNetRate
-          .times(BigInt.fromString('1000000000000000000'))
-          .div(preNetRate)
-          .minus(BigInt.fromString('1000000000000000000'))
-          .times(BigInt.fromI64(YEAR))
-          .div(period);
-        const grossAPY = postGrossRate
-          .times(BigInt.fromString('1000000000000000000'))
-          .div(preGrossRate)
-          .minus(BigInt.fromString('1000000000000000000'))
-          .times(BigInt.fromI64(YEAR))
-          .div(period);
-
-        const integrationRewardEntry = new IntegrationRewardEntry(eventUUID(event, ['IntegrationRewardEntry']));
-        integrationRewardEntry.type = 'IntegrationRewardEntry';
-        integrationRewardEntry.grossReward = rewards.plus(commission);
-        integrationRewardEntry.netReward = rewards;
-        integrationRewardEntry.netRewardRate = netAPY;
-        integrationRewardEntry.grossRewardRate = grossAPY;
-        integrationRewardEntry.report = report.id;
-        integrationRewardEntry.createdAt = event.block.timestamp;
-        integrationRewardEntry.editedAt = event.block.timestamp;
-        integrationRewardEntry.createdAtBlock = event.block.number;
-        integrationRewardEntry.editedAtBlock = event.block.number;
-        if (integrationRewardEntry.grossReward.gt(BigInt.zero())) {
+          const integrationRewardEntry = new IntegrationRewardEntry(eventUUID(event, ['IntegrationRewardEntry']));
+          integrationRewardEntry.type = 'IntegrationRewardEntry';
+          integrationRewardEntry.grossReward = rewards.plus(commission);
+          integrationRewardEntry.netReward = rewards;
+          integrationRewardEntry.netRewardRate = netAPY;
+          integrationRewardEntry.grossRewardRate = grossAPY;
+          integrationRewardEntry.report = report.id;
+          integrationRewardEntry.createdAt = event.block.timestamp;
+          integrationRewardEntry.editedAt = event.block.timestamp;
+          integrationRewardEntry.createdAtBlock = event.block.number;
+          integrationRewardEntry.editedAtBlock = event.block.number;
           pushIntegrationEntryToSummaries(event, Address.fromBytes(erc20.address), integrationRewardEntry);
           integrationRewardEntry.save();
-        }
 
-        erc20.save();
+          erc20.save();
+        }
       }
     }
 

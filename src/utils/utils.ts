@@ -796,6 +796,9 @@ export function _computeStakedEthValue(
   poolTotalSupply: BigInt,
   poolTotalUnderlyingSupply: BigInt
 ): BigInt {
+  if (poolTotalSupply.equals(BigInt.zero())) {
+    return BigInt.zero();
+  }
   return ownedPoolShares.times(poolTotalUnderlyingSupply).div(poolTotalSupply);
 }
 
