@@ -24,13 +24,13 @@ jobs:
         run: yarn
 
       - name: 'graph:codegen:goerli'
-        run: $(yarn bin)/graph codegen subgraph.goerli_fast.yml
+        run: $(yarn bin)/graph codegen subgraph.goerli_fast.yaml
 
       - name: 'graph:create:goerli'
         run: $(yarn bin)/graph create vsuite-goerli --node http://graph-node-query.thegraph:8020
 
       - name: 'graph:deploy:goerli'
-        run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001 subgraph.goerli_fast.yml
+        run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001 subgraph.goerli_fast.yaml
 
       - name: 'graph:clean'
         run: $(yarn bin)/graph clean
@@ -38,13 +38,13 @@ jobs:
 
 
       - name: 'graph:codegen:goerli-complete'
-        run: $(yarn bin)/graph codegen subgraph.goerli.yml
+        run: $(yarn bin)/graph codegen subgraph.goerli.yaml
 
       - name: 'graph:create:goerli-complete'
         run: $(yarn bin)/graph create vsuite-goerli --node http://graph-node-query.thegraph:8020
 
       - name: 'graph:deploy:goerli-complete'
-        run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001 subgraph.goerli.yml
+        run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001 subgraph.goerli.yaml
 
       - name: 'graph:clean'
         run: $(yarn bin)/graph clean
@@ -52,7 +52,7 @@ jobs:
 
 
       - name: 'graph:codegen:mainnet'
-        run: $(yarn bin)/graph codegen subgraph.mainnet_fast.yml
+        run: $(yarn bin)/graph codegen subgraph.mainnet_fast.yaml
         if: '!github.event.prerelease'
 
 
@@ -60,7 +60,7 @@ jobs:
       #   run: $(yarn bin)/graph create vsuite --node http://graph-node-query.thegraph:8020
 
       # - name: 'graph:deploy:mainnet'
-      #   run: $(yarn bin)/graph deploy vsuite --version-label ${GITHUB_REF##*/} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001 subgraph.mainnet_fast.yml
+      #   run: $(yarn bin)/graph deploy vsuite --version-label ${GITHUB_REF##*/} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001 subgraph.mainnet_fast.yaml
 
       - name: 'graph:clean'
         run: $(yarn bin)/graph clean
@@ -69,12 +69,12 @@ jobs:
 
 
       - name: 'graph:codegen:mainnet-complete'
-        run: $(yarn bin)/graph codegen subgraph.mainnet.yml
+        run: $(yarn bin)/graph codegen subgraph.mainnet.yaml
         if: '!github.event.prerelease'
 
       # - name: 'graph:create:mainnet-complete'
       #   run: $(yarn bin)/graph create vsuite-complete --node http://graph-node-query.thegraph:8020
 
       # - name: 'graph:deploy:mainnet-complete'
-      #   run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001 subgraph.mainnet.yml
+      #   run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001 subgraph.mainnet.yaml
 
