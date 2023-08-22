@@ -2,6 +2,7 @@ name: 'deploy::subgraph'
 
 on:
   release:
+    types: [created]
 
 permissions:
   id-token: write
