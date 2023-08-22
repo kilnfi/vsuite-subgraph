@@ -159,10 +159,11 @@ export function handleReceivedCask(event: ReceivedCask): void {
   let shouldBreak = false;
   for (let i = 0; i < unfullfilledTickets.length; i++) {
     const ticket = Ticket.load(unfullfilledTickets[i]) as Ticket;
-    if (ticket.position.ge(cask.position) && ticket.position.lt(cask.position.plus(cask.size))) {
+    if (ticket.position.lt(cask.position.plus(cask.size))) {
       if (ticket.position.plus(ticket.size).le(cask.position.plus(cask.size))) {
         ++removeCount;
-      } else {
+      }
+      if (ticket.position.plus(ticket.size).ge(cask.position.plus(cask.size))) {
         shouldBreak = true;
       }
       const fulfillableBy = ticket.fulfillableBy;
