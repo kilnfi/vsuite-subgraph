@@ -1,6 +1,9 @@
 name: 'deploy::subgraph'
 
 on:
+  push:
+    tags:
+      - '*'
   release:
     types: [published]
 
@@ -24,36 +27,44 @@ jobs:
         run: yarn
 
       - name: 'graph:codegen:goerli'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: $(yarn bin)/graph codegen subgraph.goerli_fast.yaml
 
       - name: 'graph:create:goerli'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: $(yarn bin)/graph create vsuite-goerli --node http://graph-node-query.thegraph:8020
 
       - name: 'graph:deploy:goerli'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001 subgraph.goerli_fast.yaml
 
       - name: 'graph:clean'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: $(yarn bin)/graph clean
 
 
 
       - name: 'graph:codegen:goerli-complete'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: $(yarn bin)/graph codegen subgraph.goerli.yaml
 
       - name: 'graph:create:goerli-complete'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: $(yarn bin)/graph create vsuite-goerli --node http://graph-node-query.thegraph:8020
 
       - name: 'graph:deploy:goerli-complete'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001 subgraph.goerli.yaml
 
       - name: 'graph:clean'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: $(yarn bin)/graph clean
 
 
 
       - name: 'graph:codegen:mainnet'
         run: $(yarn bin)/graph codegen subgraph.mainnet_fast.yaml
-        if: '!github.event.prerelease'
+        if: github.event_name == 'release'
 
 
       # - name: 'graph:create:mainnet'
@@ -64,13 +75,13 @@ jobs:
 
       - name: 'graph:clean'
         run: $(yarn bin)/graph clean
-        if: '!github.event.prerelease'
+        if: github.event_name == 'release'
 
 
 
       - name: 'graph:codegen:mainnet-complete'
         run: $(yarn bin)/graph codegen subgraph.mainnet.yaml
-        if: '!github.event.prerelease'
+        if: github.event_name == 'release'
 
       # - name: 'graph:create:mainnet-complete'
       #   run: $(yarn bin)/graph create vsuite-complete --node http://graph-node-query.thegraph:8020
