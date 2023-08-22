@@ -24,11 +24,20 @@ jobs:
       - name: 'yarn:init'
         run: yarn
 
-      - name: 'graph:codgen'
-        run: $(yarn bin)/graph codegen
+      - name: 'graph:codgen:goerli'
+        run: $(yarn bin)/graph codegen subgraph.goerli_fast.yml
 
-      - name: 'graph:create'
-        run: $(yarn bin)/graph create vsuite-goerli-audit --node http://graph-node-query.thegraph:8020
+      - name: 'graph:create:goerli'
+        run: $(yarn bin)/graph create vsuite-goerli --node http://graph-node-query.thegraph:8020
 
-      - name: 'graph:deploy'
-        run: $(yarn bin)/graph deploy vsuite-goerli-audit --version-label ${{ github.ref_name }} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001
+      - name: 'graph:deploy:goerli'
+        run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001 subgraph.goerli_fast.yml
+
+      - name: 'graph:codgen:goerli-complete'
+        run: $(yarn bin)/graph codegen subgraph.goerli.yml
+
+      - name: 'graph:create:goerli-complete'
+        run: $(yarn bin)/graph create vsuite-goerli --node http://graph-node-query.thegraph:8020
+
+      - name: 'graph:deploy:goerli-complete'
+        run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001 subgraph.goerli.yml
