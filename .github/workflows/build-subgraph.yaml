@@ -1,0 +1,38 @@
+name: 'deploy::subgraph'
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        manifest: [subgraph.goerli_fast.yaml, subgraph.goerli.yaml, subgraph.mainnet_fast.yaml, subgraph.mainnet.yaml]
+    runs-on: vsuite
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: 'asdf:install'
+        uses: asdf-vm/actions/install@v1.1.0
+
+      - name: 'yarn:init'
+        run: yarn
+
+      - name: 'graph:codegen'
+        run: $(yarn bin)/graph codegen ${{matrix.manifest}}}
+
+      - name: 'graph:build'
+        run: $(yarn bin)/graph build ${{matrix.manifest}}}
+
