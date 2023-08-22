@@ -1,4 +1,4 @@
-name: 'deploy::subgraph'
+name: 'build::subgraph'
 
 on:
   push:
