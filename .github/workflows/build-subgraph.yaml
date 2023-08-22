@@ -31,8 +31,8 @@ jobs:
         run: yarn
 
       - name: 'graph:codegen'
-        run: $(yarn bin)/graph codegen ${{matrix.manifest}}}
+        run: $(yarn bin)/graph codegen ${{matrix.manifest}}
 
       - name: 'graph:build'
-        run: $(yarn bin)/graph build ${{matrix.manifest}}}
+        run: $(yarn bin)/graph build ${{matrix.manifest}}
 
