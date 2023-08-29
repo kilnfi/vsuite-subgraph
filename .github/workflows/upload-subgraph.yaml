@@ -2,6 +2,8 @@ name: 'deploy::subgraph'
 
 on:
   push:
+    branches:
+      - master
     tags:
       - '*'
   release:
@@ -12,80 +14,79 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
-    runs-on: vsuite
+  deploy-devnet:
+    runs-on: thegraph-devnet
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-
       - name: 'asdf:install'
         uses: asdf-vm/actions/install@v1.1.0
-
       - name: 'yarn:init'
         run: yarn
-
       - name: 'graph:codegen:goerli'
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         run: $(yarn bin)/graph codegen subgraph.goerli_fast.yaml
-
       - name: 'graph:create:goerli'
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: $(yarn bin)/graph create vsuite-goerli --node http://graph-node-query.thegraph:8020
-
+        run: $(yarn bin)/graph create vsuite-goerli --node http://graph-node-query:8020
       - name: 'graph:deploy:goerli'
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001 subgraph.goerli_fast.yaml
-
+        run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.goerli_fast.yaml
       - name: 'graph:clean'
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         run: $(yarn bin)/graph clean
-
-
-
       - name: 'graph:codegen:goerli-complete'
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         run: $(yarn bin)/graph codegen subgraph.goerli.yaml
-
       - name: 'graph:create:goerli-complete'
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: $(yarn bin)/graph create vsuite-goerli --node http://graph-node-query.thegraph:8020
-
+        run: $(yarn bin)/graph create vsuite-goerli --node http://graph-node-query:8020
       - name: 'graph:deploy:goerli-complete'
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001 subgraph.goerli.yaml
-
+        run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.goerli.yaml
       - name: 'graph:clean'
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         run: $(yarn bin)/graph clean
-
-
-
+  deploy-testnet:
+    runs-on: thegraph-testnet
+    if: github.ref == 'refs/tags/'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: 'asdf:install'
+        uses: asdf-vm/actions/install@v1.1.0
+      - name: 'yarn:init'
+        run: yarn
+      - name: 'graph:codegen:goerli'
+        run: $(yarn bin)/graph codegen subgraph.goerli_fast.yaml
+      - name: 'graph:create:goerli'
+        run: $(yarn bin)/graph create vsuite-goerli --node http://graph-node-query:8020
+      - name: 'graph:deploy:goerli'
+        run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.goerli_fast.yaml
+      - name: 'graph:clean'
+        run: $(yarn bin)/graph clean
+      - name: 'graph:codegen:goerli-complete'
+        run: $(yarn bin)/graph codegen subgraph.goerli.yaml
+      - name: 'graph:create:goerli-complete'
+        run: $(yarn bin)/graph create vsuite-goerli --node http://graph-node-query:8020
+      - name: 'graph:deploy:goerli-complete'
+        run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.goerli.yaml
+      - name: 'graph:clean'
+        run: $(yarn bin)/graph clean
+  deploy-mainnet:
+    runs-on: thegraph-mainnet
+    if: github.event_name == 'release'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: 'asdf:install'
+        uses: asdf-vm/actions/install@v1.1.0
+      - name: 'yarn:init'
+        run: yarn
       - name: 'graph:codegen:mainnet'
         run: $(yarn bin)/graph codegen subgraph.mainnet_fast.yaml
-        if: github.event_name == 'release'
-
-
-      # - name: 'graph:create:mainnet'
-      #   run: $(yarn bin)/graph create vsuite --node http://graph-node-query.thegraph:8020
-
-      # - name: 'graph:deploy:mainnet'
-      #   run: $(yarn bin)/graph deploy vsuite --version-label ${GITHUB_REF##*/} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001 subgraph.mainnet_fast.yaml
-
       - name: 'graph:clean'
         run: $(yarn bin)/graph clean
-        if: github.event_name == 'release'
-
-
-
       - name: 'graph:codegen:mainnet-complete'
         run: $(yarn bin)/graph codegen subgraph.mainnet.yaml
-        if: github.event_name == 'release'
-
-      # - name: 'graph:create:mainnet-complete'
-      #   run: $(yarn bin)/graph create vsuite-complete --node http://graph-node-query.thegraph:8020
-
-      # - name: 'graph:deploy:mainnet-complete'
-      #   run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query.thegraph:8020 --ipfs http://ipfs-ipfs.thegraph:5001 subgraph.mainnet.yaml
-
+      - name: 'graph:clean'
+        run: $(yarn bin)/graph clean
