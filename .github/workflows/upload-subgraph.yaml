@@ -14,6 +14,7 @@ permissions:
   contents: read
 
 jobs:
+
   deploy-devnet:
     runs-on: thegraph-devnet
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
@@ -26,22 +27,26 @@ jobs:
         uses: asdf-vm/actions/install@v1.1.0
       - name: 'yarn:init'
         run: yarn
+
+      # Deploy fast syncing goerli version
       - name: 'graph:codegen:goerli'
         run: $(yarn bin)/graph codegen subgraph.goerli_fast.yaml
       - name: 'graph:create:goerli'
         run: $(yarn bin)/graph create vsuite-goerli --node http://graph-node-query:8020
       - name: 'graph:deploy:goerli'
         run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.goerli_fast.yaml
+
       - name: 'graph:clean'
         run: $(yarn bin)/graph clean
+
+      # Deploy slow syncing goerli version
       - name: 'graph:codegen:goerli-complete'
         run: $(yarn bin)/graph codegen subgraph.goerli.yaml
       - name: 'graph:create:goerli-complete'
-        run: $(yarn bin)/graph create vsuite-goerli --node http://graph-node-query:8020
+        run: $(yarn bin)/graph create vsuite-goerli-complete --node http://graph-node-query:8020
       - name: 'graph:deploy:goerli-complete'
-        run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.goerli.yaml
-      - name: 'graph:clean'
-        run: $(yarn bin)/graph clean
+        run: $(yarn bin)/graph deploy vsuite-goerli-complete --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.goerli.yaml
+
   deploy-testnet:
     runs-on: thegraph-testnet
     if: github.ref == 'refs/tags/'
@@ -54,22 +59,26 @@ jobs:
         uses: asdf-vm/actions/install@v1.1.0
       - name: 'yarn:init'
         run: yarn
+
+      # Deploy fast syncing goerli version
       - name: 'graph:codegen:goerli'
         run: $(yarn bin)/graph codegen subgraph.goerli_fast.yaml
       - name: 'graph:create:goerli'
         run: $(yarn bin)/graph create vsuite-goerli --node http://graph-node-query:8020
       - name: 'graph:deploy:goerli'
         run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.goerli_fast.yaml
+
       - name: 'graph:clean'
         run: $(yarn bin)/graph clean
+
+      # Deploy slow syncing goerli version
       - name: 'graph:codegen:goerli-complete'
         run: $(yarn bin)/graph codegen subgraph.goerli.yaml
       - name: 'graph:create:goerli-complete'
-        run: $(yarn bin)/graph create vsuite-goerli --node http://graph-node-query:8020
+        run: $(yarn bin)/graph create vsuite-goerli-complete --node http://graph-node-query:8020
       - name: 'graph:deploy:goerli-complete'
-        run: $(yarn bin)/graph deploy vsuite-goerli --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.goerli.yaml
-      - name: 'graph:clean'
-        run: $(yarn bin)/graph clean
+        run: $(yarn bin)/graph deploy vsuite-goerli-complete --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.goerli.yaml
+
   deploy-mainnet:
     runs-on: thegraph-mainnet
     if: github.event_name == 'release'
@@ -82,11 +91,22 @@ jobs:
         uses: asdf-vm/actions/install@v1.1.0
       - name: 'yarn:init'
         run: yarn
+
+      # Deploy fast syncing mainnet version
       - name: 'graph:codegen:mainnet'
         run: $(yarn bin)/graph codegen subgraph.mainnet_fast.yaml
+      - name: 'graph:create:mainnet'
+        run: $(yarn bin)/graph create vsuite --node http://graph-node-query:8020
+      - name: 'graph:deploy:mainnet'
+        run: $(yarn bin)/graph deploy vsuite --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.mainnet_fast.yaml
+
       - name: 'graph:clean'
         run: $(yarn bin)/graph clean
+
+      # Deploy slow syncing mainnet version
       - name: 'graph:codegen:mainnet-complete'
         run: $(yarn bin)/graph codegen subgraph.mainnet.yaml
-      - name: 'graph:clean'
-        run: $(yarn bin)/graph clean
+      - name: 'graph:create:mainnet-complete'
+        run: $(yarn bin)/graph create vsuite-complete --node http://graph-node-query:8020
+      - name: 'graph:deploy:mainnet-complete'
+        run: $(yarn bin)/graph deploy vsuitecomplete --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.mainnet.yaml
