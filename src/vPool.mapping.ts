@@ -525,22 +525,23 @@ export function handleProcessedReport(event: ProcessedReport): void {
 
           erc20.save();
         }
+
+        const multiPoolRewardsSnapshot = new MultiPoolRewardsSnapshot(
+          eventUUID(event, [multipool!.id, report.epoch.toString()])
+        );
+        multiPoolRewardsSnapshot.multiPool = multipool!.id;
+        multiPoolRewardsSnapshot.report = reportId;
+        multiPoolRewardsSnapshot.rewards = rewards;
+        multiPoolRewardsSnapshot.commission = commission;
+        multiPoolRewardsSnapshot.integrationTotalSupply = erc20.totalSupply;
+
+        multiPoolRewardsSnapshot.createdAt = event.block.timestamp;
+        multiPoolRewardsSnapshot.editedAt = event.block.timestamp;
+        multiPoolRewardsSnapshot.createdAtBlock = event.block.number;
+        multiPoolRewardsSnapshot.editedAtBlock = event.block.number;
+        multiPoolRewardsSnapshot.save();
       }
     }
-
-    const multiPoolRewardsSnapshot = new MultiPoolRewardsSnapshot(
-      eventUUID(event, [multipool!.id, report.epoch.toString()])
-    );
-    multiPoolRewardsSnapshot.multiPool = multipool!.id;
-    multiPoolRewardsSnapshot.report = reportId;
-    multiPoolRewardsSnapshot.rewards = rewards;
-    multiPoolRewardsSnapshot.commission = commission;
-
-    multiPoolRewardsSnapshot.createdAt = event.block.timestamp;
-    multiPoolRewardsSnapshot.editedAt = event.block.timestamp;
-    multiPoolRewardsSnapshot.createdAtBlock = event.block.number;
-    multiPoolRewardsSnapshot.editedAtBlock = event.block.number;
-    multiPoolRewardsSnapshot.save();
   }
 
   const systemEvent = createReportProcessedSystemEvent(

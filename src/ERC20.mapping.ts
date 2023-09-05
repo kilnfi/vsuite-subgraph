@@ -65,11 +65,13 @@ function snapshotBalance(event: ethereum.Event, staker: Address): void {
   const balance = ERC20Balance.load(entityUUID(event, [staker.toHexString()]));
   const balanceSnapshotId = txUniqueUUID(event, [staker.toHexString(), blockId.toString(), ts.toString()]);
   const balanceSnapshot = new ERC20BalanceSnapshot(balanceSnapshotId);
+  const integration = ERC20.load(entityUUID(event, []));
   balanceSnapshot.integration = entityUUID(event, []);
   balanceSnapshot.staker = staker;
   balanceSnapshot.sharesBalance = balance!.sharesBalance;
   balanceSnapshot.createdAt = ts;
   balanceSnapshot.createdAtBlock = blockId;
+  balanceSnapshot.totalSupply = integration!.totalSupply;
   balanceSnapshot.save();
 }
 

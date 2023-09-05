@@ -1015,6 +1015,7 @@ type MultiPoolRewardsSnapshot @entity {
   report: Report!
   rewards: BigInt!
   commission: BigInt!
+  integrationTotalSupply: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -1042,6 +1043,7 @@ type ERC20BalanceSnapshot @entity {
   integration: ERC20!
   staker: Bytes!
   sharesBalance: BigInt!
+  totalSupply: BigInt!
 
   createdAt: BigInt!
   createdAtBlock: BigInt!
