@@ -81,6 +81,34 @@ type PluggableHatcherImplementation @entity {
   editedAtBlock: BigInt!
 }
 
+type TUPProxy @entity {
+  id: String!
+
+  freezeTime: BigInt!
+  admin: Bytes!
+  pauser: Bytes!
+  implementation: Bytes!
+  upgrades: [TUPProxyUpgrade!]! @derivedFrom(field: "proxy")
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type TUPProxyUpgrade @entity {
+  id: String!
+
+  proxy: TUPProxy!
+  oldImplementation: Bytes!
+  newImplementation: Bytes!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
 # 
 # ███    ██ ███████ ██   ██ ██    ██ ███████ 
 # ████   ██ ██       ██ ██  ██    ██ ██      
@@ -93,6 +121,7 @@ type Nexus @entity {
   id: String!
   address: Bytes!
   contract: MetaContract!
+  proxy: TUPProxy!
 
   admin: Bytes!
   globalOracle: Bytes!
@@ -1083,6 +1112,8 @@ type ERC20 implements vPoolIntegration & Integration @entity {
   channel: IntegrationChannel!
   name: String!
   symbol: String!
+  proxy: TUPProxy!
+  type: String!
 
   summaries: RewardSummary!
 
@@ -1269,6 +1300,8 @@ type ERC1155Integration implements vPoolIntegration & Integration @entity {
   channel: IntegrationChannel!
   name: String!
   symbol: String!
+  proxy: TUPProxy!
+  type: String!
 
   paused: Boolean!
   admin: Bytes!
@@ -1340,6 +1373,8 @@ type vNFTIntegration implements Integration @entity {
   operatorCommission: BigInt!
   integratorCommission: BigInt!
   integrator: Bytes!
+  proxy: TUPProxy!
+  type: String!
 
   soulboundMode: Boolean!
   extraData: String!

@@ -19,6 +19,7 @@ import {
 import { Address, BigInt } from '@graphprotocol/graph-ts';
 import { externalEntityUUID } from './utils/utils';
 import { getOrCreateRewardSummaries } from './utils/rewards';
+import { getOrCreateTUPProxy } from './TUPProxy.mapping';
 
 export function handleDeployedProxy(event: DeployedProxy): void {
   if (
@@ -39,6 +40,7 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     ERC20_1_0_0_rc4Template.create(event.params.proxy);
 
     const integration = new ERC20(externalEntityUUID(event.params.proxy, []));
+    integration.proxy = getOrCreateTUPProxy(event, event.params.proxy).id;
     integration.address = event.params.proxy;
     integration.channel = channel.toHexString();
     integration.paused = false;
@@ -51,6 +53,13 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     integration.maxCommission = BigInt.zero();
     integration._poolsDerived = [];
     integration.summaries = getOrCreateRewardSummaries(event, event.params.proxy).id;
+    if (channel.equals(CHANNEL_NATIVE_20_vPOOL_BYTES32)) {
+      integration.type = 'Native20';
+    } else if (channel.equals(CHANNEL_LIQUID_20_A_vPOOL_BYTES32)) {
+      integration.type = 'Liquid20A';
+    } else if (channel.equals(CHANNEL_LIQUID_20_C_vPOOL_BYTES32)) {
+      integration.type = 'Liquid20C';
+    }
 
     integration.createdAt = event.block.timestamp;
     integration.editedAt = event.block.timestamp;
@@ -66,6 +75,7 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     ERC1155_1_0_0_rc4Template.create(event.params.proxy);
 
     const integration = new ERC1155Integration(externalEntityUUID(event.params.proxy, []));
+    integration.proxy = getOrCreateTUPProxy(event, event.params.proxy).id;
     integration.address = event.params.proxy;
     integration.channel = channel.toHexString();
     integration.paused = false;
@@ -82,12 +92,18 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     integration.editedAtBlock = event.block.number;
     integration.admin = Address.zero();
     integration.maxCommission = BigInt.zero();
+    if (channel.equals(CHANNEL_NATIVE_1155_vPOOL_BYTES32)) {
+      integration.type = 'Native1155';
+    } else if (channel.equals(CHANNEL_LIQUID_1155_vPOOL_vPOOL_BYTES32)) {
+      integration.type = 'Liquid1155';
+    }
 
     integration.save();
   } else if (channel.equals(CHANNEL_VNFT_BYTES32)) {
     vNFTTemplate.create(event.params.proxy);
 
     const vnft = new vNFTIntegration(externalEntityUUID(event.params.proxy, []));
+    vnft.proxy = getOrCreateTUPProxy(event, event.params.proxy).id;
     vnft.address = event.params.proxy;
     vnft.channel = channel.toHexString();
     vnft.paused = false;
@@ -103,6 +119,7 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     vnft.execLayerVault = externalEntityUUID(Address.zero(), []);
     vnft.soulboundMode = false;
     vnft.admin = Address.zero();
+    vnft.type = 'vNFT';
 
     vnft.createdAt = event.block.timestamp;
     vnft.editedAt = event.block.timestamp;

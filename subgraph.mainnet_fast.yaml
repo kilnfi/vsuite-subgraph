@@ -391,6 +391,32 @@ dataSources:
       file: ./src/IntegrationRouter.mapping.ts
 
 templates:
+  - name: TUPProxy
+    kind: ethereum/contract
+    network: mainnet
+    source:
+      abi: TUPProxy
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/TUPProxy.mapping.ts
+      entities:
+        - TUPProxy
+      abis:
+        - name: TUPProxy
+          file: ./abis/TUPProxy.json
+      eventHandlers:
+        - event: AdminChanged(address,address)
+          handler: handleAdminChanged
+        - event: BeaconUpgraded(indexed address)
+          handler: handleBeaconUpgraded
+        - event: PauserChanged(address,address)
+          handler: handlePauserChanged
+        - event: SetFreezeTime(uint256)
+          handler: handleSetFreezeTime
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
   - name: Cub
     kind: ethereum/contract
     network: mainnet

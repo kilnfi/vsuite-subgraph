@@ -45,6 +45,7 @@ import { Address, BigInt, ByteArray, Bytes, ethereum, log, crypto, dataSource } 
 import { entityUUID, externalEntityUUID } from './utils/utils';
 import { getOrCreateRewardSummaries } from './utils/rewards';
 import { verify } from './bls12_381_verify';
+import { getOrCreateTUPProxy } from './TUPProxy.mapping';
 
 function concat(b: ByteArray[]): ByteArray {
   let res = new ByteArray(0);
@@ -155,6 +156,7 @@ function _getOrCreateNexus(addr: Bytes, event: ethereum.Event): Nexus {
     nexus.address = event.address;
     nexus.admin = Address.zero();
     nexus.contract = getOrCreateMetaContract('Nexus');
+    nexus.proxy = getOrCreateTUPProxy(event, Address.fromBytes(addr)).id;
     nexus.globalOracle = Address.zero();
     nexus.globalRecipient = Address.zero();
     nexus.depositContract = Address.zero();
