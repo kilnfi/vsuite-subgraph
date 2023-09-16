@@ -265,6 +265,7 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     eq.address = event.params.exitQueue;
     eq.contract = getOrCreateMetaContract('vExitQueue');
     eq.pool = externalEntityUUID(event.params.pool, []);
+    eq.cub = externalEntityUUID(event.params.exitQueue, []);
 
     eq.createdAt = event.block.timestamp;
     eq.editedAt = event.block.timestamp;

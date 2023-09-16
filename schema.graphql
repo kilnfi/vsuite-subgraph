@@ -644,6 +644,7 @@ type vExitQueue @entity {
   address: Bytes!
   contract: MetaContract!
 
+  cub: Cub!
   pool: vPool!
   tickets: [Ticket!]! @derivedFrom(field: "exitQueue")
   ticketCount: BigInt!
