@@ -201,8 +201,9 @@ export function handleTransfer(event: Transfer): void {
   const erc1155Integration = ERC1155.load(externalEntityUUID(event.params.from, []));
 
   if (
-    (exitQueue != null && exitQueue.id == pool!.exitQueue && erc20Integration != null) ||
-    erc1155Integration != null
+    exitQueue != null &&
+    exitQueue.id == pool!.exitQueue &&
+    (erc20Integration != null || erc1155Integration != null)
   ) {
     const stakedValueBefore = _computeStakedEthValue(
       fromBalance.amount,
@@ -233,7 +234,9 @@ export function handleTransfer(event: Transfer): void {
   toBalance.amount = toBalance.amount.plus(event.params.value);
 
   saveOrEraseBalance(fromBalance, event);
-  saveOrEraseBalance(toBalance, event);
+  if (toBalance.address != Address.zero()) {
+    saveOrEraseBalance(toBalance, event);
+  }
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
@@ -381,6 +384,23 @@ export function handleProcessedReport(event: ProcessedReport): void {
   report.editedAtBlock = event.block.number;
   report.save();
 
+  if (pool!.totalUnderlyingSupply != event.params.traces.preUnderlyingSupply) {
+    throw new Error(
+      'Invalid pool.totalUnderlyingSupply ' +
+        pool!.totalUnderlyingSupply.toString() +
+        ' ' +
+        event.params.traces.preUnderlyingSupply.toString()
+    );
+  }
+  if (pool!.totalSupply.plus(event.params.traces.exitBurnedShares) != event.params.traces.preSupply) {
+    throw new Error(
+      'Invalid pool.totalSupply + traces.exitBurnedShares ' +
+        pool!.totalSupply.plus(event.params.traces.exitBurnedShares).toString() +
+        ' ' +
+        event.params.traces.preSupply.toString()
+    );
+  }
+
   const pool_pre_supply = event.params.traces.preSupply;
   const pool_pre_underlying_supply = event.params.traces.preUnderlyingSupply;
   let pool_post_supply: BigInt;
@@ -395,10 +415,17 @@ export function handleProcessedReport(event: ProcessedReport): void {
     pool_post_supply = event.params.traces.postSupply;
   }
   const pool_post_underlying_supply = _computeTotalUnderlyingSupply(pool!, report);
+  if (pool_post_underlying_supply != event.params.traces.postUnderlyingSupply) {
+    throw new Error(
+      'Invalid pool_post_underlying_supply ' +
+        pool_post_underlying_supply.toString() +
+        ' ' +
+        event.params.traces.postUnderlyingSupply.toString()
+    );
+  }
 
   pool!.totalSupply = pool_post_supply;
   pool!.totalUnderlyingSupply = pool_post_underlying_supply;
-  event.params.traces.postUnderlyingSupply;
   pool!.lastEpoch = event.params.epoch;
   pool!.expectedEpoch = event.params.epoch.plus(pool!.epochsPerFrame);
 
@@ -446,68 +473,42 @@ export function handleProcessedReport(event: ProcessedReport): void {
     if (multipool!.shares != null && pool_pre_supply.gt(BigInt.fromI32(0)) && pool_post_supply.gt(BigInt.fromI32(0))) {
       const multiPoolBalance = PoolBalance.load(multipool!.shares as string);
 
-      let deposited_eth = BigInt.zero();
-      const poolDepositor = PoolDepositor.load(multipool!.poolDepositor);
-      if (poolDepositor != null) {
-        deposited_eth = poolDepositor.depositedEth;
-      }
-
       const preRawUnderlyingSupply = multiPoolBalance!.amount.times(pool_pre_underlying_supply).div(pool_pre_supply);
-      const preUnderlyingSupply = _computeEthAfterCommission(
-        multiPoolBalance!.amount,
-        pool_pre_supply,
-        pool_pre_underlying_supply,
-        multipool!.injectedEth,
-        multipool!.exitedEth,
-        multipool!.fees,
-        multipool!.commissionPaid
-      );
-      const postRawUnderlyingSupply = multiPoolBalance!.amount.times(pool_post_underlying_supply).div(pool_post_supply);
-      const postUnderlyingSupply = _computeEthAfterCommission(
-        multiPoolBalance!.amount,
-        pool_post_supply,
-        pool_post_underlying_supply,
-        multipool!.injectedEth,
-        multipool!.exitedEth,
-        multipool!.fees,
-        multipool!.commissionPaid
-      );
 
-      rewards = maxBigInt(BigInt.zero(), postUnderlyingSupply.minus(preUnderlyingSupply));
-      commission = maxBigInt(BigInt.zero(), postRawUnderlyingSupply.minus(preRawUnderlyingSupply).minus(rewards));
+      const postRawUnderlyingSupply = multiPoolBalance!.amount.times(pool_post_underlying_supply).div(pool_post_supply);
+
+      rewards = maxBigInt(BigInt.zero(), postRawUnderlyingSupply.minus(preRawUnderlyingSupply));
+      commission = rewards.times(multipool!.fees).div(BigInt.fromI32(10000));
+      rewards = rewards.minus(commission);
 
       const erc20 = ERC20.load(multipool!.integration);
       if (erc20 != null) {
         const multiPoolBalance = PoolBalance.load(multipool!.shares as string);
         if (multiPoolBalance!.amount.gt(BigInt.zero())) {
-          const preNetRate = multiPoolBalance!.amount.gt(BigInt.zero())
-            ? preUnderlyingSupply.times(BigInt.fromString('1000000000000000000')).div(multiPoolBalance!.amount)
-            : BigInt.zero();
           const preGrossRate = multiPoolBalance!.amount.gt(BigInt.zero())
             ? preRawUnderlyingSupply.times(BigInt.fromString('1000000000000000000')).div(multiPoolBalance!.amount)
             : BigInt.zero();
 
           erc20.totalUnderlyingSupply = _recomputeERC20TotalUnderlyingSupply(Address.fromBytes(erc20.address));
 
-          const postNetRate = multiPoolBalance!.amount.gt(BigInt.zero())
-            ? postUnderlyingSupply.times(BigInt.fromString('1000000000000000000')).div(multiPoolBalance!.amount)
-            : BigInt.zero();
           const postGrossRate = multiPoolBalance!.amount.gt(BigInt.zero())
             ? postRawUnderlyingSupply.times(BigInt.fromString('1000000000000000000')).div(multiPoolBalance!.amount)
             : BigInt.zero();
 
-          const netAPY = postNetRate
-            .times(BigInt.fromString('1000000000000000000'))
-            .div(preNetRate)
-            .minus(BigInt.fromString('1000000000000000000'))
-            .times(BigInt.fromI64(YEAR))
-            .div(period);
-          const grossAPY = postGrossRate
-            .times(BigInt.fromString('1000000000000000000'))
-            .div(preGrossRate)
-            .minus(BigInt.fromString('1000000000000000000'))
-            .times(BigInt.fromI64(YEAR))
-            .div(period);
+          let grossAPY = BigInt.zero();
+          if (postGrossRate.gt(BigInt.zero()) && preGrossRate.gt(BigInt.zero())) {
+            grossAPY = postGrossRate
+              .times(BigInt.fromString('1000000000000000000'))
+              .div(preGrossRate)
+              .minus(BigInt.fromString('1000000000000000000'))
+              .times(BigInt.fromI64(YEAR))
+              .div(period);
+          }
+
+          let netAPY = BigInt.zero();
+          if (grossAPY.gt(BigInt.zero())) {
+            netAPY = grossAPY.times(BigInt.fromI32(10000).minus(multipool!.fees)).div(BigInt.fromI32(10000));
+          }
 
           const integrationRewardEntry = new IntegrationRewardEntry(eventUUID(event, ['IntegrationRewardEntry']));
           integrationRewardEntry.type = 'IntegrationRewardEntry';

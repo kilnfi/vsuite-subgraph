@@ -735,6 +735,8 @@ templates:
           handler: handleSetMaxCommission
         - event: SetPoolPercentages(uint256[])
           handler: handleSetPoolPercentages
+        - event: ExitedCommissionShares(indexed uint256,uint256,uint256[],address[])
+          handler: handleExitedCommissionShares
   - name: ERC1155_1_0_0_rc4
     kind: ethereum/contract
     network: mainnet

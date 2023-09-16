@@ -40,7 +40,7 @@ import {
   _computeEthAfterCommission,
   _computeIntegratorCommissionEarned
 } from './utils/utils';
-import { CommissionSharesSold } from '../generated/templates/ERC1155/Liquid1155';
+import { CommissionSharesSold, ExitedCommissionShares } from '../generated/templates/ERC1155/Liquid1155';
 import { getOrCreateBalance } from './vPool.mapping';
 
 function snapshotSupply(event: ethereum.Event): void {
@@ -157,6 +157,27 @@ export function handlePoolAdded(event: PoolAdded): void {
   pool!.editedAtBlock = event.block.number;
   pool!.pluggedMultiPools = multiPools;
   pool!.save();
+}
+
+export function handleExitedCommissionShares(event: ExitedCommissionShares): void {
+  const erc20 = ERC20.load(externalEntityUUID(event.address, []));
+  const multiPoolId = erc20!._poolsDerived[event.params.poolId.toU32()];
+  const multiPool = MultiPool.load(multiPoolId);
+  const poolBalance = PoolBalance.load(multiPool!.shares);
+  const pool = vPool.load(multiPool!.pool);
+  multiPool!.commissionPaid = _computeIntegratorCommissionEarned(
+    poolBalance!.amount,
+    pool!.totalSupply,
+    pool!.totalUnderlyingSupply,
+    multiPool!.injectedEth,
+    multiPool!.exitedEth,
+    multiPool!.fees
+  );
+  // multiPool!.exitedEth = multiPool!.exitedEth.plus(event.params.shares.times(pool!.totalUnderlyingSupply).div(pool!.totalSupply));
+  multiPool!.save();
+
+  erc20!.totalUnderlyingSupply = _recomputeERC20TotalUnderlyingSupply(Address.fromBytes(erc20!.address));
+  erc20!.save();
 }
 
 export function handleCommissionSharesSold(event: CommissionSharesSold): void {
@@ -376,21 +397,15 @@ export function handleStake(event: Stake): void {
   const ts = event.block.timestamp;
   const blockId = event.block.number;
   const staker = event.params.staker;
-  const ucs = getOrCreateUnassignedCommissionSold();
 
   const deposit = new ERC20Deposit(eventUUID(event, [event.address.toHexString(), staker.toHexString()]));
   deposit.integration = entityUUID(event, []);
-  deposit.depositAmount = BigInt.zero();
-  if (ucs.active && ucs.tx.equals(event.transaction.hash)) {
-    deposit.depositAmount = deposit.depositAmount.plus(ucs.amount);
-  }
   deposit.mintedShares = event.params.mintedTokens;
   deposit.hash = event.transaction.hash;
   deposit.staker = staker;
   deposit.createdAt = ts;
   deposit.createdAtBlock = blockId;
-
-  deposit.depositAmount = deposit.depositAmount.plus(event.params.depositedEth);
+  deposit.depositAmount = event.params.depositedEth;
   erc20!.totalUnderlyingSupply = erc20!.totalUnderlyingSupply.plus(event.params.depositedEth);
 
   deposit.editedAt = ts;
@@ -411,7 +426,6 @@ export function handleStake(event: Stake): void {
     balance.createdAtBlock = blockId;
     balance.editedAt = ts;
     balance.editedAtBlock = blockId;
-    balance.save();
   }
   balance.totalDeposited = balance.totalDeposited.plus(event.params.depositedEth);
   balance.adjustedTotalDeposited = balance.adjustedTotalDeposited.plus(event.params.depositedEth);
@@ -426,7 +440,6 @@ export function handleStake(event: Stake): void {
     multiPool!.save();
   }
 
-  ucs.save();
   balance.save();
 
   erc20!.totalUnderlyingSupply = _recomputeERC20TotalUnderlyingSupply(Address.fromBytes(erc20!.address));
