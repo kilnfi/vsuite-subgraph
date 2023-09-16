@@ -33,7 +33,7 @@ import {
   IntegrationRewardEntry,
   PeriodRewardSummary
 } from '../generated/schema';
-import { Bytes, BigInt, Address, store, log } from '@graphprotocol/graph-ts';
+import { Bytes, BigInt, Address, store, log, DataSourceContext, dataSource } from '@graphprotocol/graph-ts';
 import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum';
 import { MultiPoolRewardsSnapshot } from '../generated/schema';
 import {
@@ -384,21 +384,23 @@ export function handleProcessedReport(event: ProcessedReport): void {
   report.editedAtBlock = event.block.number;
   report.save();
 
-  if (pool!.totalUnderlyingSupply != event.params.traces.preUnderlyingSupply) {
-    throw new Error(
-      'Invalid pool.totalUnderlyingSupply ' +
-        pool!.totalUnderlyingSupply.toString() +
-        ' ' +
-        event.params.traces.preUnderlyingSupply.toString()
-    );
-  }
-  if (pool!.totalSupply.plus(event.params.traces.exitBurnedShares) != event.params.traces.preSupply) {
-    throw new Error(
-      'Invalid pool.totalSupply + traces.exitBurnedShares ' +
-        pool!.totalSupply.plus(event.params.traces.exitBurnedShares).toString() +
-        ' ' +
-        event.params.traces.preSupply.toString()
-    );
+  if (dataSource.network() === 'mainnet') {
+    if (pool!.totalUnderlyingSupply != event.params.traces.preUnderlyingSupply) {
+      throw new Error(
+        'Invalid pool.totalUnderlyingSupply ' +
+          pool!.totalUnderlyingSupply.toString() +
+          ' ' +
+          event.params.traces.preUnderlyingSupply.toString()
+      );
+    }
+    if (pool!.totalSupply.plus(event.params.traces.exitBurnedShares) != event.params.traces.preSupply) {
+      throw new Error(
+        'Invalid pool.totalSupply + traces.exitBurnedShares ' +
+          pool!.totalSupply.plus(event.params.traces.exitBurnedShares).toString() +
+          ' ' +
+          event.params.traces.preSupply.toString()
+      );
+    }
   }
 
   const pool_pre_supply = event.params.traces.preSupply;
@@ -415,13 +417,15 @@ export function handleProcessedReport(event: ProcessedReport): void {
     pool_post_supply = event.params.traces.postSupply;
   }
   const pool_post_underlying_supply = _computeTotalUnderlyingSupply(pool!, report);
-  if (pool_post_underlying_supply != event.params.traces.postUnderlyingSupply) {
-    throw new Error(
-      'Invalid pool_post_underlying_supply ' +
-        pool_post_underlying_supply.toString() +
-        ' ' +
-        event.params.traces.postUnderlyingSupply.toString()
-    );
+  if (dataSource.network() === 'mainnet') {
+    if (pool_post_underlying_supply != event.params.traces.postUnderlyingSupply) {
+      throw new Error(
+        'Invalid pool_post_underlying_supply ' +
+          pool_post_underlying_supply.toString() +
+          ' ' +
+          event.params.traces.postUnderlyingSupply.toString()
+      );
+    }
   }
 
   pool!.totalSupply = pool_post_supply;

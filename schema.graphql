@@ -140,6 +140,7 @@ type Nexus @entity {
   execLayerRecipientHatcher: PluggableHatcher
   coverageRecipientHatcher: PluggableHatcher
   oracleAggregatorHatcher: PluggableHatcher
+  exitQueueHatcher: PluggableHatcher
   factories: [vFactory!]! @derivedFrom(field: "nexus")
 
   createdAt: BigInt!

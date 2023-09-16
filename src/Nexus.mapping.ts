@@ -365,6 +365,7 @@ export function handleSetCoreHatchers(event: SetCoreHatchers): void {
   nexus.execLayerRecipientHatcher = externalEntityUUID(event.params.execLayerRecipient, []);
   nexus.coverageRecipientHatcher = externalEntityUUID(event.params.coverageRecipient, []);
   nexus.oracleAggregatorHatcher = externalEntityUUID(event.params.oracleAggregator, []);
+  nexus.exitQueueHatcher = externalEntityUUID(event.params.exitQueue, []);
 
   nexus.editedAt = event.block.timestamp;
   nexus.editedAtBlock = event.block.number;

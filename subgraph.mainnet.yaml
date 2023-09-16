@@ -71,7 +71,7 @@ dataSources:
     source:
       address: "0xa748AE65Ba11606492a9C57efFa0d4B7Be551ec2"
       abi: PluggableHatcher
-      startBlock: 17785573
+      startBlock: 17780000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -114,7 +114,7 @@ dataSources:
     source:
       address: "0x48005e62373277FBbE5584b351830B1b2eC1E3FD"
       abi: PluggableHatcher
-      startBlock: 17785573
+      startBlock: 17780000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -157,7 +157,7 @@ dataSources:
     source:
       address: "0x1D6103243d0507a9d1314bAC09379Bf57a5CF155"
       abi: PluggableHatcher
-      startBlock: 17785573
+      startBlock: 17780000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -200,7 +200,7 @@ dataSources:
     source:
       address: "0x066B6c3fCa9034395068eb9d442Ee5041EAc33DC"
       abi: PluggableHatcher
-      startBlock: 17785573
+      startBlock: 17780000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -243,7 +243,7 @@ dataSources:
     source:
       address: "0xdac8cF86ca42185eBCE7ED2dbEC9bc2bE1734ffC"
       abi: PluggableHatcher
-      startBlock: 17785573
+      startBlock: 17780000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -286,7 +286,7 @@ dataSources:
     source:
       address: "0x24d6E12FA25B7F8fc6B4BbA0ea77fc643d7210d3"
       abi: PluggableHatcher
-      startBlock: 17785573
+      startBlock: 17780000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -329,7 +329,50 @@ dataSources:
     source:
       address: "0xC2c48FbfeC0E61683133aAfF32C9c2E98fd17788"
       abi: PluggableHatcher
-      startBlock: 17785573
+      startBlock: 17780000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vFactory
+        - vTreasury
+      abis:
+        - name: PluggableHatcher
+          file: ./abis/PluggableHatcher.json
+      eventHandlers:
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+        - event: Hatched(indexed address,bytes)
+          handler: handleHatched
+        - event: Pause(address)
+          handler: handlePause
+        - event: Unpause(address)
+          handler: handleUnpause
+        - event: GlobalPause()
+          handler: handleGlobalPause
+        - event: GlobalUnpause()
+          handler: handleGlobalUnpause
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetPauser(address)
+          handler: handleSetPauser
+        - event: SetInitialProgress(uint256)
+          handler: handleSetInitialProgress
+        - event: RegisteredGlobalFix(address,uint256)
+          handler: handleRegisteredGlobalFix
+        - event: DeletedGlobalFix(uint256)
+          handler: handleDeletedGlobalFix
+        - event: AppliedFix(address,address)
+          handler: handleAppliedFix
+      file: ./src/PluggableHatcher.mapping.ts
+  - kind: ethereum
+    name: ExitQueueHatcher
+    network: mainnet
+    source:
+      address: "0x24a1DFEbAEc4e501c2152a5E4A434B236FCE3D3B"
+      abi: PluggableHatcher
+      startBlock: 17780000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
