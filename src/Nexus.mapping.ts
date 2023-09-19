@@ -265,6 +265,7 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     eq.address = event.params.exitQueue;
     eq.contract = getOrCreateMetaContract('vExitQueue');
     eq.pool = externalEntityUUID(event.params.pool, []);
+    eq.cub = externalEntityUUID(event.params.exitQueue, []);
 
     eq.createdAt = event.block.timestamp;
     eq.editedAt = event.block.timestamp;
@@ -365,6 +366,7 @@ export function handleSetCoreHatchers(event: SetCoreHatchers): void {
   nexus.execLayerRecipientHatcher = externalEntityUUID(event.params.execLayerRecipient, []);
   nexus.coverageRecipientHatcher = externalEntityUUID(event.params.coverageRecipient, []);
   nexus.oracleAggregatorHatcher = externalEntityUUID(event.params.oracleAggregator, []);
+  nexus.exitQueueHatcher = externalEntityUUID(event.params.exitQueue, []);
 
   nexus.editedAt = event.block.timestamp;
   nexus.editedAtBlock = event.block.number;

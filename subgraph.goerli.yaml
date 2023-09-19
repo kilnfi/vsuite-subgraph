@@ -366,6 +366,49 @@ dataSources:
         - event: AppliedFix(address,address)
           handler: handleAppliedFix
       file: ./src/PluggableHatcher.mapping.ts
+  - kind: ethereum
+    name: ExitQueueHatcher
+    network: goerli
+    source:
+      address: "0xd13dfac53f8453c4f211059387f303c6024d899d"
+      abi: PluggableHatcher
+      startBlock: 9182259
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - vFactory
+        - vTreasury
+      abis:
+        - name: PluggableHatcher
+          file: ./abis/PluggableHatcher.json
+      eventHandlers:
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+        - event: Hatched(indexed address,bytes)
+          handler: handleHatched
+        - event: Pause(address)
+          handler: handlePause
+        - event: Unpause(address)
+          handler: handleUnpause
+        - event: GlobalPause()
+          handler: handleGlobalPause
+        - event: GlobalUnpause()
+          handler: handleGlobalUnpause
+        - event: SetAdmin(address)
+          handler: handleSetAdmin
+        - event: SetPauser(address)
+          handler: handleSetPauser
+        - event: SetInitialProgress(uint256)
+          handler: handleSetInitialProgress
+        - event: RegisteredGlobalFix(address,uint256)
+          handler: handleRegisteredGlobalFix
+        - event: DeletedGlobalFix(uint256)
+          handler: handleDeletedGlobalFix
+        - event: AppliedFix(address,address)
+          handler: handleAppliedFix
+      file: ./src/PluggableHatcher.mapping.ts
   
   - kind: ethereum
     name: IntegrationRouter
@@ -735,6 +778,8 @@ templates:
           handler: handleSetMaxCommission
         - event: SetPoolPercentages(uint256[])
           handler: handleSetPoolPercentages
+        - event: ExitedCommissionShares(indexed uint256,uint256,uint256[],address[])
+          handler: handleExitedCommissionShares
   - name: ERC1155_1_0_0_rc4
     kind: ethereum/contract
     network: goerli

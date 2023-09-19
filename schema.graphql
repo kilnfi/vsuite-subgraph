@@ -140,6 +140,7 @@ type Nexus @entity {
   execLayerRecipientHatcher: PluggableHatcher
   coverageRecipientHatcher: PluggableHatcher
   oracleAggregatorHatcher: PluggableHatcher
+  exitQueueHatcher: PluggableHatcher
   factories: [vFactory!]! @derivedFrom(field: "nexus")
 
   createdAt: BigInt!
@@ -643,6 +644,7 @@ type vExitQueue @entity {
   address: Bytes!
   contract: MetaContract!
 
+  cub: Cub!
   pool: vPool!
   tickets: [Ticket!]! @derivedFrom(field: "exitQueue")
   ticketCount: BigInt!
