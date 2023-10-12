@@ -463,10 +463,8 @@ export function handleProcessedReport(event: ProcessedReport): void {
   vpoolRewardEntry.editedAt = event.block.timestamp;
   vpoolRewardEntry.createdAtBlock = event.block.number;
   vpoolRewardEntry.editedAtBlock = event.block.number;
-  if (vpoolRewardEntry.grossReward.gt(BigInt.fromI32(0))) {
-    pushvPoolEntryToSummaries(event, event.address, vpoolRewardEntry);
-    vpoolRewardEntry.save();
-  }
+  vpoolRewardEntry.save();
+  pushvPoolEntryToSummaries(event, event.address, vpoolRewardEntry);
 
   const multipools = pool!.pluggedMultiPools;
   for (let idx = 0; idx < multipools.length; ++idx) {
@@ -488,12 +486,13 @@ export function handleProcessedReport(event: ProcessedReport): void {
       const erc20 = ERC20.load(multipool!.integration);
       if (erc20 != null) {
         const multiPoolBalance = PoolBalance.load(multipool!.shares as string);
+
+        erc20.totalUnderlyingSupply = _recomputeERC20TotalUnderlyingSupply(Address.fromBytes(erc20.address));
+
         if (multiPoolBalance!.amount.gt(BigInt.zero())) {
           const preGrossRate = multiPoolBalance!.amount.gt(BigInt.zero())
             ? preRawUnderlyingSupply.times(BigInt.fromString('1000000000000000000')).div(multiPoolBalance!.amount)
             : BigInt.zero();
-
-          erc20.totalUnderlyingSupply = _recomputeERC20TotalUnderlyingSupply(Address.fromBytes(erc20.address));
 
           const postGrossRate = multiPoolBalance!.amount.gt(BigInt.zero())
             ? postRawUnderlyingSupply.times(BigInt.fromString('1000000000000000000')).div(multiPoolBalance!.amount)
@@ -525,10 +524,24 @@ export function handleProcessedReport(event: ProcessedReport): void {
           integrationRewardEntry.editedAt = event.block.timestamp;
           integrationRewardEntry.createdAtBlock = event.block.number;
           integrationRewardEntry.editedAtBlock = event.block.number;
-          pushIntegrationEntryToSummaries(event, Address.fromBytes(erc20.address), integrationRewardEntry);
           integrationRewardEntry.save();
+          pushIntegrationEntryToSummaries(event, Address.fromBytes(erc20.address), integrationRewardEntry);
 
           erc20.save();
+        } else {
+          const integrationRewardEntry = new IntegrationRewardEntry(eventUUID(event, ['IntegrationRewardEntry']));
+          integrationRewardEntry.type = 'IntegrationRewardEntry';
+          integrationRewardEntry.grossReward = BigInt.zero();
+          integrationRewardEntry.netReward = BigInt.zero();
+          integrationRewardEntry.netRewardRate = BigInt.zero();
+          integrationRewardEntry.grossRewardRate = BigInt.zero();
+          integrationRewardEntry.report = report.id;
+          integrationRewardEntry.createdAt = event.block.timestamp;
+          integrationRewardEntry.editedAt = event.block.timestamp;
+          integrationRewardEntry.createdAtBlock = event.block.number;
+          integrationRewardEntry.editedAtBlock = event.block.number;
+          integrationRewardEntry.save();
+          pushIntegrationEntryToSummaries(event, Address.fromBytes(erc20.address), integrationRewardEntry);
         }
 
         const multiPoolRewardsSnapshot = new MultiPoolRewardsSnapshot(

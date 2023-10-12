@@ -127,6 +127,7 @@ export function pushvPoolEntryToSummary(
   entries.push(entry.id);
   rs.entryCount = rs.entryCount.plus(BigInt.fromI32(1));
   rs.entries = entries;
+
   rs.netRewardRate = rs.netRewardRateCumulator.div(rs.entryCount);
   rs.grossRewardRate = rs.grossRewardRateCumulator.div(rs.entryCount);
 
