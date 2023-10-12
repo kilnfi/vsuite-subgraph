@@ -445,6 +445,16 @@ export function handleProcessedReport(event: ProcessedReport): void {
   vpoolRewardEntry.netReward = (report.delta.gt(BigInt.fromI32(0)) ? report.delta : BigInt.fromI32(0)).minus(
     report.rewards.times(pool!.operatorFee).div(BigInt.fromI32(10000))
   );
+  vpoolRewardEntry.coverage = report.pulledCoverageFunds;
+  vpoolRewardEntry.grossELRewards = report.pulledExecutionLayerRewards;
+  vpoolRewardEntry.grossCLRewards = report.consensusLayerDelta;
+  vpoolRewardEntry.netELRewards = report.pulledExecutionLayerRewards.minus(
+    report.pulledExecutionLayerRewards.times(pool!.operatorFee).div(BigInt.fromI32(10000))
+  );
+  vpoolRewardEntry.netCLRewards = report.consensusLayerDelta.gt(BigInt.fromI32(0))
+    ? report.consensusLayerDelta.minus(report.consensusLayerDelta.times(pool!.operatorFee).div(BigInt.fromI32(10000)))
+    : report.consensusLayerDelta;
+
   if (report.preUnderlyingSupply.gt(BigInt.fromI32(0))) {
     vpoolRewardEntry.netRewardRate = vpoolRewardEntry.netReward
       .times(BigInt.fromString('1000000000000000000'))
@@ -471,6 +481,11 @@ export function handleProcessedReport(event: ProcessedReport): void {
     const multipool = MultiPool.load(multipools[idx]);
     let rewards = BigInt.zero();
     let commission = BigInt.zero();
+    let grossElRewards = BigInt.zero();
+    let grossClRewards = BigInt.zero();
+    let coverage = BigInt.zero();
+    let netElRewards = BigInt.zero();
+    let netClRewards = BigInt.zero();
 
     if (multipool!.shares != null && pool_pre_supply.gt(BigInt.fromI32(0)) && pool_post_supply.gt(BigInt.fromI32(0))) {
       const multiPoolBalance = PoolBalance.load(multipool!.shares as string);
@@ -482,6 +497,13 @@ export function handleProcessedReport(event: ProcessedReport): void {
       rewards = maxBigInt(BigInt.zero(), postRawUnderlyingSupply.minus(preRawUnderlyingSupply));
       commission = rewards.times(multipool!.fees).div(BigInt.fromI32(10000));
       rewards = rewards.minus(commission);
+
+      grossElRewards = report.pulledExecutionLayerRewards.times(multiPoolBalance!.amount).div(pool_pre_supply);
+      grossClRewards = report.consensusLayerDelta.times(multiPoolBalance!.amount).div(pool_pre_supply);
+      coverage = report.pulledCoverageFunds.times(multiPoolBalance!.amount).div(pool_pre_supply);
+
+      netElRewards = grossElRewards.minus(grossElRewards.times(multipool!.fees).div(BigInt.fromI32(10000)));
+      netClRewards = grossClRewards.minus(grossClRewards.times(multipool!.fees).div(BigInt.fromI32(10000)));
 
       const erc20 = ERC20.load(multipool!.integration);
       if (erc20 != null) {
@@ -517,8 +539,13 @@ export function handleProcessedReport(event: ProcessedReport): void {
             eventUUID(event, [erc20.address.toHexString(), 'IntegrationRewardEntry'])
           );
           integrationRewardEntry.type = 'IntegrationRewardEntry';
+          integrationRewardEntry.coverage = coverage;
           integrationRewardEntry.grossReward = rewards.plus(commission);
+          integrationRewardEntry.grossELRewards = grossElRewards;
+          integrationRewardEntry.grossCLRewards = grossClRewards;
           integrationRewardEntry.netReward = rewards;
+          integrationRewardEntry.netELRewards = netElRewards;
+          integrationRewardEntry.netCLRewards = netClRewards;
           integrationRewardEntry.netRewardRate = netAPY;
           integrationRewardEntry.grossRewardRate = grossAPY;
           integrationRewardEntry.report = report.id;
@@ -537,6 +564,11 @@ export function handleProcessedReport(event: ProcessedReport): void {
           integrationRewardEntry.type = 'IntegrationRewardEntry';
           integrationRewardEntry.grossReward = BigInt.zero();
           integrationRewardEntry.netReward = BigInt.zero();
+          integrationRewardEntry.coverage = BigInt.zero();
+          integrationRewardEntry.grossELRewards = BigInt.zero();
+          integrationRewardEntry.grossCLRewards = BigInt.zero();
+          integrationRewardEntry.netELRewards = BigInt.zero();
+          integrationRewardEntry.netCLRewards = BigInt.zero();
           integrationRewardEntry.netRewardRate = BigInt.zero();
           integrationRewardEntry.grossRewardRate = BigInt.zero();
           integrationRewardEntry.report = report.id;
@@ -554,6 +586,9 @@ export function handleProcessedReport(event: ProcessedReport): void {
         multiPoolRewardsSnapshot.multiPool = multipool!.id;
         multiPoolRewardsSnapshot.report = reportId;
         multiPoolRewardsSnapshot.rewards = rewards;
+        multiPoolRewardsSnapshot.clRewards = netClRewards;
+        multiPoolRewardsSnapshot.elRewards = netElRewards;
+        multiPoolRewardsSnapshot.coverage = coverage;
         multiPoolRewardsSnapshot.commission = commission;
         multiPoolRewardsSnapshot.integrationTotalSupply = erc20.totalSupply;
 

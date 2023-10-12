@@ -453,10 +453,15 @@ type vPoolRewardEntry implements RewardEntry @entity {
   id: String!
   type: String!
 
+  coverage: BigInt!
   netReward: BigInt!
+  netELRewards: BigInt!
+  netCLRewards: BigInt!
   netRewardRate: BigInt!
   grossReward: BigInt!
   grossRewardRate: BigInt!
+  grossELRewards: BigInt!
+  grossCLRewards: BigInt!
   report: Report!
 
   createdAt: BigInt!
@@ -469,9 +474,14 @@ type IntegrationRewardEntry implements RewardEntry @entity {
   id: String!
   type: String!
 
+  coverage: BigInt!
   netReward: BigInt!
+  netELRewards: BigInt!
+  netCLRewards: BigInt!
   netRewardRate: BigInt!
   grossReward: BigInt!
+  grossELRewards: BigInt!
+  grossCLRewards: BigInt!
   grossRewardRate: BigInt!
   report: Report!
 
@@ -490,6 +500,11 @@ type PeriodRewardSummary @entity {
   netRewardRateCumulator: BigInt!
   netRewardRate: BigInt!
   totalGrossRewards: BigInt!
+  totalCoverage: BigInt!
+  totalGrossELRewards: BigInt!
+  totalGrossCLRewards: BigInt!
+  totalNetELRewards: BigInt!
+  totalNetCLRewards: BigInt!
   grossRewardRateCumulator: BigInt!
   grossRewardRate: BigInt!
   entries: [RewardEntry!]!
@@ -1045,6 +1060,9 @@ type MultiPoolRewardsSnapshot @entity {
 
   report: Report!
   rewards: BigInt!
+  elRewards: BigInt!
+  clRewards: BigInt!
+  coverage: BigInt!
   commission: BigInt!
   integrationTotalSupply: BigInt!
 
