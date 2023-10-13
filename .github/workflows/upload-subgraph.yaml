@@ -109,4 +109,4 @@ jobs:
       - name: 'graph:create:mainnet-complete'
         run: $(yarn bin)/graph create vsuite-complete --node http://graph-node-query:8020
       - name: 'graph:deploy:mainnet-complete'
-        run: $(yarn bin)/graph deploy vsuitecomplete --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.mainnet.yaml
+        run: $(yarn bin)/graph deploy vsuite-complete --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.mainnet.yaml
