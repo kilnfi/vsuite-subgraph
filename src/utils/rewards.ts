@@ -73,7 +73,6 @@ function cleanOutOfRangeEntries(event: ethereum.Event, rs: PeriodRewardSummary):
   const period = rs.period;
   let entriesToDelete = 0;
   let oldestEntryId: string | null = '';
-  let oldestEntryTimestamp = BigInt.zero();
   for (let i = 0; i < entries.length; ++i) {
     const entry = entries[i];
     if (entry.indexOf('vPoolRewardEntry') != -1) {
@@ -87,7 +86,6 @@ function cleanOutOfRangeEntries(event: ethereum.Event, rs: PeriodRewardSummary):
         entriesToDelete++;
       } else {
         oldestEntryId = vpoolEntry.id;
-        oldestEntryTimestamp = vpoolEntry.createdAt;
         break;
       }
     } else if (entry.indexOf('IntegrationRewardEntry') != -1) {
@@ -101,7 +99,6 @@ function cleanOutOfRangeEntries(event: ethereum.Event, rs: PeriodRewardSummary):
         entriesToDelete++;
       } else {
         oldestEntryId = integrationEntry.id;
-        oldestEntryTimestamp = integrationEntry.createdAt;
         break;
       }
     }
@@ -164,6 +161,7 @@ export function pushIntegrationEntryToSummary(
   entries.push(entry.id);
   rs.entryCount = rs.entryCount.plus(BigInt.fromI32(1));
   rs.entries = entries;
+
   rs.netRewardRate = rs.netRewardRateCumulator.div(rs.entryCount);
   rs.grossRewardRate = rs.grossRewardRateCumulator.div(rs.entryCount);
 

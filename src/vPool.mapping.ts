@@ -513,7 +513,9 @@ export function handleProcessedReport(event: ProcessedReport): void {
             netAPY = grossAPY.times(BigInt.fromI32(10000).minus(multipool!.fees)).div(BigInt.fromI32(10000));
           }
 
-          const integrationRewardEntry = new IntegrationRewardEntry(eventUUID(event, ['IntegrationRewardEntry']));
+          const integrationRewardEntry = new IntegrationRewardEntry(
+            eventUUID(event, [erc20.address.toHexString(), 'IntegrationRewardEntry'])
+          );
           integrationRewardEntry.type = 'IntegrationRewardEntry';
           integrationRewardEntry.grossReward = rewards.plus(commission);
           integrationRewardEntry.netReward = rewards;
@@ -529,7 +531,9 @@ export function handleProcessedReport(event: ProcessedReport): void {
 
           erc20.save();
         } else {
-          const integrationRewardEntry = new IntegrationRewardEntry(eventUUID(event, ['IntegrationRewardEntry']));
+          const integrationRewardEntry = new IntegrationRewardEntry(
+            eventUUID(event, [erc20.address.toHexString(), 'IntegrationRewardEntry'])
+          );
           integrationRewardEntry.type = 'IntegrationRewardEntry';
           integrationRewardEntry.grossReward = BigInt.zero();
           integrationRewardEntry.netReward = BigInt.zero();
