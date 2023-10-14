@@ -439,7 +439,7 @@ type vPool @entity {
   editedAtBlock: BigInt!
 }
 
-interface RewardEntry {
+interface DataEntry {
   id: String!
   type: String!
 
@@ -449,7 +449,7 @@ interface RewardEntry {
   editedAtBlock: BigInt!
 }
 
-type vPoolRewardEntry implements RewardEntry @entity {
+type vPoolRewardEntry implements DataEntry @entity {
   id: String!
   type: String!
 
@@ -470,7 +470,7 @@ type vPoolRewardEntry implements RewardEntry @entity {
   editedAtBlock: BigInt!
 }
 
-type IntegrationRewardEntry implements RewardEntry @entity {
+type IntegrationRewardEntry implements DataEntry @entity {
   id: String!
   type: String!
 
@@ -484,6 +484,30 @@ type IntegrationRewardEntry implements RewardEntry @entity {
   grossCLRewards: BigInt!
   grossRewardRate: BigInt!
   report: Report!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type DepositDataEntry implements DataEntry @entity {
+  id: String!
+  type: String!
+
+  depositedEth: BigInt!
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type ExitDataEntry implements DataEntry @entity {
+  id: String!
+  type: String!
+
+  exitedEth: BigInt!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -496,20 +520,30 @@ type PeriodRewardSummary @entity {
 
   name: String!
   period: BigInt!
-  totalNetRewards: BigInt!
-  netRewardRateCumulator: BigInt!
-  netRewardRate: BigInt!
+
+  # rewards & coverage
   totalGrossRewards: BigInt!
-  totalCoverage: BigInt!
   totalGrossELRewards: BigInt!
   totalGrossCLRewards: BigInt!
+  totalNetRewards: BigInt!
   totalNetELRewards: BigInt!
   totalNetCLRewards: BigInt!
-  grossRewardRateCumulator: BigInt!
+  totalCoverage: BigInt!
+
+  # rates
+  netRewardRate: BigInt!
+  netRewardRateCumulator: BigInt!
   grossRewardRate: BigInt!
-  entries: [RewardEntry!]!
-  entryCount: BigInt!
-  oldestEntry: RewardEntry
+  grossRewardRateCumulator: BigInt!
+
+  # volumes
+  depositedEth: BigInt!
+  exitedEth: BigInt!
+
+  entries: [DataEntry!]!
+  oldestEntry: DataEntry
+  entryCounts: [BigInt!]!
+  entryTypes: [String!]!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -1120,6 +1154,8 @@ type ERC20 implements vPoolIntegration & Integration @entity {
   snapshots: [ERC20Snapshot!]! @derivedFrom(field: "integration")
   balancesSnapshot: [ERC20BalanceSnapshot!]! @derivedFrom(field: "integration")
 
+  # Exit Tickets
+  tickets: [Ticket!]!
 
   # vPoolIntegration
   pools: [MultiPool!]! @derivedFrom(field: "integration")

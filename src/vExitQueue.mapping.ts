@@ -1,4 +1,13 @@
-import { Cask, FillTrace, Ticket, vExitQueue, Payment as PaymentEntity, vPool, vFactory } from '../generated/schema';
+import {
+  Cask,
+  FillTrace,
+  Ticket,
+  vExitQueue,
+  Payment as PaymentEntity,
+  vPool,
+  vFactory,
+  ExitDataEntry
+} from '../generated/schema';
 import { Transfer } from '../generated/templates/ERC20/Native20';
 import {
   FilledTicket,
@@ -9,6 +18,7 @@ import {
   Payment,
   TicketIdUpdated
 } from '../generated/templates/vExitQueue/vExitQueue';
+import { pushEntryToSummaries } from './utils/rewards';
 import {
   createClaimedExitQueueTicketSystemEvent,
   createNewExitQueueCaskSystemEvent,
@@ -68,6 +78,16 @@ export function handlePrintedTicket(event: PrintedTicket): void {
   se.maxExitable = event.params.ticket.maxExitable;
   se.owner = event.params.owner;
   se.save();
+
+  const exitDataEntry = new ExitDataEntry(eventUUID(event, ['ExitDataEntry']));
+  exitDataEntry.type = 'ExitDataEntry';
+  exitDataEntry.exitedEth = event.params.ticket.maxExitable;
+  exitDataEntry.createdAt = event.block.timestamp;
+  exitDataEntry.editedAt = event.block.timestamp;
+  exitDataEntry.createdAtBlock = event.block.number;
+  exitDataEntry.editedAtBlock = event.block.number;
+  exitDataEntry.save();
+  pushEntryToSummaries(event, Address.fromBytes(pool!.address), exitDataEntry);
 }
 
 export function handleTicketIdUpdated(event: TicketIdUpdated): void {

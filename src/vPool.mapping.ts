@@ -31,7 +31,8 @@ import {
   vExitQueue,
   vPoolRewardEntry,
   IntegrationRewardEntry,
-  PeriodRewardSummary
+  PeriodRewardSummary,
+  DepositDataEntry
 } from '../generated/schema';
 import { Bytes, BigInt, Address, store, log, DataSourceContext, dataSource } from '@graphprotocol/graph-ts';
 import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum';
@@ -48,7 +49,7 @@ import {
   externalEntityUUID
 } from './utils/utils';
 import { _recomputeERC20TotalUnderlyingSupply } from './ERC20.mapping';
-import { YEAR, pushIntegrationEntryToSummaries, pushvPoolEntryToSummaries } from './utils/rewards';
+import { YEAR, pushEntryToSummaries } from './utils/rewards';
 
 export function getOrCreateBalance(pool: Bytes, account: Bytes, timestamp: BigInt, block: BigInt): PoolBalance {
   const balanceId = externalEntityUUID(Address.fromBytes(pool), [account.toHexString()]);
@@ -150,6 +151,16 @@ export function handleDeposit(event: Deposit): void {
   se.amountShares = se.amountShares.plus(poolDeposit.mintedShares);
   se.depositor = entityUUID(event, [event.params.sender.toHexString()]);
   se.save();
+
+  const depositDataEntry = new DepositDataEntry(eventUUID(event, ['DepositDataEntry']));
+  depositDataEntry.type = 'DepositDataEntry';
+  depositDataEntry.depositedEth = event.params.amount;
+  depositDataEntry.createdAt = event.block.timestamp;
+  depositDataEntry.editedAt = event.block.timestamp;
+  depositDataEntry.createdAtBlock = event.block.number;
+  depositDataEntry.editedAtBlock = event.block.number;
+  depositDataEntry.save();
+  pushEntryToSummaries(event, Address.fromBytes(event.address), depositDataEntry);
 }
 
 export function handleMint(event: Mint): void {
@@ -474,7 +485,7 @@ export function handleProcessedReport(event: ProcessedReport): void {
   vpoolRewardEntry.createdAtBlock = event.block.number;
   vpoolRewardEntry.editedAtBlock = event.block.number;
   vpoolRewardEntry.save();
-  pushvPoolEntryToSummaries(event, event.address, vpoolRewardEntry);
+  pushEntryToSummaries(event, event.address, vpoolRewardEntry);
 
   const multipools = pool!.pluggedMultiPools;
   for (let idx = 0; idx < multipools.length; ++idx) {
@@ -554,7 +565,7 @@ export function handleProcessedReport(event: ProcessedReport): void {
           integrationRewardEntry.createdAtBlock = event.block.number;
           integrationRewardEntry.editedAtBlock = event.block.number;
           integrationRewardEntry.save();
-          pushIntegrationEntryToSummaries(event, Address.fromBytes(erc20.address), integrationRewardEntry);
+          pushEntryToSummaries(event, Address.fromBytes(erc20.address), integrationRewardEntry);
 
           erc20.save();
         } else {
@@ -577,7 +588,7 @@ export function handleProcessedReport(event: ProcessedReport): void {
           integrationRewardEntry.createdAtBlock = event.block.number;
           integrationRewardEntry.editedAtBlock = event.block.number;
           integrationRewardEntry.save();
-          pushIntegrationEntryToSummaries(event, Address.fromBytes(erc20.address), integrationRewardEntry);
+          pushEntryToSummaries(event, Address.fromBytes(erc20.address), integrationRewardEntry);
         }
 
         const multiPoolRewardsSnapshot = new MultiPoolRewardsSnapshot(
