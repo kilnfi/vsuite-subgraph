@@ -52,6 +52,7 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     integration.admin = Address.zero();
     integration.maxCommission = BigInt.zero();
     integration._poolsDerived = [];
+    integration.tickets = [];
     integration.summaries = getOrCreateRewardSummaries(event, event.params.proxy).id;
     if (channel.equals(CHANNEL_NATIVE_20_vPOOL_BYTES32)) {
       integration.type = 'Native20';

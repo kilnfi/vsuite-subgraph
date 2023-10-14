@@ -748,6 +748,8 @@ templates:
       eventHandlers:
         - event: Stake(indexed address,uint128,uint128,(uint128,uint128,uint128,uint128,uint128)[])
           handler: handleStake
+        - event: Exit(indexed address,uint128,(uint128,uint128)[])
+          handler: handleExit
         - event: SetName(string)
           handler: handleSetName
         - event: SetSymbol(string)
