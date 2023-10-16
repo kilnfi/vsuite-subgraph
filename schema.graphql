@@ -541,6 +541,7 @@ type PeriodRewardSummary @entity {
   exitedEth: BigInt!
 
   entries: [DataEntry!]!
+  entryCount: BigInt!
   oldestEntry: DataEntry
   entryCounts: [BigInt!]!
   entryTypes: [String!]!

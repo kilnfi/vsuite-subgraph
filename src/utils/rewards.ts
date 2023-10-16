@@ -34,6 +34,7 @@ export function getOrCreateRewardSummary(
     rs.grossRewardRateCumulator = BigInt.zero();
     rs.depositedEth = BigInt.zero();
     rs.exitedEth = BigInt.zero();
+    rs.entryCount = BigInt.zero();
     rs.entries = [];
     rs.entryCounts = [];
     rs.entryTypes = [];
@@ -114,6 +115,7 @@ function cleanOutOfRangeEntries(event: ethereum.Event, rs: PeriodRewardSummary):
         const addRes = unregisterEntryFromCounts('vPoolRewardEntry', rs.entryTypes, rs.entryCounts);
         rs.entryTypes = addRes.types;
         rs.entryCounts = addRes.counts;
+        rs.entryCount = rs.entryCount.minus(BigInt.fromI32(1));
 
         entriesToDelete++;
       } else {
@@ -136,6 +138,7 @@ function cleanOutOfRangeEntries(event: ethereum.Event, rs: PeriodRewardSummary):
         const addRes = unregisterEntryFromCounts('IntegrationRewardEntry', rs.entryTypes, rs.entryCounts);
         rs.entryTypes = addRes.types;
         rs.entryCounts = addRes.counts;
+        rs.entryCount = rs.entryCount.minus(BigInt.fromI32(1));
 
         entriesToDelete++;
       } else {
@@ -150,6 +153,7 @@ function cleanOutOfRangeEntries(event: ethereum.Event, rs: PeriodRewardSummary):
         const addRes = unregisterEntryFromCounts('DepositDataEntry', rs.entryTypes, rs.entryCounts);
         rs.entryTypes = addRes.types;
         rs.entryCounts = addRes.counts;
+        rs.entryCount = rs.entryCount.minus(BigInt.fromI32(1));
 
         entriesToDelete++;
       } else {
@@ -164,6 +168,7 @@ function cleanOutOfRangeEntries(event: ethereum.Event, rs: PeriodRewardSummary):
         const addRes = unregisterEntryFromCounts('ExitDataEntry', rs.entryTypes, rs.entryCounts);
         rs.entryTypes = addRes.types;
         rs.entryCounts = addRes.counts;
+        rs.entryCount = rs.entryCount.minus(BigInt.fromI32(1));
 
         entriesToDelete++;
       } else {
@@ -255,6 +260,7 @@ function pushEntryToSummary(event: ethereum.Event, addr: Address, name: string, 
     const addRes = registerEntryToCounts('vPoolRewardEntry', rs.entryTypes, rs.entryCounts);
     rs.entryTypes = addRes.types;
     rs.entryCounts = addRes.counts;
+    rs.entryCount = rs.entryCount.plus(BigInt.fromI32(1));
 
     const rewardEntryCount = getTypeCount(['vPoolRewardEntry'], rs.entryTypes, rs.entryCounts);
     rs.netRewardRate = rs.netRewardRateCumulator.div(rewardEntryCount);
@@ -281,6 +287,7 @@ function pushEntryToSummary(event: ethereum.Event, addr: Address, name: string, 
     const addRes = registerEntryToCounts('IntegrationRewardEntry', rs.entryTypes, rs.entryCounts);
     rs.entryTypes = addRes.types;
     rs.entryCounts = addRes.counts;
+    rs.entryCount = rs.entryCount.plus(BigInt.fromI32(1));
 
     const rewardEntryCount = getTypeCount(['IntegrationRewardEntry'], rs.entryTypes, rs.entryCounts);
     rs.netRewardRate = rs.netRewardRateCumulator.div(rewardEntryCount);
@@ -313,6 +320,7 @@ function pushEntryToSummary(event: ethereum.Event, addr: Address, name: string, 
     const addRes = registerEntryToCounts('ExitDataEntry', rs.entryTypes, rs.entryCounts);
     rs.entryTypes = addRes.types;
     rs.entryCounts = addRes.counts;
+    rs.entryCount = rs.entryCount.plus(BigInt.fromI32(1));
 
     const entries = rs.entries;
     entries.push(entry.id);
