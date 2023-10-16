@@ -306,6 +306,7 @@ function pushEntryToSummary(event: ethereum.Event, addr: Address, name: string, 
     const addRes = registerEntryToCounts('DepositDataEntry', rs.entryTypes, rs.entryCounts);
     rs.entryTypes = addRes.types;
     rs.entryCounts = addRes.counts;
+    rs.entryCount = rs.entryCount.plus(BigInt.fromI32(1));
 
     const entries = rs.entries;
     entries.push(entry.id);
