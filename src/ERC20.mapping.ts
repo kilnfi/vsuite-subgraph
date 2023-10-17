@@ -77,6 +77,7 @@ function snapshotBalance(event: ethereum.Event, staker: Address): void {
   balanceSnapshot.createdAt = ts;
   balanceSnapshot.createdAtBlock = blockId;
   balanceSnapshot.totalSupply = integration!.totalSupply;
+  balanceSnapshot.totalUnderlyingSupply = integration!.totalUnderlyingSupply;
   balanceSnapshot.save();
 }
 

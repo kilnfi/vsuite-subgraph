@@ -1128,6 +1128,7 @@ type ERC20BalanceSnapshot @entity {
   staker: Bytes!
   sharesBalance: BigInt!
   totalSupply: BigInt!
+  totalUnderlyingSupply: BigInt!
 
   createdAt: BigInt!
   createdAtBlock: BigInt!
