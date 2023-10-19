@@ -190,7 +190,7 @@ export function handleReceivedCask(event: ReceivedCask): void {
       fulfillableBy.push(caskId);
       ticket.fulfillableBy = fulfillableBy;
       ticket.fulfillableAmount = ticket.fulfillableAmount.plus(
-        minBI(cask.position.plus(cask.size).minus(ticket.position), ticket.size)
+        minBI(cask.position.plus(cask.size).minus(ticket.position.plus(ticket.fulfillableAmount)), ticket.size)
       );
       ticket.save();
     }
