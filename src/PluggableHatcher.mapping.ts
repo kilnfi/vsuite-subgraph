@@ -19,10 +19,10 @@ import { getOrCreateMetaContract } from './utils/MetaContract.utils';
 import { entityUUID, eventUUID, externalEntityUUID } from './utils/utils';
 
 function _getOrCreatePluggableHatcher(addr: Bytes, event: ethereum.Event): PluggableHatcher {
-  let ph = PluggableHatcher.load(externalEntityUUID(Address.fromBytes(addr), []));
+  let ph = PluggableHatcher.load(addr);
 
   if (ph == null) {
-    ph = new PluggableHatcher(externalEntityUUID(Address.fromBytes(addr), []));
+    ph = new PluggableHatcher(addr);
     ph.address = addr;
     ph.contract = getOrCreateMetaContract('PluggableHatcher');
     ph.pauser = Address.zero();
@@ -42,17 +42,16 @@ function _getOrCreatePluggableHatcher(addr: Bytes, event: ethereum.Event): Plugg
 export function handleUpgraded(event: Upgraded): void {
   const ph = _getOrCreatePluggableHatcher(event.address, event);
 
-  const implementationId = eventUUID(event, [event.params.implementation.toHexString()]);
-  const implementation = new PluggableHatcherImplementation(implementationId);
+  const implementation = new PluggableHatcherImplementation(event.params.implementation);
   implementation.address = event.params.implementation;
-  implementation.pluggableHatcher = entityUUID(event, []);
+  implementation.pluggableHatcher = event.address;
   implementation.createdAt = event.block.timestamp;
   implementation.createdAtBlock = event.block.number;
   implementation.editedAt = event.block.timestamp;
   implementation.editedAtBlock = event.block.number;
   implementation.save();
 
-  ph.currentImplementation = implementationId;
+  ph.currentImplementation = event.params.implementation;
   ph.upgradeCount = ph.upgradeCount.plus(BigInt.fromI32(1));
   ph.editedAt = event.block.timestamp;
   ph.editedAtBlock = event.block.number;
@@ -63,13 +62,12 @@ export function handleUpgraded(event: Upgraded): void {
 export function handleHatched(event: Hatched): void {
   const ph = _getOrCreatePluggableHatcher(event.address, event);
 
-  const cubId = event.params.cub;
-  const cub = new Cub(externalEntityUUID(cubId, []));
+  const cub = new Cub(event.params.cub);
   cub.address = event.params.cub;
   cub.contract = getOrCreateMetaContract('Cub');
   cub.progress = ph.initialProgress;
   cub.paused = false;
-  cub.hatcher = entityUUID(event, []);
+  cub.hatcher = event.address;
   cub.constructionData = event.params.cdata;
   cub.createdAt = event.block.timestamp;
   cub.createdAtBlock = event.block.number;
@@ -87,7 +85,7 @@ export function handleHatched(event: Hatched): void {
 }
 
 export function handlePause(event: Pause): void {
-  const cub = Cub.load(externalEntityUUID(event.params.cub, []));
+  const cub = Cub.load(event.params.cub);
 
   cub!.paused = true;
 
@@ -95,7 +93,7 @@ export function handlePause(event: Pause): void {
 }
 
 export function handleUnpause(event: Unpause): void {
-  const cub = Cub.load(externalEntityUUID(event.params.cub, []));
+  const cub = Cub.load(event.params.cub);
 
   cub!.paused = false;
 
@@ -148,7 +146,7 @@ export function handleRegisteredGlobalFix(event: RegisteredGlobalFix): void {
   const globalFixId = entityUUID(event, ['globalFix', event.params.index.toString()]);
   const globalFix = new Fix(globalFixId);
   globalFix.address = event.params.fix;
-  globalFix.globalFix = entityUUID(event, []);
+  globalFix.globalFix = event.address;
   globalFix.index = event.params.index;
   globalFix.deleted = false;
 
@@ -175,7 +173,7 @@ export function handleDeletedGlobalFix(event: DeletedGlobalFix): void {
 }
 
 export function handleAppliedFix(event: AppliedFix): void {
-  const cub = Cub.load(externalEntityUUID(event.params.cub, []));
+  const cub = Cub.load(event.params.cub);
 
   const fixId = eventUUID(event, ['fix', event.params.fix.toHexString()]);
 

@@ -3,7 +3,7 @@ import { Claimed, SetFrameSize, SetRootAndIpfsHash } from '../generated/template
 import { entityUUID, eventUUID } from './utils/utils';
 
 export function handleSetFrameSize(event: SetFrameSize): void {
-  const merkleVault = MerkleVault.load(entityUUID(event, []));
+  const merkleVault = MerkleVault.load(event.address);
   merkleVault!.frameSize = event.params.frameSize;
 
   merkleVault!.editedAt = event.block.timestamp;
@@ -12,7 +12,7 @@ export function handleSetFrameSize(event: SetFrameSize): void {
 }
 
 export function handleSetRootAndIpfshash(event: SetRootAndIpfsHash): void {
-  const merkleVault = MerkleVault.load(entityUUID(event, []));
+  const merkleVault = MerkleVault.load(event.address);
   merkleVault!.root = event.params.root;
   merkleVault!.ipfsHash = event.params.ipfsHash;
 
@@ -22,7 +22,7 @@ export function handleSetRootAndIpfshash(event: SetRootAndIpfsHash): void {
 }
 
 export function handleClaimed(event: Claimed): void {
-  const merkleVault = MerkleVault.load(entityUUID(event, []));
+  const merkleVault = MerkleVault.load(event.address);
 
   const claim = new VaultClaim(eventUUID(event, []));
   claim.execLayerVault = merkleVault!.id;

@@ -67,7 +67,7 @@ export function handleAddedValidators(event: AddedValidators): void {
   if (entity == null) {
     entity = new WithdrawalChannel(channelId);
     entity.withdrawalChannel = event.params.withdrawalChannel;
-    entity.factory = entityUUID(event, []);
+    entity.factory = event.address;
     entity.total = BigInt.fromI32(0);
     entity.funded = BigInt.fromI32(0);
     entity.limit = BigInt.fromI32(0);
@@ -194,7 +194,7 @@ export function handleValidatorRequest(event: ValidatorRequest): void {
   if (entity == null) {
     entity = new WithdrawalChannel(channelId);
     entity.withdrawalChannel = event.params.withdrawalChannel;
-    entity.factory = entityUUID(event, []);
+    entity.factory = event.address;
     entity.total = BigInt.fromI32(0);
     entity.funded = BigInt.fromI32(0);
     entity.limit = BigInt.fromI32(0);
@@ -332,7 +332,7 @@ export function handleFundedValidator(event: FundedValidator): void {
   systemEvent.fundedValidationKeys = fundedKeys;
   systemEvent.save();
 
-  const factory = vFactory.load(entityUUID(event, []));
+  const factory = vFactory.load(event.address);
   factory!.totalActivatedValidators = factory!.totalActivatedValidators.plus(BigInt.fromI32(1));
   factory!.save();
 }
@@ -459,7 +459,7 @@ export function handleSetValidatorExtraData(event: SetValidatorExtraData): void 
 }
 
 export function handleSetMetadata(event: SetMetadata): void {
-  const factory = vFactory.load(entityUUID(event, []));
+  const factory = vFactory.load(event.address);
 
   let oldValueOperatorName = factory!.operatorName;
   if (oldValueOperatorName === null) {
@@ -518,7 +518,7 @@ export function handleSetMetadata(event: SetMetadata): void {
 }
 
 export function handleSetAdmin(event: SetAdmin): void {
-  const factory = vFactory.load(entityUUID(event, []));
+  const factory = vFactory.load(event.address);
 
   let oldValue = factory!.admin;
   if (oldValue === null) {
@@ -538,7 +538,7 @@ export function handleSetAdmin(event: SetAdmin): void {
 }
 
 export function handleChangedOperator(event: ChangedOperator): void {
-  const factory = vFactory.load(entityUUID(event, []));
+  const factory = vFactory.load(event.address);
 
   let oldValue = factory!.operator;
   if (oldValue === null) {
@@ -563,27 +563,32 @@ export function handleChangedOperator(event: ChangedOperator): void {
 }
 
 export function handleChangedTreasury(event: ChangedTreasury): void {
-  const factory = vFactory.load(entityUUID(event, []));
+  const factory = vFactory.load(event.address);
 
   let oldValue = factory!.treasury;
   if (oldValue === null) {
-    oldValue = externalEntityUUID(Address.zero(), []);
+    oldValue = Address.zero();
   }
 
-  factory!.treasury = externalEntityUUID(event.params.treasury, []);
+  factory!.treasury = event.params.treasury;
 
   factory!.editedAt = event.block.timestamp;
   factory!.editedAtBlock = event.block.number;
 
   factory!.save();
 
-  const systemEvent = createChangedFactoryParameterSystemEvent(event, event.address, `treasury`, oldValue);
+  const systemEvent = createChangedFactoryParameterSystemEvent(
+    event,
+    event.address,
+    `treasury`,
+    oldValue.toHexString()
+  );
   systemEvent.newValue = event.params.treasury.toHexString();
   systemEvent.save();
 }
 
 export function handleSetMinimalRecipientImplementation(event: SetMinimalRecipientImplementation): void {
-  const factory = vFactory.load(entityUUID(event, []));
+  const factory = vFactory.load(event.address);
 
   let oldValue = factory!.minimalRecipientImplementation;
   if (oldValue === null) {
@@ -608,21 +613,21 @@ export function handleSetMinimalRecipientImplementation(event: SetMinimalRecipie
 }
 
 export function handleSetHatcherRegistry(event: SetHatcherRegistry): void {
-  const factory = vFactory.load(entityUUID(event, []));
+  const factory = vFactory.load(event.address);
 
   let oldValue = factory!.nexus;
   if (oldValue === null) {
-    oldValue = externalEntityUUID(Address.zero(), []);
+    oldValue = Address.zero();
   }
 
-  factory!.nexus = externalEntityUUID(event.params.hatcherRegistry, []);
+  factory!.nexus = event.params.hatcherRegistry;
 
   factory!.editedAt = event.block.timestamp;
   factory!.editedAtBlock = event.block.number;
 
   factory!.save();
 
-  const systemEvent = createChangedFactoryParameterSystemEvent(event, event.address, `nexus`, oldValue);
+  const systemEvent = createChangedFactoryParameterSystemEvent(event, event.address, `nexus`, oldValue.toHexString());
   systemEvent.newValue = event.params.hatcherRegistry.toHexString();
   systemEvent.save();
 }
@@ -634,7 +639,7 @@ export function handleSetExitTotal(event: SetExitTotal): void {
   if (channel == null) {
     channel = new WithdrawalChannel(channelId);
     channel.withdrawalChannel = event.params.withdrawalChannel;
-    channel.factory = externalEntityUUID(event.address, []);
+    channel.factory = event.address;
     channel.total = BigInt.fromI32(0);
     channel.funded = BigInt.fromI32(0);
     channel.limit = BigInt.fromI32(0);
@@ -657,7 +662,7 @@ export function handleApproveDepositor(event: ApproveDepositor): void {
   if (channel == null) {
     channel = new WithdrawalChannel(channelId);
     channel.withdrawalChannel = event.params.wc;
-    channel.factory = externalEntityUUID(event.address, []);
+    channel.factory = event.address;
     channel.total = BigInt.fromI32(0);
     channel.funded = BigInt.fromI32(0);
     channel.limit = BigInt.fromI32(0);

@@ -39,10 +39,10 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     ERC20Template.create(event.params.proxy);
     ERC20_1_0_0_rc4Template.create(event.params.proxy);
 
-    const integration = new ERC20(externalEntityUUID(event.params.proxy, []));
+    const integration = new ERC20(event.params.proxy);
     integration.proxy = getOrCreateTUPProxy(event, event.params.proxy).id;
     integration.address = event.params.proxy;
-    integration.channel = channel.toHexString();
+    integration.channel = channel;
     integration.paused = false;
     integration.name = '';
     integration.symbol = '';
@@ -51,7 +51,6 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     integration.decimals = BigInt.fromI32(18);
     integration.admin = Address.zero();
     integration.maxCommission = BigInt.zero();
-    integration._poolsDerived = [];
     integration.tickets = [];
     integration.summaries = getOrCreateRewardSummaries(event, event.params.proxy).id;
     if (channel.equals(CHANNEL_NATIVE_20_vPOOL_BYTES32)) {
@@ -75,17 +74,16 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     ERC1155Template.create(event.params.proxy);
     ERC1155_1_0_0_rc4Template.create(event.params.proxy);
 
-    const integration = new ERC1155Integration(externalEntityUUID(event.params.proxy, []));
+    const integration = new ERC1155Integration(event.params.proxy);
     integration.proxy = getOrCreateTUPProxy(event, event.params.proxy).id;
     integration.address = event.params.proxy;
-    integration.channel = channel.toHexString();
+    integration.channel = channel;
     integration.paused = false;
     integration.name = '';
     integration.symbol = '';
     integration.uriPrefix = '';
     integration.totalSupply = BigInt.zero();
     integration.totalUnderlyingSupply = BigInt.zero();
-    integration._poolsDerived = [];
 
     integration.createdAt = event.block.timestamp;
     integration.editedAt = event.block.timestamp;
@@ -103,10 +101,10 @@ export function handleDeployedProxy(event: DeployedProxy): void {
   } else if (channel.equals(CHANNEL_VNFT_BYTES32)) {
     vNFTTemplate.create(event.params.proxy);
 
-    const vnft = new vNFTIntegration(externalEntityUUID(event.params.proxy, []));
+    const vnft = new vNFTIntegration(event.params.proxy);
     vnft.proxy = getOrCreateTUPProxy(event, event.params.proxy).id;
     vnft.address = event.params.proxy;
-    vnft.channel = channel.toHexString();
+    vnft.channel = channel;
     vnft.paused = false;
     vnft.name = '';
     vnft.symbol = '';
@@ -115,9 +113,9 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     vnft.operatorCommission = BigInt.zero();
     vnft.integratorCommission = BigInt.zero();
     vnft.integrator = Address.zero();
-    vnft.vFactory = externalEntityUUID(Address.zero(), []);
+    vnft.vFactory = Address.zero();
     vnft.extraData = '';
-    vnft.execLayerVault = externalEntityUUID(Address.zero(), []);
+    vnft.execLayerVault = Address.zero();
     vnft.soulboundMode = false;
     vnft.admin = Address.zero();
     vnft.type = 'vNFT';

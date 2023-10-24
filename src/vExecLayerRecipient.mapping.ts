@@ -5,9 +5,9 @@ import { entityUUID, txUniqueUUID } from './utils/utils';
 export function handleSuppliedEther(event: SuppliedEther): void {
   const elseId = txUniqueUUID(event, [event.address.toHexString()]);
   const else_ = new ExecLayerSuppliedEther(elseId);
-  const elr = vExecLayerRecipient.load(entityUUID(event, []));
+  const elr = vExecLayerRecipient.load(event.address);
 
-  else_.execLayerRecipient = entityUUID(event, []);
+  else_.execLayerRecipient = event.address;
   else_.amount = event.params.amount;
 
   else_.createdAt = event.block.timestamp;

@@ -30,7 +30,7 @@ import {
 import { Address, BigInt, store } from '@graphprotocol/graph-ts';
 
 export function handlePrintedTicket(event: PrintedTicket): void {
-  const exitQueue = vExitQueue.load(entityUUID(event, []));
+  const exitQueue = vExitQueue.load(event.address);
 
   const ticketId = entityUUID(event, [idToIdx(event.params.id).toString()]);
   const ticket = Ticket.load(ticketId);
@@ -41,7 +41,7 @@ export function handlePrintedTicket(event: PrintedTicket): void {
     ticket!.index = BigInt.fromI32(0);
   }
   ticket!.ticketId = event.params.id;
-  ticket!.exitQueue = entityUUID(event, []);
+  ticket!.exitQueue = event.address;
   ticket!.owner = event.params.owner;
   ticket!.size = event.params.ticket.size;
   ticket!.position = event.params.ticket.position;
@@ -111,7 +111,7 @@ export function handleTransfer(event: Transfer): void {
       ticket = new Ticket(ticketId);
       ticket.index = BigInt.zero();
       ticket.ticketId = event.params.value;
-      ticket.exitQueue = entityUUID(event, []);
+      ticket.exitQueue = event.address;
       ticket.size = BigInt.zero();
       ticket.position = BigInt.zero();
       ticket.maxExitable = BigInt.zero();
@@ -143,7 +143,7 @@ function minBI(a: BigInt, b: BigInt): BigInt {
 }
 
 export function handleReceivedCask(event: ReceivedCask): void {
-  const exitQueue = vExitQueue.load(entityUUID(event, []));
+  const exitQueue = vExitQueue.load(event.address);
 
   const caskId = entityUUID(event, [event.params.id.toString()]);
   const cask = new Cask(caskId);
@@ -154,7 +154,7 @@ export function handleReceivedCask(event: ReceivedCask): void {
     cask.index = BigInt.fromI32(0);
   }
   cask.caskId = event.params.id;
-  cask.exitQueue = entityUUID(event, []);
+  cask.exitQueue = event.address;
   cask.size = event.params.cask.size;
   cask.position = event.params.cask.position;
   cask.value = event.params.cask.value;
@@ -220,9 +220,9 @@ export function handleReceivedCask(event: ReceivedCask): void {
 }
 
 export function handleSetPool(event: SetPool): void {
-  const exitQueue = vExitQueue.load(entityUUID(event, []));
+  const exitQueue = vExitQueue.load(event.address);
 
-  exitQueue!.pool = externalEntityUUID(event.params.pool, []);
+  exitQueue!.pool = event.params.pool;
   exitQueue!.editedAt = event.block.timestamp;
   exitQueue!.editedAtBlock = event.block.number;
 
@@ -230,7 +230,7 @@ export function handleSetPool(event: SetPool): void {
 }
 
 export function handleFilledTicket(event: FilledTicket): void {
-  const exitQueue = vExitQueue.load(entityUUID(event, []));
+  const exitQueue = vExitQueue.load(event.address);
 
   exitQueue!.unclaimedFunds = exitQueue!.unclaimedFunds.plus(event.params.unclaimedEth);
   exitQueue!.editedAt = event.block.timestamp;
@@ -312,7 +312,7 @@ export function handlePayment(event: Payment): void {
 
   payment.recipient = event.params.recipient;
   payment.amount = event.params.amount;
-  payment.exitQueue = entityUUID(event, []);
+  payment.exitQueue = event.address;
   payment.createdAt = event.block.timestamp;
   payment.editedAt = event.block.timestamp;
   payment.createdAtBlock = event.block.number;
@@ -322,7 +322,7 @@ export function handlePayment(event: Payment): void {
 }
 
 export function handleSuppliedEther(event: SuppliedEther): void {
-  const exitQueue = vExitQueue.load(entityUUID(event, []));
+  const exitQueue = vExitQueue.load(event.address);
 
   exitQueue!.unclaimedFunds = exitQueue!.unclaimedFunds.minus(event.params.amount);
   exitQueue!.editedAt = event.block.timestamp;

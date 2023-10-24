@@ -1,11 +1,11 @@
-import { Address, BigInt, ethereum } from '@graphprotocol/graph-ts';
+import { Address, BigInt, ethereum, log } from '@graphprotocol/graph-ts';
 import { TUPProxy, TUPProxyUpgrade } from '../generated/schema';
 import { AdminChanged, PauserChanged, SetFreezeTime, Upgraded } from '../generated/templates/TUPProxy/TUPProxy';
 import { TUPProxy as TUPProxyTemplate } from '../generated/templates';
 import { txUniqueUUID } from './utils/utils';
 
 export function handleAdminChanged(event: AdminChanged): void {
-  const proxy = TUPProxy.load(event.address.toHexString());
+  const proxy = TUPProxy.load(event.address);
   proxy!.admin = event.params.newAdmin;
   proxy!.editedAt = event.block.timestamp;
   proxy!.editedAtBlock = event.block.number;
@@ -13,7 +13,7 @@ export function handleAdminChanged(event: AdminChanged): void {
 }
 
 export function handlePauserChanged(event: PauserChanged): void {
-  const proxy = TUPProxy.load(event.address.toHexString());
+  const proxy = TUPProxy.load(event.address);
   proxy!.pauser = event.params.newPauser;
   proxy!.editedAt = event.block.timestamp;
   proxy!.editedAtBlock = event.block.number;
@@ -21,7 +21,7 @@ export function handlePauserChanged(event: PauserChanged): void {
 }
 
 export function handleSetFreezeTime(event: SetFreezeTime): void {
-  const proxy = TUPProxy.load(event.address.toHexString());
+  const proxy = TUPProxy.load(event.address);
   proxy!.freezeTime = event.params.freezeTime;
   proxy!.editedAt = event.block.timestamp;
   proxy!.editedAtBlock = event.block.number;
@@ -29,10 +29,10 @@ export function handleSetFreezeTime(event: SetFreezeTime): void {
 }
 
 export function handleUpgraded(event: Upgraded): void {
-  const proxy = TUPProxy.load(event.address.toHexString());
+  const proxy = TUPProxy.load(event.address);
 
   const upgrade = new TUPProxyUpgrade(txUniqueUUID(event, [event.address.toHexString()]));
-  upgrade.proxy = event.address.toHexString();
+  upgrade.proxy = event.address;
   upgrade.newImplementation = event.params.implementation;
   upgrade.oldImplementation = proxy!.implementation;
   upgrade.createdAt = event.block.timestamp;
@@ -49,10 +49,11 @@ export function handleUpgraded(event: Upgraded): void {
 }
 
 export const getOrCreateTUPProxy = (event: ethereum.Event, address: Address): TUPProxy => {
-  let proxy = TUPProxy.load(address.toHexString());
+  let proxy = TUPProxy.load(address);
 
   if (proxy == null) {
-    proxy = new TUPProxy(address.toHexString());
+    proxy = new TUPProxy(address);
+    proxy.address = event.address;
     proxy.admin = Address.zero();
     proxy.pauser = Address.zero();
     proxy.freezeTime = BigInt.zero();
@@ -62,6 +63,7 @@ export const getOrCreateTUPProxy = (event: ethereum.Event, address: Address): TU
     proxy.createdAtBlock = event.block.number;
     proxy.editedAtBlock = event.block.number;
     proxy.save();
+
     TUPProxyTemplate.create(address);
   }
 

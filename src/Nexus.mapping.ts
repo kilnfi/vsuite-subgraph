@@ -149,11 +149,11 @@ export function getOrLoadVerificationTracker(): PendingKeyValidationTracker {
 }
 
 function _getOrCreateNexus(addr: Bytes, event: ethereum.Event): Nexus {
-  let nexus = Nexus.load(externalEntityUUID(Address.fromBytes(addr), []));
+  let nexus = Nexus.load(addr);
   if (nexus == null) {
-    nexus = new Nexus(entityUUID(event, []));
+    nexus = new Nexus(addr);
 
-    nexus.address = event.address;
+    nexus.address = addr;
     nexus.admin = Address.zero();
     nexus.contract = getOrCreateMetaContract('Nexus');
     nexus.proxy = getOrCreateTUPProxy(event, Address.fromBytes(addr)).id;
@@ -181,12 +181,12 @@ export function handleInitialized(event: Initialized): void {
 }
 
 export function handleSpawnedFactory(event: SpawnedFactory): void {
-  const treasury = new vTreasury(externalEntityUUID(event.params.treasury, []));
+  const treasury = new vTreasury(event.params.treasury);
   treasury.address = event.params.treasury;
-  treasury.cub = externalEntityUUID(event.params.treasury, []);
+  treasury.cub = event.params.treasury;
   treasury.operator = Address.zero();
   treasury.fee = BigInt.zero();
-  treasury.factory = externalEntityUUID(event.params.factory, []);
+  treasury.factory = event.params.factory;
   treasury.createdAt = event.block.timestamp;
   treasury.editedAt = event.block.timestamp;
   treasury.createdAtBlock = event.block.number;
@@ -196,12 +196,12 @@ export function handleSpawnedFactory(event: SpawnedFactory): void {
 
   treasury.save();
 
-  const factory = new vFactory(externalEntityUUID(event.params.factory, []));
+  const factory = new vFactory(event.params.factory);
   factory.version = BigInt.fromI32(1);
   factory.address = event.params.factory;
   factory.contract = getOrCreateMetaContract('vFactory');
-  factory.cub = externalEntityUUID(event.params.factory, []);
-  factory.treasury = externalEntityUUID(Address.zero(), []);
+  factory.cub = event.params.factory;
+  factory.treasury = Address.zero();
   factory.totalActivatedValidators = BigInt.zero();
   factory.operatorName = '';
   factory.operatorUrl = '';
@@ -217,13 +217,13 @@ export function handleSpawnedFactory(event: SpawnedFactory): void {
 }
 export function handleSpawnedPool(event: SpawnedPool): void {
   {
-    const pool = new vPool(externalEntityUUID(event.params.pool, []));
+    const pool = new vPool(event.params.pool);
 
     pool.address = event.params.pool;
     pool.contract = getOrCreateMetaContract('vPool');
-    pool.cub = externalEntityUUID(event.params.pool, []);
-    pool.factory = externalEntityUUID(event.params.factory, []);
-    pool.nexus = entityUUID(event, []);
+    pool.cub = event.params.pool;
+    pool.factory = event.params.factory;
+    pool.nexus = event.address;
     pool.totalSupply = BigInt.zero();
     pool.totalUnderlyingSupply = BigInt.zero();
     pool.purchasedValidatorCount = BigInt.zero();
@@ -234,11 +234,11 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     pool.expectedEpoch = BigInt.zero();
     pool.pluggedMultiPools = [];
 
-    pool.oracleAggregator = Address.zero().toHexString();
-    pool.coverageRecipient = Address.zero().toHexString();
-    pool.execLayerRecipient = Address.zero().toHexString();
-    pool.withdrawalRecipient = Address.zero().toHexString();
-    pool.exitQueue = Address.zero().toHexString();
+    pool.oracleAggregator = Address.zero();
+    pool.coverageRecipient = Address.zero();
+    pool.execLayerRecipient = Address.zero();
+    pool.withdrawalRecipient = Address.zero();
+    pool.exitQueue = Address.zero();
     pool.operatorFee = BigInt.zero();
     pool.epochsPerFrame = BigInt.zero();
     pool.genesisTimestamp = BigInt.zero();
@@ -260,12 +260,12 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     vPoolTemplate.create(event.params.pool);
   }
   {
-    const eq = new vExitQueue(externalEntityUUID(event.params.exitQueue, []));
+    const eq = new vExitQueue(event.params.exitQueue);
 
     eq.address = event.params.exitQueue;
     eq.contract = getOrCreateMetaContract('vExitQueue');
-    eq.pool = externalEntityUUID(event.params.pool, []);
-    eq.cub = externalEntityUUID(event.params.exitQueue, []);
+    eq.pool = event.params.pool;
+    eq.cub = event.params.exitQueue;
 
     eq.createdAt = event.block.timestamp;
     eq.editedAt = event.block.timestamp;
@@ -280,13 +280,13 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     vExitQueueTemplate.create(event.params.exitQueue);
   }
   {
-    const elr = new vExecLayerRecipient(externalEntityUUID(event.params.execLayerRecipient, []));
+    const elr = new vExecLayerRecipient(event.params.execLayerRecipient);
 
     elr.totalSuppliedEther = BigInt.zero();
     elr.address = event.params.execLayerRecipient;
     elr.contract = getOrCreateMetaContract('vExecLayerRecipient');
-    elr.cub = externalEntityUUID(event.params.execLayerRecipient, []);
-    elr.pool = externalEntityUUID(event.params.pool, []);
+    elr.cub = event.params.execLayerRecipient;
+    elr.pool = event.params.pool;
 
     elr.createdAt = event.block.timestamp;
     elr.editedAt = event.block.timestamp;
@@ -297,7 +297,7 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     vExecLayerRecipientTemplate.create(event.params.execLayerRecipient);
   }
   {
-    const cr = new vCoverageRecipient(externalEntityUUID(event.params.coverageRecipient, []));
+    const cr = new vCoverageRecipient(event.params.coverageRecipient);
 
     cr.totalSuppliedEther = BigInt.zero();
     cr.totalVoidedShares = BigInt.zero();
@@ -305,8 +305,8 @@ export function handleSpawnedPool(event: SpawnedPool): void {
     cr.totalAvailableShares = BigInt.zero();
     cr.address = event.params.coverageRecipient;
     cr.contract = getOrCreateMetaContract('vCoverageRecipient');
-    cr.cub = externalEntityUUID(event.params.coverageRecipient, []);
-    cr.pool = externalEntityUUID(event.params.pool, []);
+    cr.cub = event.params.coverageRecipient;
+    cr.pool = event.params.pool;
 
     cr.createdAt = event.block.timestamp;
     cr.editedAt = event.block.timestamp;
@@ -318,14 +318,14 @@ export function handleSpawnedPool(event: SpawnedPool): void {
   }
 
   {
-    const wr = new vWithdrawalRecipient(externalEntityUUID(event.params.withdrawalRecipient, []));
+    const wr = new vWithdrawalRecipient(event.params.withdrawalRecipient);
 
     wr.withdrawalCredentials = Bytes.fromHexString('0x010000000000000000000000').concat(
       event.params.withdrawalRecipient
     );
     wr.address = event.params.withdrawalRecipient;
-    wr.cub = externalEntityUUID(event.params.withdrawalRecipient, []);
-    wr.pool = externalEntityUUID(event.params.pool, []);
+    wr.cub = event.params.withdrawalRecipient;
+    wr.pool = event.params.pool;
 
     wr.createdAt = event.block.timestamp;
     wr.editedAt = event.block.timestamp;
@@ -336,12 +336,12 @@ export function handleSpawnedPool(event: SpawnedPool): void {
   }
 
   {
-    const oa = new vOracleAggregator(externalEntityUUID(event.params.oracleAggregator, []));
+    const oa = new vOracleAggregator(event.params.oracleAggregator);
 
     oa.address = event.params.oracleAggregator;
     oa.contract = getOrCreateMetaContract('vOracleAggregator');
-    oa.cub = externalEntityUUID(event.params.oracleAggregator, []);
-    oa.pool = externalEntityUUID(event.params.pool, []);
+    oa.cub = event.params.oracleAggregator;
+    oa.pool = event.params.pool;
     oa.memberCount = BigInt.zero();
     oa.quorum = BigInt.fromI32(1);
     oa.highestReportedEpoch = BigInt.zero();
@@ -359,14 +359,14 @@ export function handleSpawnedPool(event: SpawnedPool): void {
 export function handleSetCoreHatchers(event: SetCoreHatchers): void {
   const nexus = _getOrCreateNexus(event.address, event);
 
-  nexus.factoryHatcher = externalEntityUUID(event.params.factory, []);
-  nexus.treasuryHatcher = externalEntityUUID(event.params.treasury, []);
-  nexus.poolHatcher = externalEntityUUID(event.params.pool, []);
-  nexus.withdrawalRecipientHatcher = externalEntityUUID(event.params.withdrawalRecipient, []);
-  nexus.execLayerRecipientHatcher = externalEntityUUID(event.params.execLayerRecipient, []);
-  nexus.coverageRecipientHatcher = externalEntityUUID(event.params.coverageRecipient, []);
-  nexus.oracleAggregatorHatcher = externalEntityUUID(event.params.oracleAggregator, []);
-  nexus.exitQueueHatcher = externalEntityUUID(event.params.exitQueue, []);
+  nexus.factoryHatcher = event.params.factory;
+  nexus.treasuryHatcher = event.params.treasury;
+  nexus.poolHatcher = event.params.pool;
+  nexus.withdrawalRecipientHatcher = event.params.withdrawalRecipient;
+  nexus.execLayerRecipientHatcher = event.params.execLayerRecipient;
+  nexus.coverageRecipientHatcher = event.params.coverageRecipient;
+  nexus.oracleAggregatorHatcher = event.params.oracleAggregator;
+  nexus.exitQueueHatcher = event.params.exitQueue;
 
   nexus.editedAt = event.block.timestamp;
   nexus.editedAtBlock = event.block.number;
