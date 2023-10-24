@@ -3,14 +3,14 @@ import { AppliedFixes } from '../generated/templates/Cub/Cub';
 import { entityUUID, eventUUID } from './utils/utils';
 
 export function handleAppliedFixes(event: AppliedFixes): void {
-  const cub = Cub.load(entityUUID(event, []));
+  const cub = Cub.load(event.address);
 
   for (let idx = 0; idx < event.params.fixes.length; ++idx) {
     const fixId = eventUUID(event, ['fix', event.params.fixes[idx].toHexString()]);
 
     const fix = new Fix(fixId);
     fix.address = event.params.fixes[idx];
-    fix.fix = entityUUID(event, []);
+    fix.fix = event.address;
 
     fix.createdAt = event.block.timestamp;
     fix.createdAtBlock = event.block.number;

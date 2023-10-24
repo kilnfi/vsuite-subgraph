@@ -30,7 +30,7 @@ function getQuorum(memberCount: BigInt): BigInt {
 }
 
 export function handleAddedOracleAggregatorMember(event: AddedOracleAggregatorMember): void {
-  const oa = vOracleAggregator.load(entityUUID(event, []));
+  const oa = vOracleAggregator.load(event.address);
 
   const memberCount = oa!.memberCount.toI32();
 
@@ -39,7 +39,7 @@ export function handleAddedOracleAggregatorMember(event: AddedOracleAggregatorMe
   const oaMember = new OracleAggregatorMember(oaMemberId);
 
   oaMember.address = event.params.member;
-  oaMember.oracleAggregator = entityUUID(event, []);
+  oaMember.oracleAggregator = event.address;
   oaMember.index = BigInt.fromI32(memberCount);
   oaMember.createdAt = event.block.timestamp;
   oaMember.createdAtBlock = event.block.number;
@@ -70,7 +70,7 @@ export function handleAddedOracleAggregatorMember(event: AddedOracleAggregatorMe
 }
 
 export function handleRemovedOracleAggregatorMember(event: RemovedOracleAggregatorMember): void {
-  const oa = vOracleAggregator.load(entityUUID(event, []));
+  const oa = vOracleAggregator.load(event.address);
 
   const memberCount = oa!.memberCount.toI32();
   let removedMemberIndex = -1;
@@ -131,7 +131,7 @@ export function handleRemovedOracleAggregatorMember(event: RemovedOracleAggregat
 }
 
 function timeSinceLastVariant(epoch: BigInt, oracleAggregatorAddress: Bytes): BigInt {
-  const oa = vOracleAggregator.load(externalEntityUUID(Address.fromBytes(oracleAggregatorAddress), []));
+  const oa = vOracleAggregator.load(oracleAggregatorAddress);
 
   if (oa != null) {
     if (oa.lastVariant != null) {
@@ -160,7 +160,7 @@ export function handleGlobalVote(
   variant: Bytes,
   report: GlobalMemberVotedReportStruct
 ): void {
-  const oa = vOracleAggregator.load(entityUUID(event, []));
+  const oa = vOracleAggregator.load(event.address);
 
   const variantId = entityUUID(event, [variant.toHexString()]);
 
@@ -180,7 +180,7 @@ export function handleGlobalVote(
     _variant.activatedCount = report.activatedCount;
     _variant.stoppedCount = report.stoppedCount;
 
-    _variant.oracleAggregator = entityUUID(event, []);
+    _variant.oracleAggregator = event.address;
     _variant.createdAt = event.block.timestamp;
     _variant.createdAtBlock = event.block.number;
 
@@ -224,7 +224,7 @@ export function handleGlobalVote(
 }
 
 export function handleVote(event: ethereum.Event, voter: Bytes, variant: Bytes, report: MemberVotedReportStruct): void {
-  const oa = vOracleAggregator.load(entityUUID(event, []));
+  const oa = vOracleAggregator.load(event.address);
 
   const variantId = entityUUID(event, [variant.toHexString()]);
 
@@ -244,7 +244,7 @@ export function handleVote(event: ethereum.Event, voter: Bytes, variant: Bytes, 
     _variant.activatedCount = report.activatedCount;
     _variant.stoppedCount = report.stoppedCount;
 
-    _variant.oracleAggregator = entityUUID(event, []);
+    _variant.oracleAggregator = event.address;
     _variant.createdAt = event.block.timestamp;
     _variant.createdAtBlock = event.block.number;
 
@@ -296,7 +296,7 @@ export function handlerGlobalMemberVoted(event: GlobalMemberVoted): void {
 }
 
 export function handleSubmittedReport(event: SubmittedReport): void {
-  const oa = vOracleAggregator.load(entityUUID(event, []));
+  const oa = vOracleAggregator.load(event.address);
   const blockId = event.block.timestamp;
   const ts = event.block.timestamp;
 
@@ -314,7 +314,7 @@ export function handleSubmittedReport(event: SubmittedReport): void {
 }
 
 export function handleSetHighestReportedEpoch(event: SetHighestReportedEpoch): void {
-  const oa = vOracleAggregator.load(entityUUID(event, []));
+  const oa = vOracleAggregator.load(event.address);
   oa!.highestReportedEpoch = event.params.epoch;
   oa!.editedAt = event.block.timestamp;
   oa!.editedAtBlock = event.block.number;

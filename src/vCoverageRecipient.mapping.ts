@@ -25,9 +25,9 @@ import {
 export function handleSuppliedEther(event: SuppliedEther): void {
   const cseId = txUniqueUUID(event, [event.address.toHexString()]);
   const cse = new CoverageSuppliedEther(cseId);
-  const cr = vCoverageRecipient.load(entityUUID(event, []));
+  const cr = vCoverageRecipient.load(event.address);
 
-  cse.coverageRecipient = entityUUID(event, []);
+  cse.coverageRecipient = event.address;
   cse.amount = event.params.amount;
 
   cse.createdAt = event.block.timestamp;
@@ -47,9 +47,9 @@ export function handleSuppliedEther(event: SuppliedEther): void {
 export function handleVoidedShares(event: VoidedShares): void {
   const cseId = txUniqueUUID(event, [event.address.toHexString()]);
   const cvs = new CoverageVoidedShares(cseId);
-  const cr = vCoverageRecipient.load(entityUUID(event, []));
+  const cr = vCoverageRecipient.load(event.address);
 
-  cvs.coverageRecipient = entityUUID(event, []);
+  cvs.coverageRecipient = event.address;
   cvs.amount = event.params.amount;
 
   cvs.createdAt = event.block.timestamp;
@@ -67,7 +67,7 @@ export function handleVoidedShares(event: VoidedShares): void {
 }
 
 export function handleUpdatedEtherForCoverage(event: UpdatedEtherForCoverage): void {
-  const cr = vCoverageRecipient.load(entityUUID(event, []));
+  const cr = vCoverageRecipient.load(event.address);
 
   let initialAmount = cr!.totalAvailableEther;
 
@@ -87,7 +87,7 @@ export function handleUpdatedEtherForCoverage(event: UpdatedEtherForCoverage): v
 }
 
 export function handleUpdatedSharesForCoverage(event: UpdatedSharesForCoverage): void {
-  const cr = vCoverageRecipient.load(entityUUID(event, []));
+  const cr = vCoverageRecipient.load(event.address);
 
   let initialAmount = cr!.totalAvailableShares;
 
@@ -118,7 +118,7 @@ export function handleAllowedDonor(event: AllowedDonor): void {
       donor = new CoverageDonor(donorId);
 
       donor.address = event.params.donorAddress;
-      donor.coverageRecipient = entityUUID(event, []);
+      donor.coverageRecipient = event.address;
 
       donor.createdAt = event.block.timestamp;
       donor.createdAtBlock = event.block.number;
@@ -138,7 +138,7 @@ export function handleAllowedDonor(event: AllowedDonor): void {
   }
 
   if (oldValue !== event.params.allowed) {
-    const coverageRecipient = vCoverageRecipient.load(entityUUID(event, []));
+    const coverageRecipient = vCoverageRecipient.load(event.address);
     const pool = vPool.load(coverageRecipient!.pool);
     const factory = vFactory.load(pool!.factory);
     const se = createChangedCoverageRecipientParameterSystemEvent(

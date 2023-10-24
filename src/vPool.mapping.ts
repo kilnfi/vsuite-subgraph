@@ -32,7 +32,8 @@ import {
   vPoolRewardEntry,
   IntegrationRewardEntry,
   PeriodRewardSummary,
-  DepositDataEntry
+  DepositDataEntry,
+  ERC1155Integration
 } from '../generated/schema';
 import { Bytes, BigInt, Address, store, log, DataSourceContext, dataSource } from '@graphprotocol/graph-ts';
 import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum';
@@ -59,7 +60,7 @@ export function getOrCreateBalance(pool: Bytes, account: Bytes, timestamp: BigIn
   if (balance == null) {
     balance = new PoolBalance(balanceId);
     balance.address = account;
-    balance.pool = externalEntityUUID(Address.fromBytes(pool), []);
+    balance.pool = pool;
     balance.amount = BigInt.zero();
     balance.totalApproval = BigInt.zero();
     balance.createdAt = timestamp;
@@ -80,7 +81,7 @@ function saveOrEraseBalance(balance: PoolBalance, event: ethereum.Event): void {
 }
 
 export function handleSetCommittedEthers(event: SetCommittedEthers): void {
-  const pool = vPool.load(entityUUID(event, []));
+  const pool = vPool.load(event.address);
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
@@ -90,7 +91,7 @@ export function handleSetCommittedEthers(event: SetCommittedEthers): void {
 }
 
 export function handleSetDepositedEthers(event: SetDepositedEthers): void {
-  const pool = vPool.load(entityUUID(event, []));
+  const pool = vPool.load(event.address);
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
@@ -100,7 +101,7 @@ export function handleSetDepositedEthers(event: SetDepositedEthers): void {
 }
 
 export function handleSetRequestedExits(event: SetRequestedExits): void {
-  const pool = vPool.load(entityUUID(event, []));
+  const pool = vPool.load(event.address);
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
@@ -110,7 +111,7 @@ export function handleSetRequestedExits(event: SetRequestedExits): void {
 }
 
 export function handleDeposit(event: Deposit): void {
-  const pool = vPool.load(entityUUID(event, []));
+  const pool = vPool.load(event.address);
 
   const poolDeposit = new PoolDeposit(eventUUID(event, ['deposit']));
 
@@ -164,7 +165,7 @@ export function handleDeposit(event: Deposit): void {
 }
 
 export function handleMint(event: Mint): void {
-  const pool = vPool.load(entityUUID(event, []));
+  const pool = vPool.load(event.address);
 
   const balance = getOrCreateBalance(
     event.address,
@@ -185,7 +186,7 @@ export function handleMint(event: Mint): void {
 }
 
 export function handleBurn(event: Burn): void {
-  const pool = vPool.load(entityUUID(event, []));
+  const pool = vPool.load(event.address);
 
   const balance = getOrCreateBalance(event.address, event.params.burner, event.block.timestamp, event.block.number);
 
@@ -201,15 +202,15 @@ export function handleBurn(event: Burn): void {
 }
 
 export function handleTransfer(event: Transfer): void {
-  const pool = vPool.load(entityUUID(event, []));
+  const pool = vPool.load(event.address);
 
   const fromBalance = getOrCreateBalance(event.address, event.params.from, event.block.timestamp, event.block.number);
 
   const toBalance = getOrCreateBalance(event.address, event.params.to, event.block.timestamp, event.block.number);
 
-  const exitQueue = vExitQueue.load(externalEntityUUID(event.params.to, []));
-  const erc20Integration = ERC20.load(externalEntityUUID(event.params.from, []));
-  const erc1155Integration = ERC1155.load(externalEntityUUID(event.params.from, []));
+  const exitQueue = vExitQueue.load(event.params.to);
+  const erc20Integration = ERC20.load(event.params.from);
+  const erc1155Integration = ERC1155Integration.load(event.params.from);
 
   if (
     exitQueue != null &&
@@ -264,7 +265,7 @@ export function handleTransfer(event: Transfer): void {
 }
 
 export function handlePurchasedValidators(event: PurchasedValidators): void {
-  const pool = vPool.load(entityUUID(event, []));
+  const pool = vPool.load(event.address);
 
   const validatorCount = pool!.purchasedValidatorCount.toI32();
   const validators: string[] = [];
@@ -321,7 +322,7 @@ function maxBigInt(a: BigInt, b: BigInt): BigInt {
 }
 
 export function handleSetConsensusLayerSpec(event: SetConsensusLayerSpec): void {
-  const pool = vPool.load(entityUUID(event, []));
+  const pool = vPool.load(event.address);
 
   pool!.epochsUntilFinal = event.params.consensusLayerSpec.epochsUntilFinal;
   pool!.slotsPerEpoch = event.params.consensusLayerSpec.slotsPerEpoch;
@@ -352,7 +353,7 @@ function _computeTotalUnderlyingSupply(pool: vPool, lastReport: Report | null): 
 }
 
 export function handleProcessedReport(event: ProcessedReport): void {
-  const pool = vPool.load(entityUUID(event, []));
+  const pool = vPool.load(event.address);
 
   const reportId = entityUUID(event, [event.params.epoch.toString()]);
   const report = new Report(reportId);
@@ -623,7 +624,7 @@ export function handleProcessedReport(event: ProcessedReport): void {
 }
 
 export function handleSetContractLinks(event: SetContractLinks): void {
-  const pool = vPool.load(entityUUID(event, []));
+  const pool = vPool.load(event.address);
 
   const withdrawalRecipientOld = pool!.withdrawalRecipient;
   const exitQueueOld = pool!.exitQueue;
@@ -631,11 +632,11 @@ export function handleSetContractLinks(event: SetContractLinks): void {
   const coverageRecipientOld = pool!.coverageRecipient;
   const oracleAggregatorOld = pool!.oracleAggregator;
 
-  pool!.withdrawalRecipient = externalEntityUUID(event.params.withdrawalRecipient, []);
-  pool!.exitQueue = externalEntityUUID(event.params.exitQueue, []);
-  pool!.execLayerRecipient = externalEntityUUID(event.params.execLayerRecipient, []);
-  pool!.coverageRecipient = externalEntityUUID(event.params.coverageRecipient, []);
-  pool!.oracleAggregator = externalEntityUUID(event.params.oracleAggregator, []);
+  pool!.withdrawalRecipient = event.params.withdrawalRecipient;
+  pool!.exitQueue = event.params.exitQueue;
+  pool!.execLayerRecipient = event.params.execLayerRecipient;
+  pool!.coverageRecipient = event.params.coverageRecipient;
+  pool!.oracleAggregator = event.params.oracleAggregator;
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
@@ -647,7 +648,7 @@ export function handleSetContractLinks(event: SetContractLinks): void {
       vFactory.load(pool!.factory)!.address,
       event.address,
       `withdrawalRecipient`,
-      withdrawalRecipientOld
+      withdrawalRecipientOld.toHexString()
     );
     systemEvent.newValue = event.params.withdrawalRecipient.toHexString();
     systemEvent.save();
@@ -658,7 +659,7 @@ export function handleSetContractLinks(event: SetContractLinks): void {
       vFactory.load(pool!.factory)!.address,
       event.address,
       `exitQueue`,
-      exitQueueOld
+      exitQueueOld.toHexString()
     );
     systemEvent.newValue = event.params.exitQueue.toHexString();
     systemEvent.save();
@@ -669,7 +670,7 @@ export function handleSetContractLinks(event: SetContractLinks): void {
       vFactory.load(pool!.factory)!.address,
       event.address,
       `execLayerRecipient`,
-      execLayerRecipientOld
+      execLayerRecipientOld.toHexString()
     );
     systemEvent.newValue = event.params.execLayerRecipient.toHexString();
     systemEvent.save();
@@ -680,7 +681,7 @@ export function handleSetContractLinks(event: SetContractLinks): void {
       vFactory.load(pool!.factory)!.address,
       event.address,
       `coverageRecipient`,
-      coverageRecipientOld
+      coverageRecipientOld.toHexString()
     );
     systemEvent.newValue = event.params.coverageRecipient.toHexString();
     systemEvent.save();
@@ -691,7 +692,7 @@ export function handleSetContractLinks(event: SetContractLinks): void {
       vFactory.load(pool!.factory)!.address,
       event.address,
       `oracleAggregator`,
-      oracleAggregatorOld
+      oracleAggregatorOld.toHexString()
     );
     systemEvent.newValue = event.params.oracleAggregator.toHexString();
     systemEvent.save();
@@ -699,7 +700,7 @@ export function handleSetContractLinks(event: SetContractLinks): void {
 }
 
 export function handleSetOperatorFee(event: SetOperatorFee): void {
-  const pool = vPool.load(entityUUID(event, []));
+  const pool = vPool.load(event.address);
 
   let oldValue = pool!.operatorFee;
   pool!.operatorFee = event.params.operatorFeeBps;
@@ -722,7 +723,7 @@ export function handleSetOperatorFee(event: SetOperatorFee): void {
 }
 
 export function handleSetEpochsPerFrame(event: SetEpochsPerFrame): void {
-  const pool = vPool.load(entityUUID(event, []));
+  const pool = vPool.load(event.address);
 
   let oldValue = pool!.epochsPerFrame;
 
@@ -747,7 +748,7 @@ export function handleSetEpochsPerFrame(event: SetEpochsPerFrame): void {
 }
 
 export function handleSetReportBounds(event: SetReportBounds): void {
-  const pool = vPool.load(entityUUID(event, []));
+  const pool = vPool.load(event.address);
 
   pool!.maxAPRUpperBound = event.params.maxAPRUpperBound;
   pool!.maxAPRUpperCoverageBoost = event.params.maxAPRUpperCoverageBoost;
@@ -811,7 +812,7 @@ export function handleApproveDepositor(event: ApproveDepositor): void {
 
     depositor.allowed = event.params.allowed;
     depositor.address = event.params.depositor;
-    depositor.pool = externalEntityUUID(event.address, []);
+    depositor.pool = event.address;
     depositor.depositedEth = BigInt.fromI32(0);
     depositor.createdAt = event.block.timestamp;
     depositor.createdAtBlock = event.block.number;
@@ -826,7 +827,7 @@ export function handleApproveDepositor(event: ApproveDepositor): void {
     depositor.save();
   }
 
-  const pool = vPool.load(entityUUID(event, []));
+  const pool = vPool.load(event.address);
 
   if (oldValue != event.params.allowed) {
     const systemEvent = createChangedPoolParameterSystemEvent(
