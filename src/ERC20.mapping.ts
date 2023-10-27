@@ -14,7 +14,8 @@ import {
   PoolBalance,
   DepositDataEntry,
   ExitDataEntry,
-  vExitQueue
+  vExitQueue,
+  CommissionLoader
 } from '../generated/schema';
 import { Stake as Stake_1_0_0_rc4 } from '../generated/templates/ERC20_1_0_0_rc4/Native20';
 import {
@@ -283,19 +284,41 @@ export function handleNewCommissionSplit(event: NewCommissionSplit): void {
   const ts = event.block.timestamp;
   const blockId = event.block.number;
 
+  // clear out old commission splits
+  let idx = 0;
+  while (true) {
+    const commission = Commission.load(entityUUID(event, [idx.toString()]));
+    if (commission != null) {
+      commission.commission = BigInt.zero();
+      commission.save();
+      ++idx;
+    } else {
+      break;
+    }
+  }
+
+  const length = idx;
+
   for (let i = 0; i < recipients.length; i++) {
     const recipient = recipients[i];
     const split = splits[i];
 
-    const id = entityUUID(event, [recipient.toHexString()]);
-    let commission = Commission.load(id);
+    let commission: Commission | null = null;
+    for (let j = 0; j < length; j++) {
+      const com = Commission.load(entityUUID(event, [j.toString()]));
+      if (com!.recipient.equals(recipient)) {
+        commission = com;
+        break;
+      }
+    }
 
     if (!commission) {
-      commission = new Commission(id);
+      commission = new Commission(entityUUID(event, [idx.toString()]));
       commission.vPoolIntegration = erc20!.id;
-      commission.withdrawnCommission = BigInt.fromI32(0);
+      commission.withdrawnCommission = BigInt.zero();
       commission.createdAt = ts;
       commission.createdAtBlock = blockId;
+      ++idx;
     }
 
     commission.commission = split;
@@ -316,16 +339,26 @@ export function handleCommissionWithdrawn(event: CommissionWithdrawn): void {
   const ts = event.block.timestamp;
   const blockId = event.block.number;
 
-  const id = entityUUID(event, [event.params.withdrawer.toHexString()]);
-  const commission = Commission.load(id);
-  commission!.withdrawnCommission = commission!.withdrawnCommission.plus(event.params.amountWithdrawn);
-  commission!.editedAt = ts;
-  commission!.editedAtBlock = blockId;
-  commission!.save();
-
-  erc20!.editedAt = ts;
-  erc20!.editedAtBlock = blockId;
-  erc20!.save();
+  let idx = 0;
+  while (true) {
+    const commission = Commission.load(entityUUID(event, [idx.toString()]));
+    if (commission != null) {
+      if (commission.recipient.equals(event.params.withdrawer)) {
+        commission.withdrawnCommission = commission.withdrawnCommission.plus(event.params.amountWithdrawn);
+        commission.editedAt = ts;
+        commission.editedAtBlock = blockId;
+        commission.save();
+      
+        erc20!.editedAt = ts;
+        erc20!.editedAtBlock = blockId;
+        erc20!.save();
+        break;
+      }
+      ++idx;
+    } else {
+      break;
+    }
+  }
 }
 
 export function handleStake_1_0_0_rc4(event: Stake_1_0_0_rc4): void {

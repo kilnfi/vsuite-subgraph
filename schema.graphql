@@ -1016,7 +1016,7 @@ type OracleAggregatorReportVariantVote @entity {
 #
 
 type Commission @entity {
-  id: String! # "integrationsAddress+recipient"
+  id: String! # "integrationsAddress+idx"
   vPoolIntegration: vPoolIntegration!
 
   recipient: Bytes!
