@@ -47,6 +47,28 @@ jobs:
       - name: 'graph:deploy:goerli-complete'
         run: $(yarn bin)/graph deploy vsuite-goerli-complete --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.goerli.yaml
 
+      - name: 'graph:clean'
+        run: $(yarn bin)/graph clean
+
+      # Deploy fast syncing devnet
+      - name: 'graph:codegen:devnet'
+        run: $(yarn bin)/graph codegen subgraph.devnet_fast.yaml
+      - name: 'graph:create:devnet'
+        run: $(yarn bin)/graph create vsuite-devnet --node http://graph-node-query:8020
+      - name: 'graph:deploy:devnet'
+        run: $(yarn bin)/graph deploy vsuite-devnet --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.devnet_fast.yaml
+
+      - name: 'graph:clean'
+        run: $(yarn bin)/graph clean
+
+      # Deploy slow syncing devnet version
+      - name: 'graph:codegen:devnet-complete'
+        run: $(yarn bin)/graph codegen subgraph.devnet.yaml
+      - name: 'graph:create:devnet-complete'
+        run: $(yarn bin)/graph create vsuite-devnet-complete --node http://graph-node-query:8020
+      - name: 'graph:deploy:devnet-complete'
+        run: $(yarn bin)/graph deploy vsuite-devnet-complete --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.devnet.yaml
+
   deploy-testnet:
     runs-on: thegraph-testnet
     if: startsWith(github.ref, 'refs/tags/')
@@ -78,6 +100,25 @@ jobs:
         run: $(yarn bin)/graph create vsuite-goerli-complete --node http://graph-node-query:8020
       - name: 'graph:deploy:goerli-complete'
         run: $(yarn bin)/graph deploy vsuite-goerli-complete --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.goerli.yaml
+
+      # Deploy fast syncing testnet version
+      - name: 'graph:codegen:testnet'
+        run: $(yarn bin)/graph codegen subgraph.testnet_fast.yaml
+      - name: 'graph:create:testnet'
+        run: $(yarn bin)/graph create vsuite-testnet --node http://graph-node-query:8020
+      - name: 'graph:deploy:testnet'
+        run: $(yarn bin)/graph deploy vsuite-testnet --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.testnet_fast.yaml
+
+      - name: 'graph:clean'
+        run: $(yarn bin)/graph clean
+
+      # Deploy slow syncing testnet version
+      - name: 'graph:codegen:testnet-complete'
+        run: $(yarn bin)/graph codegen subgraph.testnet.yaml
+      - name: 'graph:create:testnet-complete'
+        run: $(yarn bin)/graph create vsuite-testnet-complete --node http://graph-node-query:8020
+      - name: 'graph:deploy:testnet-complete'
+        run: $(yarn bin)/graph deploy vsuite-testnet-complete --version-label ${GITHUB_REF##*/} --node http://graph-node-query:8020 --ipfs http://ipfs-ipfs:5001 subgraph.testnet.yaml
 
   deploy-mainnet:
     runs-on: thegraph-mainnet
