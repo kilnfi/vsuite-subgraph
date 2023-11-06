@@ -43,7 +43,9 @@ import {
   externalEntityUUID,
   getOrCreateUnassignedCommissionSold,
   _computeEthAfterCommission,
-  _computeIntegratorCommissionEarned
+  _computeIntegratorCommissionEarned,
+  createERC20DepositSystemEvent,
+  createERC20ExitSystemEvent
 } from './utils/utils';
 import { CommissionSharesSold, ExitedCommissionShares } from '../generated/templates/ERC1155/Liquid1155';
 import { getOrCreateBalance } from './vPool.mapping';
@@ -348,7 +350,7 @@ export function handleCommissionWithdrawn(event: CommissionWithdrawn): void {
         commission.editedAt = ts;
         commission.editedAtBlock = blockId;
         commission.save();
-      
+
         erc20!.editedAt = ts;
         erc20!.editedAtBlock = blockId;
         erc20!.save();
@@ -374,6 +376,21 @@ export function handleStake_1_0_0_rc4(event: Stake_1_0_0_rc4): void {
   deposit.depositAmount = BigInt.zero();
   if (ucs.active && ucs.tx.equals(event.transaction.hash)) {
     deposit.depositAmount = deposit.depositAmount.plus(ucs.amount);
+    createERC20DepositSystemEvent(
+      event,
+      event.address,
+      event.params.staker,
+      event.params.ethValue.plus(ucs.amount),
+      event.params.sharesBought
+    );
+  } else {
+    createERC20DepositSystemEvent(
+      event,
+      event.address,
+      event.params.staker,
+      event.params.ethValue,
+      event.params.sharesBought
+    );
   }
   deposit.mintedShares = event.params.sharesBought;
   deposit.hash = event.transaction.hash;
@@ -447,6 +464,8 @@ export function handleStake(event: Stake): void {
   const blockId = event.block.number;
   const staker = event.params.staker;
 
+  createERC20DepositSystemEvent(event, event.address, staker, event.params.depositedEth, event.params.mintedTokens);
+
   const deposit = new ERC20Deposit(eventUUID(event, [event.address.toHexString(), staker.toHexString()]));
   deposit.integration = event.address;
   deposit.mintedShares = event.params.mintedTokens;
@@ -511,18 +530,24 @@ export function handleExit(event: Exit): void {
   const details = event.params.exitDetails;
   const depositDataEntry = new ExitDataEntry(eventUUID(event, ['ExitDataEntry']));
   depositDataEntry.exitedEth = BigInt.zero();
+
+  let totalETH = BigInt.zero();
   for (let idx = 0; idx < details.length; ++idx) {
     const poolId = details[idx].poolId;
     const exitedShares = details[idx].exitedPoolShares;
     const multiPool = MultiPool.load(entityUUID(event, [poolId.toString()]));
     const pool = vPool.load(multiPool!.pool);
     const ethValue = exitedShares.times(pool!.totalUnderlyingSupply).div(pool!.totalSupply);
+    totalETH = totalETH.plus(ethValue);
     depositDataEntry.exitedEth = depositDataEntry.exitedEth.plus(ethValue);
     const exitQueue = vExitQueue.load(pool!.exitQueue);
     const nextTicketIdx = exitQueue!.ticketCount;
     const linkedTicketId = externalEntityUUID(Address.fromBytes(exitQueue!.address), [nextTicketIdx.toString()]);
     tickets.push(linkedTicketId);
   }
+
+  createERC20ExitSystemEvent(event, event.address, event.params.staker, totalETH, event.params.exitedTokens);
+
   depositDataEntry.type = 'ExitDataEntry';
   depositDataEntry.createdAt = event.block.timestamp;
   depositDataEntry.editedAt = event.block.timestamp;

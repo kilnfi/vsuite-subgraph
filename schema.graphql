@@ -2120,3 +2120,56 @@ type ClaimedExitQueueTicketSystemEvent implements SystemEvent @entity {
   createdAt: BigInt!
   createdAtBlock: BigInt!
 }
+
+
+type ERC20DepositSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  integration: ERC20!
+  depositedAmount: BigInt!
+  mintedShares: BigInt!
+  staker: Bytes!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type ERC20ExitSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  integration: ERC20!
+  exitedAmount: BigInt!
+  exitedShares: BigInt!
+  staker: Bytes!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}

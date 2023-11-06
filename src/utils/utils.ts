@@ -9,6 +9,8 @@ import {
   CoverageRecipientUpdatedEthSystemEvent,
   CoverageRecipientUpdatedSharesSystemEvent,
   DuplicateKeySystemAlert,
+  ERC20DepositSystemEvent,
+  ERC20ExitSystemEvent,
   ExternalFundingSystemAlert,
   FundedValidationKeySystemEvent,
   G,
@@ -860,4 +862,72 @@ export function _computeEthAfterCommission(
       commissionPaid
     )
   );
+}
+
+export function createERC20DepositSystemEvent(
+  event: ethereum.Event,
+  erc20Address: Address,
+  depositor: Address,
+  amount: BigInt,
+  shares: BigInt
+): void {
+  const g = getOrCreateG();
+
+  const id = `ERC20DepositSystemEvent/${event.transaction.hash.toHexString()}/${event.logIndex.toString()}/${erc20Address.toHexString()}/${depositor.toHexString()}`;
+  let systemEvent = ERC20DepositSystemEvent.load(id);
+  if (systemEvent == null) {
+    systemEvent = new ERC20DepositSystemEvent(id);
+    systemEvent.index = g.systemLogIndex;
+    systemEvent.type = 'ERC20DepositSystemEvent';
+
+    systemEvent.tx = event.transaction.hash;
+    systemEvent.who = event.transaction.from;
+
+    systemEvent.integration = erc20Address;
+    systemEvent.staker = depositor;
+    systemEvent.depositedAmount = amount;
+    systemEvent.mintedShares = shares;
+
+    systemEvent.createdAt = event.block.timestamp;
+    systemEvent.createdAtBlock = event.block.number;
+
+    g.systemLogIndex = g.systemLogIndex.plus(BigInt.fromI32(1));
+    g.save();
+  }
+
+  systemEvent.save();
+}
+
+export function createERC20ExitSystemEvent(
+  event: ethereum.Event,
+  erc20Address: Address,
+  depositor: Address,
+  amount: BigInt,
+  shares: BigInt
+): void {
+  const g = getOrCreateG();
+
+  const id = `ERC20ExitSystemEvent/${event.transaction.hash.toHexString()}/${event.logIndex.toString()}/${erc20Address.toHexString()}/${depositor.toHexString()}`;
+  let systemEvent = ERC20ExitSystemEvent.load(id);
+  if (systemEvent == null) {
+    systemEvent = new ERC20ExitSystemEvent(id);
+    systemEvent.index = g.systemLogIndex;
+    systemEvent.type = 'ERC20ExitSystemEvent';
+
+    systemEvent.tx = event.transaction.hash;
+    systemEvent.who = event.transaction.from;
+
+    systemEvent.integration = erc20Address;
+    systemEvent.staker = depositor;
+    systemEvent.exitedAmount = amount;
+    systemEvent.exitedShares = shares;
+
+    systemEvent.createdAt = event.block.timestamp;
+    systemEvent.createdAtBlock = event.block.number;
+
+    g.systemLogIndex = g.systemLogIndex.plus(BigInt.fromI32(1));
+    g.save();
+  }
+
+  systemEvent.save();
 }
