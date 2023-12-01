@@ -17,7 +17,7 @@ import {
   checkChannel
 } from './utils/IntegrationChannel.utils';
 import { Address, BigInt } from '@graphprotocol/graph-ts';
-import { externalEntityUUID } from './utils/utils';
+import { addressInArray, externalEntityUUID } from './utils/utils';
 import { getOrCreateRewardSummaries } from './utils/rewards';
 import { getOrCreateTUPProxy } from './TUPProxy.mapping';
 
@@ -37,39 +37,40 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     channel.equals(CHANNEL_LIQUID_20_C_vPOOL_BYTES32)
   ) {
     //check is only for a goerli failed instance
-    if (event.params.proxy.toHexString().toLowerCase() != '0xd32e4d4cbde76738a766f5413323d8a52838e145') {
-      ERC20Template.create(event.params.proxy);
-      ERC20_1_0_0_rc4Template.create(event.params.proxy);
-
-      const integration = new ERC20(event.params.proxy);
-      integration.proxy = getOrCreateTUPProxy(event, event.params.proxy).id;
-      integration.address = event.params.proxy;
-      integration.channel = channel;
-      integration.paused = false;
-      integration.name = '';
-      integration.symbol = '';
-      integration.totalSupply = BigInt.zero();
-      integration.totalUnderlyingSupply = BigInt.zero();
-      integration.decimals = BigInt.fromI32(18);
-      integration.admin = Address.zero();
-      integration.maxCommission = BigInt.zero();
-      integration.tickets = [];
-      integration.summaries = getOrCreateRewardSummaries(event, event.params.proxy).id;
-      if (channel.equals(CHANNEL_NATIVE_20_vPOOL_BYTES32)) {
-        integration.type = 'Native20';
-      } else if (channel.equals(CHANNEL_LIQUID_20_A_vPOOL_BYTES32)) {
-        integration.type = 'Liquid20A';
-      } else if (channel.equals(CHANNEL_LIQUID_20_C_vPOOL_BYTES32)) {
-        integration.type = 'Liquid20C';
-      }
-
-      integration.createdAt = event.block.timestamp;
-      integration.editedAt = event.block.timestamp;
-      integration.createdAtBlock = event.block.number;
-      integration.editedAtBlock = event.block.number;
-
-      integration.save();
+    if (addressInArray(event.params.proxy, [Address.fromString('0xd32e4d4cbde76738a766f5413323d8a52838e145')])) {
+      return;
     }
+    ERC20Template.create(event.params.proxy);
+    ERC20_1_0_0_rc4Template.create(event.params.proxy);
+
+    const integration = new ERC20(event.params.proxy);
+    integration.proxy = getOrCreateTUPProxy(event, event.params.proxy).id;
+    integration.address = event.params.proxy;
+    integration.channel = channel;
+    integration.paused = false;
+    integration.name = '';
+    integration.symbol = '';
+    integration.totalSupply = BigInt.zero();
+    integration.totalUnderlyingSupply = BigInt.zero();
+    integration.decimals = BigInt.fromI32(18);
+    integration.admin = Address.zero();
+    integration.maxCommission = BigInt.zero();
+    integration.tickets = [];
+    integration.summaries = getOrCreateRewardSummaries(event, event.params.proxy).id;
+    if (channel.equals(CHANNEL_NATIVE_20_vPOOL_BYTES32)) {
+      integration.type = 'Native20';
+    } else if (channel.equals(CHANNEL_LIQUID_20_A_vPOOL_BYTES32)) {
+      integration.type = 'Liquid20A';
+    } else if (channel.equals(CHANNEL_LIQUID_20_C_vPOOL_BYTES32)) {
+      integration.type = 'Liquid20C';
+    }
+
+    integration.createdAt = event.block.timestamp;
+    integration.editedAt = event.block.timestamp;
+    integration.createdAtBlock = event.block.number;
+    integration.editedAtBlock = event.block.number;
+
+    integration.save();
   } else if (
     channel.equals(CHANNEL_NATIVE_1155_vPOOL_BYTES32) ||
     channel.equals(CHANNEL_LIQUID_1155_vPOOL_vPOOL_BYTES32)

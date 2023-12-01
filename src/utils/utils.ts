@@ -931,3 +931,12 @@ export function createERC20ExitSystemEvent(
 
   systemEvent.save();
 }
+
+export function addressInArray(address: Address, array: Array<Address>): boolean {
+  for (let i = 0; i < array.length; i++) {
+    if (address.equals(array[i])) {
+      return true;
+    }
+  }
+  return false;
+}
