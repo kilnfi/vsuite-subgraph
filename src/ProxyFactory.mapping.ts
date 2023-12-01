@@ -17,7 +17,7 @@ import {
   checkChannel
 } from './utils/IntegrationChannel.utils';
 import { Address, BigInt } from '@graphprotocol/graph-ts';
-import { externalEntityUUID } from './utils/utils';
+import { addressInArray, externalEntityUUID } from './utils/utils';
 import { getOrCreateRewardSummaries } from './utils/rewards';
 import { getOrCreateTUPProxy } from './TUPProxy.mapping';
 
@@ -36,6 +36,10 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     channel.equals(CHANNEL_LIQUID_20_A_vPOOL_BYTES32) ||
     channel.equals(CHANNEL_LIQUID_20_C_vPOOL_BYTES32)
   ) {
+    //check is only for a goerli failed instance
+    if (addressInArray(event.params.proxy, [Address.fromString('0xd32e4d4cbde76738a766f5413323d8a52838e145')])) {
+      return;
+    }
     ERC20Template.create(event.params.proxy);
     ERC20_1_0_0_rc4Template.create(event.params.proxy);
 
