@@ -246,7 +246,7 @@ export function handleTransfer(event: Transfer): void {
   toBalance.amount = toBalance.amount.plus(event.params.value);
 
   saveOrEraseBalance(fromBalance, event);
-  if (toBalance.address != Address.zero()) {
+  if (toBalance.address.notEqual(Address.zero())) {
     saveOrEraseBalance(toBalance, event);
   }
 

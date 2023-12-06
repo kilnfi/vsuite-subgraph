@@ -211,15 +211,20 @@ export function _recomputeERC20TotalUnderlyingSupply(erc20Address: Address): Big
   while (multipool != null) {
     const pool = vPool.load(multipool.pool);
     const poolBalance = PoolBalance.load(multipool.shares);
+    if (poolBalance == null) {
+      ++idx;
+      multipool = MultiPool.load(externalEntityUUID(erc20Address, [idx.toString()]));
+      continue;
+    }
     totalUnderlyingSupply = totalUnderlyingSupply.plus(
       _computeEthAfterCommission(
-        poolBalance!.amount,
+        poolBalance.amount,
         pool!.totalSupply,
         pool!.totalUnderlyingSupply,
-        multipool.injectedEth,
-        multipool.exitedEth,
-        multipool.fees,
-        multipool.commissionPaid
+        multipool!.injectedEth,
+        multipool!.exitedEth,
+        multipool!.fees,
+        multipool!.commissionPaid
       )
     );
     ++idx;
@@ -237,7 +242,7 @@ export function handleSetFee(event: SetFee): void {
 
   if (multiPool != null) {
     const poolBalance = PoolBalance.load(multiPool.shares);
-    if (poolBalance!.amount.gt(BigInt.zero())) {
+    if (poolBalance != null && poolBalance!.amount.gt(BigInt.zero())) {
       const earnedBeforeFeeUpdate = _computeIntegratorCommissionEarned(
         poolBalance!.amount,
         pool!.totalSupply,
