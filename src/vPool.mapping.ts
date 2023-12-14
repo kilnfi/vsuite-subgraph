@@ -51,6 +51,7 @@ import {
 } from './utils/utils';
 import { _recomputeERC20TotalUnderlyingSupply } from './ERC20.mapping';
 import { YEAR, pushEntryToSummaries } from './utils/rewards';
+import { shouldSkip } from './utils/shouldSkip';
 
 export function getOrCreateBalance(pool: Bytes, account: Bytes, timestamp: BigInt, block: BigInt): PoolBalance {
   const balanceId = externalEntityUUID(Address.fromBytes(pool), [account.toHexString()]);
@@ -81,6 +82,9 @@ function saveOrEraseBalance(balance: PoolBalance, event: ethereum.Event): void {
 }
 
 export function handleSetCommittedEthers(event: SetCommittedEthers): void {
+  if (shouldSkip(event)) {
+    return;
+  }
   const pool = vPool.load(event.address);
 
   pool!.editedAt = event.block.timestamp;
@@ -91,6 +95,9 @@ export function handleSetCommittedEthers(event: SetCommittedEthers): void {
 }
 
 export function handleSetDepositedEthers(event: SetDepositedEthers): void {
+  if (shouldSkip(event)) {
+    return;
+  }
   const pool = vPool.load(event.address);
 
   pool!.editedAt = event.block.timestamp;
@@ -353,6 +360,9 @@ function _computeTotalUnderlyingSupply(pool: vPool, lastReport: Report | null): 
 }
 
 export function handleProcessedReport(event: ProcessedReport): void {
+  if (shouldSkip(event)) {
+    return;
+  }
   const pool = vPool.load(event.address);
 
   const reportId = entityUUID(event, [event.params.epoch.toString()]);
