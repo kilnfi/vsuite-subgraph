@@ -951,7 +951,7 @@ templates:
       file: ./src/MerkleVault.mapping.ts
   - kind: ethereum
     name: Native20_Fix_09_12_Oracle_Report
-    network: mainnet
+    network: holesky
     source:
       abi: Native20_Fix_09_12_Oracle_Report
     mapping:

@@ -18,7 +18,7 @@ import {
   CommissionLoader
 } from '../generated/schema';
 import { Stake as Stake_1_0_0_rc4 } from '../generated/templates/ERC20_1_0_0_rc4/Native20';
-import { CommissionSharesReturnedFix091223} from '../generated/templates/Native20_Fix_09_12_Oracle_Report/Native20_Fix_09_12_Oracle_Report'
+import { CommissionSharesReturnedFix091223 } from '../generated/templates/Native20_Fix_09_12_Oracle_Report/Native20_Fix_09_12_Oracle_Report';
 import {
   Approval,
   CommissionWithdrawn,
