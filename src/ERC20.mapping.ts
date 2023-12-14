@@ -18,6 +18,7 @@ import {
   CommissionLoader
 } from '../generated/schema';
 import { Stake as Stake_1_0_0_rc4 } from '../generated/templates/ERC20_1_0_0_rc4/Native20';
+import { CommissionSharesReturnedFix091223} from '../generated/templates/Native20_Fix_09_12_Oracle_Report/Native20_Fix_09_12_Oracle_Report'
 import {
   Approval,
   CommissionWithdrawn,
@@ -82,6 +83,12 @@ function snapshotBalance(event: ethereum.Event, staker: Address): void {
   balanceSnapshot.totalSupply = integration!.totalSupply;
   balanceSnapshot.totalUnderlyingSupply = integration!.totalUnderlyingSupply;
   balanceSnapshot.save();
+}
+
+export function handleCommissionSharesReturnedFix091223(event: CommissionSharesReturnedFix091223): void {
+  const multiPool = MultiPool.load(entityUUID(event, [event.params.poolId.toString()]));
+  multiPool!.commissionPaid = multiPool!.commissionPaid.minus(event.params.eth);
+  multiPool!.save();
 }
 
 export function handleSetName(event: SetName): void {
