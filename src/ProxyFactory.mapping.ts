@@ -4,7 +4,8 @@ import {
   ERC1155 as ERC1155Template,
   vNFT as vNFTTemplate,
   ERC20_1_0_0_rc4 as ERC20_1_0_0_rc4Template,
-  ERC1155_1_0_0_rc4 as ERC1155_1_0_0_rc4Template
+  ERC1155_1_0_0_rc4 as ERC1155_1_0_0_rc4Template,
+  Native20_Fix_09_12_Oracle_Report
 } from '../generated/templates';
 import { DeployedProxy } from '../generated/templates/ProxyFactory/ProxyFactory';
 import {
@@ -42,6 +43,7 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     }
     ERC20Template.create(event.params.proxy);
     ERC20_1_0_0_rc4Template.create(event.params.proxy);
+    Native20_Fix_09_12_Oracle_Report.create(event.params.proxy);
 
     const integration = new ERC20(event.params.proxy);
     integration.proxy = getOrCreateTUPProxy(event, event.params.proxy).id;

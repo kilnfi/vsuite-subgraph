@@ -949,3 +949,21 @@ templates:
         - event: Claimed(address,uint256,uint256)
           handler: handleClaimed
       file: ./src/MerkleVault.mapping.ts
+  - kind: ethereum
+    name: Native20_Fix_09_12_Oracle_Report
+    network: mainnet
+    source:
+      abi: Native20_Fix_09_12_Oracle_Report
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ERC20
+      abis:
+        - name: Native20_Fix_09_12_Oracle_Report
+          file: ./abis/fix/Native20_Fix_09_12_Oracle_Report.json
+      eventHandlers:
+        - event: CommissionSharesReturnedFix091223(uint256,uint256,uint256)
+          handler: handleCommissionSharesReturnedFix091223
+      file: ./src/fix/Native20_Fix_09_12_Oracle_Report.mapping.ts
