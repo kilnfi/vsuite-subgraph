@@ -73,65 +73,66 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     integration.editedAtBlock = event.block.number;
 
     integration.save();
-  } else if (
-    channel.equals(CHANNEL_NATIVE_1155_vPOOL_BYTES32) ||
-    channel.equals(CHANNEL_LIQUID_1155_vPOOL_vPOOL_BYTES32)
-  ) {
-    ERC1155Template.create(event.params.proxy);
-    ERC1155_1_0_0_rc4Template.create(event.params.proxy);
+  } 
+  // else if (
+  //   channel.equals(CHANNEL_NATIVE_1155_vPOOL_BYTES32) ||
+  //   channel.equals(CHANNEL_LIQUID_1155_vPOOL_vPOOL_BYTES32)
+  // ) {
+  //   ERC1155Template.create(event.params.proxy);
+  //   ERC1155_1_0_0_rc4Template.create(event.params.proxy);
 
-    const integration = new ERC1155Integration(event.params.proxy);
-    integration.proxy = getOrCreateTUPProxy(event, event.params.proxy).id;
-    integration.address = event.params.proxy;
-    integration.channel = channel;
-    integration.paused = false;
-    integration.name = '';
-    integration.symbol = '';
-    integration.uriPrefix = '';
-    integration.totalSupply = BigInt.zero();
-    integration.totalUnderlyingSupply = BigInt.zero();
+  //   const integration = new ERC1155Integration(event.params.proxy);
+  //   integration.proxy = getOrCreateTUPProxy(event, event.params.proxy).id;
+  //   integration.address = event.params.proxy;
+  //   integration.channel = channel;
+  //   integration.paused = false;
+  //   integration.name = '';
+  //   integration.symbol = '';
+  //   integration.uriPrefix = '';
+  //   integration.totalSupply = BigInt.zero();
+  //   integration.totalUnderlyingSupply = BigInt.zero();
 
-    integration.createdAt = event.block.timestamp;
-    integration.editedAt = event.block.timestamp;
-    integration.createdAtBlock = event.block.number;
-    integration.editedAtBlock = event.block.number;
-    integration.admin = Address.zero();
-    integration.maxCommission = BigInt.zero();
-    if (channel.equals(CHANNEL_NATIVE_1155_vPOOL_BYTES32)) {
-      integration.type = 'Native1155';
-    } else if (channel.equals(CHANNEL_LIQUID_1155_vPOOL_vPOOL_BYTES32)) {
-      integration.type = 'Liquid1155';
-    }
+  //   integration.createdAt = event.block.timestamp;
+  //   integration.editedAt = event.block.timestamp;
+  //   integration.createdAtBlock = event.block.number;
+  //   integration.editedAtBlock = event.block.number;
+  //   integration.admin = Address.zero();
+  //   integration.maxCommission = BigInt.zero();
+  //   if (channel.equals(CHANNEL_NATIVE_1155_vPOOL_BYTES32)) {
+  //     integration.type = 'Native1155';
+  //   } else if (channel.equals(CHANNEL_LIQUID_1155_vPOOL_vPOOL_BYTES32)) {
+  //     integration.type = 'Liquid1155';
+  //   }
 
-    integration.save();
-  } else if (channel.equals(CHANNEL_VNFT_BYTES32)) {
-    vNFTTemplate.create(event.params.proxy);
+  //   integration.save();
+  // } else if (channel.equals(CHANNEL_VNFT_BYTES32)) {
+  //   vNFTTemplate.create(event.params.proxy);
 
-    const vnft = new vNFTIntegration(event.params.proxy);
-    vnft.proxy = getOrCreateTUPProxy(event, event.params.proxy).id;
-    vnft.address = event.params.proxy;
-    vnft.channel = channel;
-    vnft.paused = false;
-    vnft.name = '';
-    vnft.symbol = '';
-    vnft.uriPrefix = '';
-    vnft.supply = BigInt.zero();
-    vnft.operatorCommission = BigInt.zero();
-    vnft.integratorCommission = BigInt.zero();
-    vnft.integrator = Address.zero();
-    vnft.vFactory = Address.zero();
-    vnft.extraData = '';
-    vnft.execLayerVault = Address.zero();
-    vnft.soulboundMode = false;
-    vnft.admin = Address.zero();
-    vnft.type = 'vNFT';
+  //   const vnft = new vNFTIntegration(event.params.proxy);
+  //   vnft.proxy = getOrCreateTUPProxy(event, event.params.proxy).id;
+  //   vnft.address = event.params.proxy;
+  //   vnft.channel = channel;
+  //   vnft.paused = false;
+  //   vnft.name = '';
+  //   vnft.symbol = '';
+  //   vnft.uriPrefix = '';
+  //   vnft.supply = BigInt.zero();
+  //   vnft.operatorCommission = BigInt.zero();
+  //   vnft.integratorCommission = BigInt.zero();
+  //   vnft.integrator = Address.zero();
+  //   vnft.vFactory = Address.zero();
+  //   vnft.extraData = '';
+  //   vnft.execLayerVault = Address.zero();
+  //   vnft.soulboundMode = false;
+  //   vnft.admin = Address.zero();
+  //   vnft.type = 'vNFT';
 
-    vnft.createdAt = event.block.timestamp;
-    vnft.editedAt = event.block.timestamp;
-    vnft.createdAtBlock = event.block.number;
-    vnft.editedAtBlock = event.block.number;
+  //   vnft.createdAt = event.block.timestamp;
+  //   vnft.editedAt = event.block.timestamp;
+  //   vnft.createdAtBlock = event.block.number;
+  //   vnft.editedAtBlock = event.block.number;
 
-    vnft.save();
-  }
+  //   vnft.save();
+  // }
   // else if () {}
 }
