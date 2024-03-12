@@ -546,7 +546,7 @@ export function handleExit(event: Exit): void {
     totalETH = totalETH.plus(ethValue);
     depositDataEntry.exitedEth = depositDataEntry.exitedEth.plus(ethValue);
     const exitQueue = vExitQueue.load(pool!.exitQueue);
-    const nextTicketIdx = exitQueue!.ticketCount;
+    const nextTicketIdx = exitQueue!.ticketCount.minus(BigInt.fromI32(1));
     const linkedTicketId = externalEntityUUID(Address.fromBytes(exitQueue!.address), [nextTicketIdx.toString()]);
     tickets.push(linkedTicketId);
   }
