@@ -50,6 +50,13 @@ import {
 import { CommissionSharesSold, ExitedCommissionShares } from '../generated/templates/ERC1155/Liquid1155';
 import { getOrCreateBalance } from './vPool.mapping';
 import { pushEntryToSummaries } from './utils/rewards';
+import { Upgraded } from '../generated/templates/TUPProxy/TUPProxy';
+import { IntegrationChannel } from '../generated/schema';
+import {
+  CHANNEL_LIQUID_20_A_vPOOL_BYTES32,
+  CHANNEL_LIQUID_20_C_vPOOL_BYTES32,
+  CHANNEL_NATIVE_20_vPOOL_BYTES32
+} from './utils/IntegrationChannel.utils';
 
 function snapshotSupply(event: ethereum.Event): void {
   const blockId = event.block.number;
@@ -702,4 +709,19 @@ export function handleSetPoolPercentages(event: SetPoolPercentages): void {
     pool!.poolAllocation = event.params.split[i];
     pool!.save();
   }
+}
+
+export function handleUpgraded(event: Upgraded): void {
+  const erc20 = ERC20.load(event.address);
+
+  if (event.params.implementation.equals(IntegrationChannel.load(CHANNEL_NATIVE_20_vPOOL_BYTES32)!.implementation)) {
+    erc20!.type = 'Native20';
+  } else if (event.params.implementation.equals(IntegrationChannel.load(CHANNEL_LIQUID_20_A_vPOOL_BYTES32)!.implementation)) {
+    erc20!.type = 'Liquid20A';
+  } else if (event.params.implementation.equals(IntegrationChannel.load(CHANNEL_LIQUID_20_C_vPOOL_BYTES32)!.implementation)) {
+    erc20!.type = 'Liquid20C';
+  }
+  erc20!.editedAt = event.block.timestamp;
+  erc20!.editedAtBlock = event.block.number;
+  erc20!.save();
 }
