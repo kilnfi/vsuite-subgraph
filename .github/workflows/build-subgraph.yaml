@@ -18,7 +18,7 @@ jobs:
       max-parallel: 4
       matrix:
         manifest: [subgraph.testnet_fast.yaml, subgraph.testnet.yaml,subgraph.devnet_fast.yaml, subgraph.devnet.yaml, subgraph.goerli_fast.yaml, subgraph.goerli.yaml, subgraph.mainnet_fast.yaml, subgraph.mainnet.yaml]
-    runs-on: vsuite
+    runs-on: ubuntu
     steps:
       - name: Checkout
         uses: actions/checkout@v2
