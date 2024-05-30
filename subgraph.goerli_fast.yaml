@@ -575,8 +575,6 @@ templates:
           handler: handleDeposit
         - event: Mint(indexed address,uint256,uint256)
           handler: handleMint
-        - event: Burn(address,uint256,uint256)
-          handler: handleBurn
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
         - event: Approval(indexed address,indexed address,uint256)
