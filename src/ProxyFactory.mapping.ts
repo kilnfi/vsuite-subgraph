@@ -73,7 +73,7 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     integration.editedAtBlock = event.block.number;
 
     integration.save();
-  } 
+  }
   // else if (
   //   channel.equals(CHANNEL_NATIVE_1155_vPOOL_BYTES32) ||
   //   channel.equals(CHANNEL_LIQUID_1155_vPOOL_vPOOL_BYTES32)

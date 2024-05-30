@@ -192,22 +192,6 @@ export function handleMint(event: Mint): void {
   pool!.save();
 }
 
-export function handleBurn(event: Burn): void {
-  const pool = vPool.load(event.address);
-
-  const balance = getOrCreateBalance(event.address, event.params.burner, event.block.timestamp, event.block.number);
-
-  balance.amount = balance.amount.minus(event.params.amount);
-
-  saveOrEraseBalance(balance, event);
-
-  pool!.editedAt = event.block.timestamp;
-  pool!.editedAtBlock = event.block.number;
-  pool!.totalSupply = event.params.totalSupply;
-
-  pool!.save();
-}
-
 export function handleTransfer(event: Transfer): void {
   const pool = vPool.load(event.address);
 
