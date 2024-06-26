@@ -1,24 +1,18 @@
-import { ERC1155Integration, ERC20, vNFTIntegration } from '../generated/schema';
+import { ERC20 } from '../generated/schema';
 import {
   ERC20 as ERC20Template,
-  ERC1155 as ERC1155Template,
-  vNFT as vNFTTemplate,
   ERC20_1_0_0_rc4 as ERC20_1_0_0_rc4Template,
-  ERC1155_1_0_0_rc4 as ERC1155_1_0_0_rc4Template,
   Native20_Fix_09_12_Oracle_Report
 } from '../generated/templates';
 import { DeployedProxy } from '../generated/templates/ProxyFactory/ProxyFactory';
 import {
-  CHANNEL_LIQUID_1155_vPOOL_vPOOL_BYTES32,
   CHANNEL_LIQUID_20_A_vPOOL_BYTES32,
   CHANNEL_LIQUID_20_C_vPOOL_BYTES32,
-  CHANNEL_NATIVE_1155_vPOOL_BYTES32,
   CHANNEL_NATIVE_20_vPOOL_BYTES32,
-  CHANNEL_VNFT_BYTES32,
   checkChannel
 } from './utils/IntegrationChannel.utils';
 import { Address, BigInt } from '@graphprotocol/graph-ts';
-import { addressInArray, externalEntityUUID } from './utils/utils';
+import { addressInArray } from './utils/utils';
 import { getOrCreateRewardSummaries } from './utils/rewards';
 import { getOrCreateTUPProxy } from './TUPProxy.mapping';
 

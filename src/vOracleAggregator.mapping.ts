@@ -17,12 +17,11 @@ import {
   Nexus,
   vFactory
 } from '../generated/schema';
-import { Address, BigInt, Bytes, ethereum, log, store } from '@graphprotocol/graph-ts';
+import { Address, BigInt, Bytes, ethereum, store } from '@graphprotocol/graph-ts';
 import {
   createChangedOracleAggregatorParameterSystemEvent,
   createOracleMemberVotedSystemEvent,
-  entityUUID,
-  externalEntityUUID
+  entityUUID
 } from './utils/utils';
 
 function getQuorum(memberCount: BigInt): BigInt {

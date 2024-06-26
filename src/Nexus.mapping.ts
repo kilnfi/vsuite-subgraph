@@ -42,7 +42,6 @@ import {
   hashTreeRootSigningData
 } from './ssz_deposit_message/index';
 import { Address, BigInt, ByteArray, Bytes, ethereum, log, crypto, dataSource } from '@graphprotocol/graph-ts';
-import { entityUUID, externalEntityUUID } from './utils/utils';
 import { getOrCreateRewardSummaries } from './utils/rewards';
 import { verify } from './bls12_381_verify';
 import { getOrCreateTUPProxy } from './TUPProxy.mapping';

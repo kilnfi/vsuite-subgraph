@@ -1,4 +1,4 @@
-import { Address, BigInt, ethereum, log } from '@graphprotocol/graph-ts';
+import { Address, BigInt, ethereum } from '@graphprotocol/graph-ts';
 import { TUPProxy, TUPProxyUpgrade } from '../generated/schema';
 import { AdminChanged, PauserChanged, SetFreezeTime, Upgraded } from '../generated/templates/TUPProxy/TUPProxy';
 import { TUPProxy as TUPProxyTemplate } from '../generated/templates';

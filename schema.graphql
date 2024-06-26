@@ -749,6 +749,7 @@ type Ticket @entity {
   exitQueue: vExitQueue!
 
   ticketId: BigInt!
+  origin: Integration
 
   owner: Bytes!
   size: BigInt!

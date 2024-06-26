@@ -1,6 +1,6 @@
 import { MerkleVault, VaultClaim } from '../generated/schema';
 import { Claimed, SetFrameSize, SetRootAndIpfsHash } from '../generated/templates/MerkleVault/MerkleVault';
-import { entityUUID, eventUUID } from './utils/utils';
+import { eventUUID } from './utils/utils';
 
 export function handleSetFrameSize(event: SetFrameSize): void {
   const merkleVault = MerkleVault.load(event.address);

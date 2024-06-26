@@ -1,4 +1,4 @@
-import { Address, ethereum, BigInt, Bytes, Entity, store } from '@graphprotocol/graph-ts';
+import { Address, ethereum, BigInt, Bytes, store } from '@graphprotocol/graph-ts';
 import {
   AddedValidationKeysSystemEvent,
   ChangedCoverageRecipientParameterSystemEvent,

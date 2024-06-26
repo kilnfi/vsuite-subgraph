@@ -1,6 +1,5 @@
 import {
   Mint,
-  Burn,
   Transfer,
   Deposit,
   PurchasedValidators,
@@ -27,15 +26,13 @@ import {
   vFactory,
   MultiPool,
   ERC20,
-  ERC1155,
   vExitQueue,
   vPoolRewardEntry,
   IntegrationRewardEntry,
-  PeriodRewardSummary,
   DepositDataEntry,
   ERC1155Integration
 } from '../generated/schema';
-import { Bytes, BigInt, Address, store, log, DataSourceContext, dataSource } from '@graphprotocol/graph-ts';
+import { Bytes, BigInt, Address, store, dataSource } from '@graphprotocol/graph-ts';
 import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum';
 import { MultiPoolRewardsSnapshot } from '../generated/schema';
 import {
