@@ -4,11 +4,10 @@ import {
   RewardSummary,
   vPoolRewardEntry,
   IntegrationRewardEntry,
-  vPool,
   DepositDataEntry,
   ExitDataEntry
 } from '../../generated/schema';
-import { entityUUID, externalEntityUUID } from './utils';
+import { externalEntityUUID } from './utils';
 
 export function getOrCreateRewardSummary(
   event: ethereum.Event,

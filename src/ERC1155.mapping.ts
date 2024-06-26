@@ -32,7 +32,6 @@ import {
 import {
   eventUUID,
   entityUUID,
-  externalEntityUUID,
   getOrCreateUnassignedCommissionSold,
   _computeIntegratorCommissionOwed
 } from './utils/utils';

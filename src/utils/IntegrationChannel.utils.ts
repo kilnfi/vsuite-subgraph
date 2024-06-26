@@ -1,4 +1,4 @@
-import { Bytes, log } from '@graphprotocol/graph-ts';
+import { Bytes } from '@graphprotocol/graph-ts';
 import { getOrCreateMetaContract } from './MetaContract.utils';
 
 export const CHANNEL_NATIVE_20_vPOOL_BYTES32 = Bytes.fromHexString(

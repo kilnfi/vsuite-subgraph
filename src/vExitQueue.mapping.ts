@@ -24,10 +24,9 @@ import {
   createNewExitQueueCaskSystemEvent,
   createNewExitQueueTicketSystemEvent,
   entityUUID,
-  eventUUID,
-  externalEntityUUID
+  eventUUID
 } from './utils/utils';
-import { Address, BigInt, store } from '@graphprotocol/graph-ts';
+import { Address, BigInt } from '@graphprotocol/graph-ts';
 
 export function handlePrintedTicket(event: PrintedTicket): void {
   const exitQueue = vExitQueue.load(event.address);

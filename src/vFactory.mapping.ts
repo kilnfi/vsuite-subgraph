@@ -1,4 +1,4 @@
-import { Bytes, store, BigInt, dataSource, log, crypto, ByteArray, Address, ethereum } from '@graphprotocol/graph-ts';
+import { Bytes, store, BigInt, dataSource, Address } from '@graphprotocol/graph-ts';
 import {
   WithdrawalChannel,
   ValidationKey,
@@ -9,8 +9,7 @@ import {
   FactoryDepositor,
   CommonValidationKeyEntry,
   DepositEvent,
-  PendingKeyValidationRequest,
-  PendingKeyValidationTracker
+  PendingKeyValidationRequest
 } from '../generated/schema';
 import {
   AddedValidators,

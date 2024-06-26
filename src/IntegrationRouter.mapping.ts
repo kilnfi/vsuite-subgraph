@@ -1,9 +1,4 @@
-import { Bytes } from '@graphprotocol/graph-ts';
-import {
-  ChannelImplementationUpdated,
-  Initialized,
-  ProxyFactoryDeployed
-} from '../generated/IntegrationRouter/IntegrationRouter';
+import { ChannelImplementationUpdated, ProxyFactoryDeployed } from '../generated/IntegrationRouter/IntegrationRouter';
 import { IntegrationChannel } from '../generated/schema';
 import { ProxyFactory } from '../generated/templates';
 import { existsChannel, getChannelName, getMetaContractForChannel } from './utils/IntegrationChannel.utils';

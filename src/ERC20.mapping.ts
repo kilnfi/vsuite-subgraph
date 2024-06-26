@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, ethereum, log } from '@graphprotocol/graph-ts';
+import { Address, BigInt, ethereum } from '@graphprotocol/graph-ts';
 import {
   ERC20,
   MultiPool,
@@ -10,12 +10,11 @@ import {
   vPool,
   ERC20BalanceSnapshot,
   ERC20Snapshot,
-  UnassignedCommissionSold,
   PoolBalance,
   DepositDataEntry,
   ExitDataEntry,
   vExitQueue,
-  CommissionLoader
+  Ticket
 } from '../generated/schema';
 import { Stake as Stake_1_0_0_rc4 } from '../generated/templates/ERC20_1_0_0_rc4/Native20';
 import {
@@ -549,6 +548,12 @@ export function handleExit(event: Exit): void {
     const nextTicketIdx = exitQueue!.ticketCount.minus(BigInt.fromI32(1));
     const linkedTicketId = externalEntityUUID(Address.fromBytes(exitQueue!.address), [nextTicketIdx.toString()]);
     tickets.push(linkedTicketId);
+
+    const ticket = Ticket.load(linkedTicketId);
+    if (ticket != null) {
+      ticket.origin = event.address;
+      ticket.save();
+    }
   }
 
   createERC20ExitSystemEvent(event, event.address, event.params.staker, totalETH, event.params.exitedTokens);
