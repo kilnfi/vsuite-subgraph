@@ -347,6 +347,10 @@ export function handleProcessedReport(event: ProcessedReport): void {
   const pool = vPool.load(event.address);
 
   const reportId = entityUUID(event, [event.params.epoch.toString()]);
+  if (Report.load(reportId) != null) {
+    // if we have the same epoch twice, it's most probably due to a manual fix
+    return;
+  }
   const report = new Report(reportId);
   const lastEpoch = pool!.lastEpoch;
 
