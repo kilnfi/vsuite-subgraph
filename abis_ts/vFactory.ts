@@ -56,6 +56,27 @@ const abi = `
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "withdrawalChannel",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "requestedTotal",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "maxFundedCount",
+        "type": "uint32"
+      }
+    ],
+    "name": "ExitTotalTooHigh",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "index",
         "type": "uint256"
@@ -113,6 +134,11 @@ const abi = `
   },
   {
     "inputs": [],
+    "name": "InvalidNullValue",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "InvalidPublicKeyLength",
     "type": "error"
   },
@@ -159,9 +185,14 @@ const abi = `
         "internalType": "uint256",
         "name": "limit",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "validatorCount",
+        "type": "uint256"
       }
     ],
-    "name": "LastEditAfterSnapshot",
+    "name": "LimitExceededValidatorCount",
     "type": "error"
   },
   {
@@ -267,10 +298,16 @@ const abi = `
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": true,
         "internalType": "address",
         "name": "depositor",
         "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "wc",
+        "type": "bytes32"
       },
       {
         "indexed": false,
@@ -312,7 +349,38 @@ const abi = `
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "funded",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "requestedTotal",
+        "type": "uint32"
+      }
+    ],
+    "name": "ExitRequestAboveFunded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
+        "internalType": "bytes32",
+        "name": "withdrawalChannel",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "publicKey",
+        "type": "bytes"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "id",
         "type": "uint256"
@@ -329,6 +397,18 @@ const abi = `
         "internalType": "bytes32",
         "name": "withdrawalChannel",
         "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "depositor",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "withdrawalAddress",
+        "type": "address"
       },
       {
         "indexed": false,
@@ -382,6 +462,25 @@ const abi = `
       },
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "limit",
+        "type": "uint256"
+      }
+    ],
+    "name": "LastEditAfterSnapshot",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "withdrawalChannel",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
         "internalType": "bytes",
         "name": "publicKey",
         "type": "bytes"
@@ -407,6 +506,38 @@ const abi = `
       }
     ],
     "name": "SetAdmin",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "depositContract",
+        "type": "address"
+      }
+    ],
+    "name": "SetDepositContract",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "withdrawalChannel",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "totalExited",
+        "type": "uint32"
+      }
+    ],
+    "name": "SetExitTotal",
     "type": "event"
   },
   {
@@ -639,6 +770,11 @@ const abi = `
         "type": "address"
       },
       {
+        "internalType": "bytes32",
+        "name": "wc",
+        "type": "bytes32"
+      },
+      {
         "internalType": "bool",
         "name": "allowed",
         "type": "bool"
@@ -670,6 +806,30 @@ const abi = `
     "name": "approve",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      }
+    ],
+    "name": "autoClaimDetails",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "enabled",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -773,6 +933,11 @@ const abi = `
         "internalType": "address",
         "name": "depositor",
         "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "wc",
+        "type": "bytes32"
       }
     ],
     "name": "depositors",
@@ -796,6 +961,25 @@ const abi = `
     ],
     "name": "exit",
     "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "totalExited",
+        "type": "uint32"
+      }
+    ],
+    "name": "exitTotal",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -844,7 +1028,7 @@ const abi = `
         "type": "address"
       }
     ],
-    "name": "initializeV1",
+    "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -908,7 +1092,7 @@ const abi = `
         "type": "string"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {

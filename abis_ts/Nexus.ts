@@ -20,11 +20,16 @@ const abi = `
     "inputs": [
       {
         "internalType": "address",
-        "name": "hatcher",
+        "name": "pluggableHatcher",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "configuredNexus",
         "type": "address"
       }
     ],
-    "name": "InvalidProvidedHatcher",
+    "name": "InvalidPluggableHatcherConfiguration",
     "type": "error"
   },
   {
@@ -140,6 +145,12 @@ const abi = `
         "internalType": "address",
         "name": "oracleAggregator",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "exitQueue",
+        "type": "address"
       }
     ],
     "name": "SetCoreHatchers",
@@ -247,50 +258,6 @@ const abi = `
       {
         "indexed": true,
         "internalType": "address",
-        "name": "pluggableHatcher",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "active",
-        "type": "bool"
-      }
-    ],
-    "name": "SetPluggableHatcher",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "caller",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "hatcher",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "cub",
-        "type": "address"
-      }
-    ],
-    "name": "Spawn",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
         "name": "factory",
         "type": "address"
       },
@@ -342,6 +309,12 @@ const abi = `
         "internalType": "address",
         "name": "oracleAggregator",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "exitQueue",
+        "type": "address"
       }
     ],
     "name": "SpawnedPool",
@@ -377,7 +350,7 @@ const abi = `
         "type": "address[]"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -420,12 +393,12 @@ const abi = `
             "type": "uint64"
           }
         ],
-        "internalType": "struct ctypes.GlobalConsensusLayerSpec",
+        "internalType": "struct ctypes.ConsensusLayerSpec",
         "name": "",
         "type": "tuple"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -462,9 +435,9 @@ const abi = `
         "type": "address"
       },
       {
-        "internalType": "address[7]",
+        "internalType": "address[8]",
         "name": "pluggableHatcherList",
-        "type": "address[7]"
+        "type": "address[8]"
       },
       {
         "internalType": "address",
@@ -507,28 +480,9 @@ const abi = `
         "type": "uint64"
       }
     ],
-    "name": "initializeV1",
+    "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "pluggableHatcher",
-        "type": "address"
-      }
-    ],
-    "name": "isPluggableHatcher",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -560,51 +514,9 @@ const abi = `
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "factory",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "pluggableHatcher",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes",
-        "name": "cdata",
-        "type": "bytes"
-      }
-    ],
-    "name": "plugOnFactory",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "pluggableHatcher",
-        "type": "address"
-      }
-    ],
-    "name": "registerPluggableHatcher",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[7]",
+        "internalType": "address[8]",
         "name": "coreHatchers_",
-        "type": "address[7]"
+        "type": "address[8]"
       }
     ],
     "name": "replaceCoreHatchers",
@@ -691,7 +603,7 @@ const abi = `
             "type": "string"
           }
         ],
-        "internalType": "struct INexusV1.FactoryConstructionArguments",
+        "internalType": "struct INexus.FactoryConstructionArguments",
         "name": "fca",
         "type": "tuple"
       }
@@ -735,9 +647,14 @@ const abi = `
             "internalType": "string",
             "name": "initialExtraData",
             "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "exitQueueImageUrl",
+            "type": "string"
           }
         ],
-        "internalType": "struct INexusV1.PoolConstructionArguments",
+        "internalType": "struct INexus.PoolConstructionArguments",
         "name": "pca",
         "type": "tuple"
       }
@@ -745,9 +662,9 @@ const abi = `
     "name": "spawnPool",
     "outputs": [
       {
-        "internalType": "address[5]",
+        "internalType": "address[6]",
         "name": "spawned",
-        "type": "address[5]"
+        "type": "address[6]"
       }
     ],
     "stateMutability": "nonpayable",
@@ -781,19 +698,6 @@ const abi = `
       }
     ],
     "name": "transferAdmin",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "pluggableHatcher",
-        "type": "address"
-      }
-    ],
-    "name": "unregisterPluggableHatcher",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
