@@ -3,27 +3,6 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum
-    name: DepositContract
-    network: holesky
-    source:
-      address: "0x4242424242424242424242424242424242424242"
-      abi: DepositContract 
-      startBlock: 180000
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - vFactory
-        - vTreasury
-      abis:
-        - name: DepositContract
-          file: ./abis/DepositContract.json
-      eventHandlers:
-        - event: DepositEvent(bytes,bytes,bytes,bytes,bytes)
-          handler: handleDepositEvent
-      file: ./src/DepositContract.mapping.ts
-  - kind: ethereum
     name: Nexus
     network: holesky
     source:
@@ -61,8 +40,6 @@ dataSources:
           handler: handlerSetGlobalConsensusLayerSpec
         - event: SetAdmin(address)
           handler: handleSetAdmin
-      blockHandlers:
-        - handler: handleBlock
       file: ./src/Nexus.mapping.ts
 
   - kind: ethereum
@@ -416,7 +393,7 @@ dataSources:
     source:
       address: "0x8f2789A79C0494981373ceF711406585dA93DF43"
       abi: IntegrationRouter
-      startBlock: 180000 
+      startBlock: 180000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -494,18 +471,19 @@ templates:
         - name: vFactory
           file: ./abis/vFactory.json
       eventHandlers:
+        # - event: AddedValidators(indexed bytes32,bytes)
+        #   handler: handleAddedValidators
+        # - event: ExitValidator(indexed bytes32,bytes,uint256)
+        #   handler: handleExitValidator
+        # - event: ValidatorRequest(indexed bytes32,uint256)
+        #   handler: handleValidatorRequest
+        # - event: FundedValidator(indexed bytes32,indexed address,indexed address,bytes,uint256,uint256)
+        #   handler: handleFundedValidator
+        # - event: UpdatedLimit(indexed bytes32,uint256)
+        #   handler: handleUpdatedLimit
+        # removed with 2.2.0
         - event: SetExitTotal(indexed bytes32,uint32)
           handler: handleSetExitTotal
-        - event: AddedValidators(indexed bytes32,bytes)
-          handler: handleAddedValidators
-        - event: UpdatedLimit(indexed bytes32,uint256)
-          handler: handleUpdatedLimit
-        - event: FundedValidator(indexed bytes32,indexed address,indexed address,bytes,uint256,uint256)
-          handler: handleFundedValidator
-        - event: ExitValidator(indexed bytes32,bytes,uint256)
-          handler: handleExitValidator
-        - event: ValidatorRequest(indexed bytes32,uint256)
-          handler: handleValidatorRequest
         - event: SetValidatorOwner(indexed uint256,address)
           handler: handleSetValidatorOwner
         - event: SetValidatorFeeRecipient(indexed uint256,address)
@@ -526,6 +504,31 @@ templates:
           handler: handleSetHatcherRegistry
         - event: ApproveDepositor(indexed address,indexed bytes32,bool)
           handler: handleApproveDepositor
+  - name: vFactory_2_2_0
+    kind: ethereum/contract
+    network: holesky
+    source:
+      abi: vFactory_2_2_0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/vFactory.mapping.ts
+      entities:
+        - vFactory
+      abis:
+        - name: vFactory_2_2_0
+          file: ./abis/vFactory.2_2_0.json
+      eventHandlers:
+        - event: ExitValidator(uint256)
+          handler: handleExitValidator_2_2_0
+        - event: ActivatedValidator(indexed bytes32,indexed address,indexed address,bytes,bytes,uint256)
+          handler: handleActivatedValidator_2_2_0
+        - event: SetRoot((bytes32,string))
+          handler: handleSetRoot_2_2_0
+        - event: SetValidatorThreshold(indexed uint256,uint96)
+          handler: handleSetValidatorThreshold_2_2_0
+
   - name: vTreasury
     kind: ethereum/contract
     network: holesky
@@ -599,6 +602,24 @@ templates:
           handler: handleSetDepositedEthers
         - event: SetRequestedExits(uint32)
           handler: handleSetRequestedExits
+  - name: vPool_2_2_0
+    kind: ethereum/contract
+    network: holesky
+    source:
+      abi: vPool_2_2_0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/vPool.mapping.ts
+      entities:
+        - vPool
+      abis:
+        - name: vPool_2_2_0
+          file: ./abis/vPool.2_2_0.json
+      eventHandlers:
+        - event: ProcessedReport(indexed uint256,(uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32,uint32),(uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,int128,int128,uint128,uint128,uint128,int128,uint128,uint128,uint128))
+          handler: handleProcessedReport_2_2_0
 
   - name: vExitQueue
     kind: ethereum/contract
@@ -707,6 +728,29 @@ templates:
           handler: handleSubmittedReport
         - event: SetHighestReportedEpoch(uint256)
           handler: handleSetHighestReportedEpoch
+  - name: vOracleAggregator_2_2_0
+    kind: ethereum/contract
+    network: holesky
+    source:
+      abi: vOracleAggregator_2_2_0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/vOracleAggregator.mapping.ts
+      entities:
+        - vOracleAggregator
+      abis:
+        - name: vOracleAggregator_2_2_0
+          file: ./abis/vOracleAggregator.2_2_0.json
+      eventHandlers:
+        - event: MemberVoted(indexed address,indexed bytes32,(uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32,uint32))
+          handler: handleMemberVoted_2_2_0
+        - event: GlobalMemberVoted(indexed address,indexed bytes32,(uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32,uint32))
+          handler: handlerGlobalMemberVoted_2_2_0
+        - event: SubmittedReport((uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32,uint32),bytes32,uint256,uint256)
+          handler: handleSubmittedReport_2_2_0
+
 
   - name: ERC20_1_0_0_rc4
     kind: ethereum/contract

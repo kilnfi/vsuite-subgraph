@@ -2,12 +2,15 @@ import {
   AddedOracleAggregatorMember,
   GlobalMemberVoted,
   MemberVoted,
-  MemberVotedReportStruct,
-  GlobalMemberVotedReportStruct,
   RemovedOracleAggregatorMember,
   SetHighestReportedEpoch,
   SubmittedReport
 } from '../generated/templates/vOracleAggregator/vOracleAggregator';
+import {
+  MemberVoted as MemberVoted_2_2_0,
+  GlobalMemberVoted as GlobalMemberVoted_2_2_0,
+  SubmittedReport as SubmittedReport_2_2_0
+} from '../generated/templates/vOracleAggregator_2_2_0/vOracleAggregator_2_2_0';
 import {
   vOracleAggregator,
   OracleAggregatorMember,
@@ -26,6 +29,20 @@ import {
 
 function getQuorum(memberCount: BigInt): BigInt {
   return memberCount.plus(BigInt.fromI32(1)).times(BigInt.fromI32(3)).div(BigInt.fromI32(4)).plus(BigInt.fromI32(1));
+}
+
+class ReportStruct {
+  balanceSum: BigInt;
+  exitedSum: BigInt;
+  skimmedSum: BigInt;
+  slashedSum: BigInt;
+  exitingSum: BigInt;
+  maxExitable: BigInt;
+  maxCommittable: BigInt;
+  epoch: BigInt;
+  activatedCount: BigInt;
+  stoppedCount: BigInt;
+  invalidActivationCount: BigInt;
 }
 
 export function handleAddedOracleAggregatorMember(event: AddedOracleAggregatorMember): void {
@@ -153,12 +170,7 @@ function timeSinceLastVariant(epoch: BigInt, oracleAggregatorAddress: Bytes): Bi
   return BigInt.zero();
 }
 
-export function handleGlobalVote(
-  event: ethereum.Event,
-  voter: Bytes,
-  variant: Bytes,
-  report: GlobalMemberVotedReportStruct
-): void {
+export function handleGlobalVote(event: ethereum.Event, voter: Bytes, variant: Bytes, report: ReportStruct): void {
   const oa = vOracleAggregator.load(event.address);
 
   const variantId = entityUUID(event, [variant.toHexString()]);
@@ -173,11 +185,12 @@ export function handleGlobalVote(
     _variant.exitedSum = report.exitedSum;
     _variant.skimmedSum = report.skimmedSum;
     _variant.slashedSum = report.slashedSum;
-    _variant.exiting = report.exiting;
+    _variant.exitingSum = report.exitingSum;
     _variant.maxExitable = report.maxExitable;
     _variant.maxCommittable = report.maxCommittable;
     _variant.activatedCount = report.activatedCount;
     _variant.stoppedCount = report.stoppedCount;
+    _variant.invalidActivationCount = report.invalidActivationCount;
 
     _variant.oracleAggregator = event.address;
     _variant.createdAt = event.block.timestamp;
@@ -222,7 +235,7 @@ export function handleGlobalVote(
   systemEvent.save();
 }
 
-export function handleVote(event: ethereum.Event, voter: Bytes, variant: Bytes, report: MemberVotedReportStruct): void {
+export function handleVote(event: ethereum.Event, voter: Bytes, variant: Bytes, report: ReportStruct): void {
   const oa = vOracleAggregator.load(event.address);
 
   const variantId = entityUUID(event, [variant.toHexString()]);
@@ -237,11 +250,12 @@ export function handleVote(event: ethereum.Event, voter: Bytes, variant: Bytes, 
     _variant.exitedSum = report.exitedSum;
     _variant.skimmedSum = report.skimmedSum;
     _variant.slashedSum = report.slashedSum;
-    _variant.exiting = report.exiting;
+    _variant.exitingSum = report.exitingSum;
     _variant.maxExitable = report.maxExitable;
     _variant.maxCommittable = report.maxCommittable;
     _variant.activatedCount = report.activatedCount;
     _variant.stoppedCount = report.stoppedCount;
+    _variant.invalidActivationCount = report.invalidActivationCount;
 
     _variant.oracleAggregator = event.address;
     _variant.createdAt = event.block.timestamp;
@@ -287,14 +301,96 @@ export function handleVote(event: ethereum.Event, voter: Bytes, variant: Bytes, 
 }
 
 export function handleMemberVoted(event: MemberVoted): void {
-  handleVote(event, event.params.member, event.params.variant, event.params.report);
+  const reportStruct: ReportStruct = {
+    balanceSum: event.params.report.balanceSum,
+    exitedSum: event.params.report.exitedSum,
+    skimmedSum: event.params.report.skimmedSum,
+    slashedSum: event.params.report.slashedSum,
+    exitingSum: event.params.report.exiting,
+    maxExitable: event.params.report.maxExitable,
+    maxCommittable: event.params.report.maxCommittable,
+    epoch: event.params.report.epoch,
+    activatedCount: event.params.report.activatedCount,
+    stoppedCount: event.params.report.stoppedCount,
+    invalidActivationCount: BigInt.zero()
+  };
+
+  handleVote(event, event.params.member, event.params.variant, reportStruct);
 }
 
 export function handlerGlobalMemberVoted(event: GlobalMemberVoted): void {
-  handleGlobalVote(event, event.params.globalMember, event.params.variant, event.params.report);
+  const reportStruct: ReportStruct = {
+    balanceSum: event.params.report.balanceSum,
+    exitedSum: event.params.report.exitedSum,
+    skimmedSum: event.params.report.skimmedSum,
+    slashedSum: event.params.report.slashedSum,
+    exitingSum: event.params.report.exiting,
+    maxExitable: event.params.report.maxExitable,
+    maxCommittable: event.params.report.maxCommittable,
+    epoch: event.params.report.epoch,
+    activatedCount: event.params.report.activatedCount,
+    stoppedCount: event.params.report.stoppedCount,
+    invalidActivationCount: BigInt.zero()
+  };
+
+  handleGlobalVote(event, event.params.globalMember, event.params.variant, reportStruct);
+}
+
+export function handleMemberVoted_2_2_0(event: MemberVoted_2_2_0): void {
+  const reportStruct: ReportStruct = {
+    balanceSum: event.params.report.balanceSum,
+    exitedSum: event.params.report.exitedSum,
+    skimmedSum: event.params.report.skimmedSum,
+    slashedSum: event.params.report.slashedSum,
+    exitingSum: event.params.report.exitingSum,
+    maxExitable: event.params.report.maxExitable,
+    maxCommittable: event.params.report.maxCommittable,
+    epoch: event.params.report.epoch,
+    activatedCount: event.params.report.activatedCount,
+    stoppedCount: event.params.report.stoppedCount,
+    invalidActivationCount: event.params.report.invalidActivationCount
+  };
+
+  handleVote(event, event.params.member, event.params.variant, reportStruct);
+}
+
+export function handlerGlobalMemberVoted_2_2_0(event: GlobalMemberVoted_2_2_0): void {
+  const reportStruct: ReportStruct = {
+    balanceSum: event.params.report.balanceSum,
+    exitedSum: event.params.report.exitedSum,
+    skimmedSum: event.params.report.skimmedSum,
+    slashedSum: event.params.report.slashedSum,
+    exitingSum: event.params.report.exitingSum,
+    maxExitable: event.params.report.maxExitable,
+    maxCommittable: event.params.report.maxCommittable,
+    epoch: event.params.report.epoch,
+    activatedCount: event.params.report.activatedCount,
+    stoppedCount: event.params.report.stoppedCount,
+    invalidActivationCount: event.params.report.invalidActivationCount
+  };
+
+  handleGlobalVote(event, event.params.globalMember, event.params.variant, reportStruct);
 }
 
 export function handleSubmittedReport(event: SubmittedReport): void {
+  const oa = vOracleAggregator.load(event.address);
+  const blockId = event.block.timestamp;
+  const ts = event.block.timestamp;
+
+  const variantId = entityUUID(event, [event.params.variant.toHexString()]);
+
+  const variant = OracleAggregatorReportVariant.load(variantId);
+
+  variant!.submitted = true;
+  variant!.save();
+
+  oa!.lastVariant = variantId;
+  oa!.editedAt = ts;
+  oa!.editedAtBlock = blockId;
+  oa!.save();
+}
+
+export function handleSubmittedReport_2_2_0(event: SubmittedReport_2_2_0): void {
   const oa = vOracleAggregator.load(event.address);
   const blockId = event.block.timestamp;
   const ts = event.block.timestamp;

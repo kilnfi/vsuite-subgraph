@@ -143,6 +143,20 @@ type Nexus @entity {
   oracleAggregatorHatcher: PluggableHatcher
   exitQueueHatcher: PluggableHatcher
   factories: [vFactory!]! @derivedFrom(field: "nexus")
+  drivers: [Driver!]! @derivedFrom(field: "nexus")
+
+  createdAt: BigInt!
+  editedAt: BigInt!
+  createdAtBlock: BigInt!
+  editedAtBlock: BigInt!
+}
+
+type Driver @entity {
+  id: String!
+  
+  address: Bytes!
+  name: String!
+  nexus: Nexus
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -171,6 +185,9 @@ type vFactory @entity {
   operatorUrl: String!
   operatorIconUrl: String!
 
+  treeRoot: Bytes!
+  treeIPFSHash: String!
+
   totalActivatedValidators: BigInt!
 
   cub: Cub!
@@ -189,13 +206,10 @@ type WithdrawalChannel @entity {
   id: String!
 
   withdrawalChannel: Bytes!
-  total: BigInt!
   funded: BigInt!
-  limit: BigInt!
 
   keys: [ValidationKey!]! @derivedFrom(field: "withdrawalChannel")
   factory: vFactory!
-  lastValidatorRequest: ValidatorRequest
   depositors: [FactoryDepositor!]! @derivedFrom(field: "withdrawalChannel")
   lastExitTotal: BigInt!
 
@@ -205,50 +219,6 @@ type WithdrawalChannel @entity {
   editedAtBlock: BigInt!
 }
 
-type ValidatorRequest @entity {
-  id: String!
-
-  requestedTotal: BigInt!
-  totalOnRequest: BigInt!
-
-  withdrawalChannel: WithdrawalChannel!
-
-  createdAt: BigInt!
-  editedAt: BigInt!
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
-
-type CommonValidationKeyEntry @entity {
-  id: String!
-
-  publicKey: Bytes!
-
-  validationKeyCount: BigInt!
-  validationKeys: [ValidationKey!]! @derivedFrom(field: "commonValidationKeyEntry")
-
-  depositEventCount: BigInt!
-  depositEvents: [DepositEvent!]! @derivedFrom(field: "commonValidationKeyEntry")
-
-  createdAt: BigInt!
-  editedAt: BigInt!
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
-
-type PendingKeyValidationTracker @entity {
-  id: String!
-
-  total: BigInt!
-  current: BigInt!
-}
-
-type PendingKeyValidationRequest @entity {
-  id: String!
-
-  key: String!
-}
-
 type ValidationKey @entity {
   id: String!
 
@@ -256,34 +226,21 @@ type ValidationKey @entity {
   signature: Bytes!
   index: BigInt!
 
+  validatorId: BigInt!
+  depositor: FactoryDepositor!
+  withdrawalAddress: Bytes!
+  feeRecipient: Bytes
+  extraData: String
+  threshold: BigInt
+  owner: Bytes
+
+  lastExitRequest: ExitRequest
+
   validSignature: Boolean
   validationError: String
   validationStatus: String
 
-  commonValidationKeyEntry: CommonValidationKeyEntry!
-
-  funded: FundedValidationKey
   withdrawalChannel: WithdrawalChannel!
-
-  createdAt: BigInt!
-  editedAt: BigInt!
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
-
-type FundedValidationKey @entity {
-  id: String!
-
-  validatorId: BigInt!
-  depositEvent: DepositEvent!
-  owner: Bytes
-  depositor: FactoryDepositor!
-  withdrawalAddress: Bytes
-  feeRecipient: Bytes
-  extraData: String
-
-  lastExitRequest: ExitRequest
-  validationKey: ValidationKey!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -296,7 +253,7 @@ type ExitRequest @entity {
 
   emitter: Bytes!
 
-  validator: FundedValidationKey!
+  validator: ValidationKey!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -309,7 +266,7 @@ type FactoryDepositor @entity {
   address: Bytes!
 
   withdrawalChannel: WithdrawalChannel!
-  fundedValidationKeys: [FundedValidationKey!]! @derivedFrom(field: "depositor")
+  validationKeys: [ValidationKey!]! @derivedFrom(field: "depositor")
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -619,7 +576,7 @@ type PoolPurchasedValidator @entity {
   index: BigInt!
 
   pool: vPool!
-  fundedValidationKey: FundedValidationKey!
+  validationKey: ValidationKey!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -635,11 +592,12 @@ type Report @entity {
   exitedSum: BigInt!
   skimmedSum: BigInt!
   slashedSum: BigInt!
-  exiting: BigInt!
+  exitingSum: BigInt!
   maxExitable: BigInt!
   maxCommittable: BigInt!
   activatedCount: BigInt!
   stoppedCount: BigInt!
+  invalidActivationCount: BigInt!
 
   preUnderlyingSupply: BigInt!
   postUnderlyingSupply: BigInt!
@@ -976,12 +934,13 @@ type OracleAggregatorReportVariant @entity {
   exitedSum: BigInt!
   skimmedSum: BigInt!
   slashedSum: BigInt!
-  exiting: BigInt!
+  exitingSum: BigInt!
   maxExitable: BigInt!
   maxCommittable: BigInt!
   epoch: BigInt!
   activatedCount: BigInt!
   stoppedCount: BigInt!
+  invalidActivationCount: BigInt!
 
 
   oracleAggregator: vOracleAggregator!
@@ -1465,7 +1424,7 @@ type vNFT @entity {
   integration: vNFTIntegration!
 
   owner: Bytes!
-  validator: FundedValidationKey!
+  validator: ValidationKey!
 
   transfers: [vNFTTransfer!]! @derivedFrom(field: "vNFT")
   user: vNFTUser @derivedFrom(field: "vNFT")
@@ -1503,43 +1462,6 @@ type vNFTUser @entity {
   vNFT: vNFT!
   user: Bytes!
   expiry: BigInt!
-
-  createdAt: BigInt!
-  editedAt: BigInt!
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
-
-type ExternalDepositLink @entity {
-  id: String!
-
-  validationKey: ValidationKey!
-  depositEvent: DepositEvent!
-}
-
-type DepositEvent @entity {
-  id: String!
-
-  pubkey: Bytes!
-  withdrawalCredentials: Bytes!
-  amount: BigInt!
-  signature: Bytes!
-  index: BigInt!
-
-  amountRaw: Bytes!
-  indexRaw: Bytes!
-
-  validatorDepositIndex: BigInt!
-
-  validationKeyActivation: [FundedValidationKey!]! @derivedFrom(field: "depositEvent")
-  commonValidationKeyEntry: CommonValidationKeyEntry!
-
-  tx: Bytes!
-  logIndex: BigInt!
-
-  validSignature: Boolean
-  validationError: String
-  verified: Boolean!
 
   createdAt: BigInt!
   editedAt: BigInt!
@@ -1645,7 +1567,7 @@ type FundedValidationKeySystemEvent implements SystemEvent @entity {
   count: BigInt!
   newTotal: BigInt!
   withdrawalChannel: WithdrawalChannel!
-  fundedValidationKeys: [FundedValidationKey!]!
+  validationKeys: [ValidationKey!]!
 
   createdAt: BigInt!
   createdAtBlock: BigInt!
@@ -1693,9 +1615,34 @@ type ValidatorOwnerChangedSystemEvent implements SystemEvent @entity {
   oracleAggregator: vOracleAggregator
   exitQueue: vExitQueue
 
-  validator: FundedValidationKey!
+  validator: ValidationKey!
   oldOwner: Bytes!
   newOwner: Bytes!
+
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+}
+
+type ValidatorThresholdChangedSystemEvent implements SystemEvent @entity {
+  id: String!
+  index: BigInt!
+  type: String!
+
+  tx: Bytes!
+  who: Bytes!
+
+  factory: vFactory
+  treasury: vTreasury
+  pool: vPool
+  withdrawalRecipient: vWithdrawalRecipient
+  execLayerRecipient: vExecLayerRecipient
+  coverageRecipient: vCoverageRecipient
+  oracleAggregator: vOracleAggregator
+  exitQueue: vExitQueue
+
+  validator: ValidationKey!
+  oldThreshold: BigInt!
+  newThreshold: BigInt!
 
   createdAt: BigInt!
   createdAtBlock: BigInt!
@@ -1718,7 +1665,7 @@ type ValidatorFeeRecipientChangedSystemEvent implements SystemEvent @entity {
   oracleAggregator: vOracleAggregator
   exitQueue: vExitQueue
 
-  validator: FundedValidationKey!
+  validator: ValidationKey!
   oldFeeRecipient: Bytes!
   newFeeRecipient: Bytes!
 
@@ -1743,56 +1690,9 @@ type ValidatorExtraDataChangedSystemEvent implements SystemEvent @entity {
   oracleAggregator: vOracleAggregator
   exitQueue: vExitQueue
 
-  validator: FundedValidationKey!
+  validator: ValidationKey!
   oldExtraData: String!
   newExtraData: String!
-
-  createdAt: BigInt!
-  createdAtBlock: BigInt!
-}
-
-type DuplicateKeySystemAlert implements SystemEvent @entity {
-  id: String!
-  index: BigInt!
-  type: String!
-
-  tx: Bytes!
-  who: Bytes!
-
-  factory: vFactory
-  treasury: vTreasury
-  pool: vPool
-  withdrawalRecipient: vWithdrawalRecipient
-  execLayerRecipient: vExecLayerRecipient
-  coverageRecipient: vCoverageRecipient
-  oracleAggregator: vOracleAggregator
-  exitQueue: vExitQueue
-
-  key: CommonValidationKeyEntry!
-
-  createdAt: BigInt!
-  createdAtBlock: BigInt!
-}
-
-type ExternalFundingSystemAlert implements SystemEvent @entity {
-  id: String!
-  index: BigInt!
-  type: String!
-
-  tx: Bytes!
-  who: Bytes!
-
-  factory: vFactory
-  treasury: vTreasury
-  pool: vPool
-  withdrawalRecipient: vWithdrawalRecipient
-  execLayerRecipient: vExecLayerRecipient
-  coverageRecipient: vCoverageRecipient
-  oracleAggregator: vOracleAggregator
-  exitQueue: vExitQueue
-
-  key: CommonValidationKeyEntry!
-  logIndex: BigInt
 
   createdAt: BigInt!
   createdAtBlock: BigInt!
