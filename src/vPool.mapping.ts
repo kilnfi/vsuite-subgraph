@@ -30,8 +30,7 @@ import {
   vExitQueue,
   vPoolRewardEntry,
   IntegrationRewardEntry,
-  DepositDataEntry,
-  ERC1155Integration
+  DepositDataEntry
 } from '../generated/schema';
 import { Bytes, BigInt, Address, store, dataSource } from '@graphprotocol/graph-ts';
 import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum';
@@ -199,13 +198,8 @@ export function handleTransfer(event: Transfer): void {
 
   const exitQueue = vExitQueue.load(event.params.to);
   const erc20Integration = ERC20.load(event.params.from);
-  const erc1155Integration = ERC1155Integration.load(event.params.from);
 
-  if (
-    exitQueue != null &&
-    exitQueue.id == pool!.exitQueue &&
-    (erc20Integration != null || erc1155Integration != null)
-  ) {
+  if (exitQueue != null && exitQueue.id == pool!.exitQueue && erc20Integration != null) {
     const stakedValueBefore = _computeStakedEthValue(
       fromBalance.amount,
       pool!.totalSupply,

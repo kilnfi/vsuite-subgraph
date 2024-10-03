@@ -241,9 +241,9 @@ export function handleSetFee(event: SetFee): void {
 
   if (multiPool != null) {
     const poolBalance = PoolBalance.load(multiPool.shares);
-    if (poolBalance != null && poolBalance!.amount.gt(BigInt.zero())) {
+    if (poolBalance != null && poolBalance.amount.gt(BigInt.zero())) {
       const earnedBeforeFeeUpdate = _computeIntegratorCommissionEarned(
-        poolBalance!.amount,
+        poolBalance.amount,
         pool!.totalSupply,
         pool!.totalUnderlyingSupply,
         multiPool.injectedEth,
@@ -251,7 +251,7 @@ export function handleSetFee(event: SetFee): void {
         multiPool.fees
       );
       const earnedAfterFeeUpdate = _computeIntegratorCommissionEarned(
-        poolBalance!.amount,
+        poolBalance.amount,
         pool!.totalSupply,
         pool!.totalUnderlyingSupply,
         multiPool.injectedEth,

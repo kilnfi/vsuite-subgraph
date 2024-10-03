@@ -67,13 +67,13 @@ export function handleActivatedValidator_2_2_0(event: ActivatedValidator): void 
   keyEntity.editedAt = event.block.timestamp;
   keyEntity.editedAtBlock = event.block.number;
 
-  keyEntity!.save();
+  keyEntity.save();
 
   channel.funded = BigInt.fromI32(channel.funded.toI32() + 1);
   channel.editedAt = event.block.timestamp;
   channel.editedAtBlock = event.block.number;
 
-  channel!.save();
+  channel.save();
 
   const systemEvent = createFundedValidationKeySystemEvent(
     event,
@@ -82,7 +82,7 @@ export function handleActivatedValidator_2_2_0(event: ActivatedValidator): void 
     event.params.depositor
   );
   systemEvent.count = systemEvent.count.plus(BigInt.fromI32(1));
-  systemEvent.newTotal = channel!.funded;
+  systemEvent.newTotal = channel.funded;
   const activatedKeys = systemEvent.validationKeys;
   activatedKeys.push(keyId);
   systemEvent.validationKeys = activatedKeys;
