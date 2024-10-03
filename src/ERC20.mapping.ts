@@ -385,6 +385,7 @@ export function handleStake_1_0_0_rc4(event: Stake_1_0_0_rc4): void {
       event,
       event.address,
       event.params.staker,
+      event.params.staker,
       event.params.ethValue.plus(ucs.amount),
       event.params.sharesBought
     );
@@ -392,6 +393,7 @@ export function handleStake_1_0_0_rc4(event: Stake_1_0_0_rc4): void {
     createERC20DepositSystemEvent(
       event,
       event.address,
+      event.params.staker,
       event.params.staker,
       event.params.ethValue,
       event.params.sharesBought
@@ -470,7 +472,14 @@ export function handleStake(event: Stake): void {
   const blockId = event.block.number;
   const staker = event.params.staker;
 
-  createERC20DepositSystemEvent(event, event.address, staker, event.params.depositedEth, event.params.mintedTokens);
+  createERC20DepositSystemEvent(
+    event,
+    event.address,
+    staker,
+    staker,
+    event.params.depositedEth,
+    event.params.mintedTokens
+  );
 
   const deposit = new ERC20Deposit(eventUUID(event, [event.address.toHexString(), staker.toHexString()]));
   deposit.integration = event.address;
@@ -538,7 +547,14 @@ export function handleStake_2_2_0(event: Stake_2_2_0): void {
   const blockId = event.block.number;
   const staker = event.params.recipient;
 
-  createERC20DepositSystemEvent(event, event.address, staker, event.params.depositedEth, event.params.mintedTokens);
+  createERC20DepositSystemEvent(
+    event,
+    event.address,
+    event.params.staker,
+    event.params.recipient,
+    event.params.depositedEth,
+    event.params.mintedTokens
+  );
 
   const deposit = new ERC20Deposit(eventUUID(event, [event.address.toHexString(), staker.toHexString()]));
   deposit.integration = event.address;

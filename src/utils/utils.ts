@@ -844,13 +844,14 @@ export function _computeEthAfterCommission(
 export function createERC20DepositSystemEvent(
   event: ethereum.Event,
   erc20Address: Address,
-  depositor: Address,
+  staker: Address,
+  recipient: Address,
   amount: BigInt,
   shares: BigInt
 ): void {
   const g = getOrCreateG();
 
-  const id = `ERC20DepositSystemEvent/${event.transaction.hash.toHexString()}/${event.logIndex.toString()}/${erc20Address.toHexString()}/${depositor.toHexString()}`;
+  const id = `ERC20DepositSystemEvent/${event.transaction.hash.toHexString()}/${event.logIndex.toString()}/${erc20Address.toHexString()}/${staker.toHexString()}/${recipient.toHexString()}`;
   let systemEvent = ERC20DepositSystemEvent.load(id);
   if (systemEvent == null) {
     systemEvent = new ERC20DepositSystemEvent(id);
@@ -861,7 +862,8 @@ export function createERC20DepositSystemEvent(
     systemEvent.who = event.transaction.from;
 
     systemEvent.integration = erc20Address;
-    systemEvent.staker = depositor;
+    systemEvent.staker = staker;
+    systemEvent.recipient = recipient;
     systemEvent.depositedAmount = amount;
     systemEvent.mintedShares = shares;
 

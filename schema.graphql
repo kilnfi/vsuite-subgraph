@@ -1790,6 +1790,7 @@ type ERC20DepositSystemEvent implements SystemEvent @entity {
   depositedAmount: BigInt!
   mintedShares: BigInt!
   staker: Bytes!
+  recipient: Bytes!
 
   createdAt: BigInt!
   createdAtBlock: BigInt!
