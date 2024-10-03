@@ -9,14 +9,18 @@ import {
   SetMinimalRecipientImplementation,
   SpawnedFactory,
   SpawnedPool,
-  SetAdmin
+  SetAdmin,
+  SetDriver
 } from '../generated/Nexus/Nexus';
 import {
   vOracleAggregator as vOracleAggregatorTemplate,
+  vOracleAggregator_2_2_0 as vOracleAggregatorTemplate_2_2_0,
   vCoverageRecipient as vCoverageRecipientTemplate,
   vExecLayerRecipient as vExecLayerRecipientTemplate,
   vFactory as vFactoryTemplate,
+  vFactory_2_2_0 as vFactoryTemplate_2_2_0,
   vPool as vPoolTemplate,
+  vPool_2_2_0 as vPoolTemplate_2_2_0,
   vExitQueue as vExitQueueTemplate,
   vTreasury as vTreasuryTemplate
 } from '../generated/templates';
@@ -30,122 +34,11 @@ import {
   vWithdrawalRecipient,
   vOracleAggregator,
   vExitQueue,
-  PendingKeyValidationRequest,
-  ValidationKey,
-  WithdrawalChannel,
-  PendingKeyValidationTracker
+  Driver
 } from '../generated/schema';
-import {
-  FORK_VERSIONS,
-  generateDepositDomain,
-  hashTreeRootDepositMessage,
-  hashTreeRootSigningData
-} from './ssz_deposit_message/index';
-import { Address, BigInt, ByteArray, Bytes, ethereum, log, crypto, dataSource } from '@graphprotocol/graph-ts';
+import { Address, BigInt, Bytes, ethereum } from '@graphprotocol/graph-ts';
 import { getOrCreateRewardSummaries } from './utils/rewards';
-import { verify } from './bls12_381_verify';
 import { getOrCreateTUPProxy } from './TUPProxy.mapping';
-
-function concat(b: ByteArray[]): ByteArray {
-  let res = new ByteArray(0);
-  for (let i = 0; i < b.length; i++) {
-    res = res.concat(b[i]);
-  }
-  return res;
-}
-
-// due to an issue with the heap when verify a lot of signatures, we need this
-// workaround to very the keys in an async manner. This is suboptimal and an
-// alternative should be found as it slows down the whole indexing process
-export function handleBlock(block: ethereum.Block): void {
-  const verificationTracker = getOrLoadVerificationTracker();
-
-  if (verificationTracker.current.lt(verificationTracker.total)) {
-    log.info('Found pending verifications !', []);
-    const from = verificationTracker.current;
-    let to = verificationTracker.total;
-    if (to.minus(from).gt(BigInt.fromI32(10))) {
-      to = from.plus(BigInt.fromI32(10));
-    }
-    for (let i = from; i.lt(to); i = i.plus(BigInt.fromI32(1))) {
-      const keyReq = PendingKeyValidationRequest.load(i.toString());
-      const key = ValidationKey.load(keyReq!.key);
-      const wc = WithdrawalChannel.load(key!.withdrawalChannel);
-      const factory = vFactory.load(wc!.factory);
-      let withdrawalCredentials: Bytes;
-      if (wc!.withdrawalChannel.toHexString() == '0x0000000000000000000000000000000000000000000000000000000000000000') {
-        withdrawalCredentials = Bytes.fromByteArray(
-          concat([
-            ByteArray.fromHexString('0x010000000000000000000000'),
-            Bytes.fromUint8Array(
-              crypto
-                .keccak256(
-                  concat([
-                    Bytes.fromHexString('0xff'),
-                    factory!.address,
-                    crypto.keccak256(key!.publicKey),
-                    crypto.keccak256(
-                      concat([
-                        Bytes.fromHexString('0x3d602d80600a3d3981f3363d3d373d3d3d363d73'),
-                        factory!.minimalRecipientImplementation as Bytes,
-                        Bytes.fromHexString('0x5af43d82803e903d91602b57fd5bf3')
-                      ])
-                    )
-                  ])
-                )
-                .slice(12, 32)
-            )
-          ])
-        );
-      } else {
-        withdrawalCredentials = wc!.withdrawalChannel;
-      }
-
-      log.info('Starting verification for {}', [key!.publicKey.toHexString()]);
-
-      const depositMessageRoot = hashTreeRootDepositMessage({
-        pubkey: key!.publicKey,
-        withdrawalCredentials: withdrawalCredentials,
-        amount: 32000000000
-      });
-
-      const forkVersion: Uint8Array = FORK_VERSIONS[dataSource.network() == 'mainnet' ? 0 : 1];
-      const depositDomain: Uint8Array = generateDepositDomain(forkVersion);
-
-      const signingRoot = hashTreeRootSigningData({
-        objectRoot: depositMessageRoot,
-        domain: depositDomain
-      });
-
-      const signature_verification = verify(key!.signature, signingRoot, key!.publicKey);
-
-      if (signature_verification.error != null || signature_verification.value == false) {
-        key!.validSignature = false;
-        key!.validationError = signature_verification.error;
-      } else {
-        key!.validSignature = true;
-      }
-
-      key!.validationStatus = 'done';
-      key!.save();
-
-      log.info('Finished verification for {}', [key!.publicKey.toHexString()]);
-    }
-    verificationTracker.current = to;
-    verificationTracker.save();
-  }
-}
-
-export function getOrLoadVerificationTracker(): PendingKeyValidationTracker {
-  let tracker = PendingKeyValidationTracker.load('global');
-  if (tracker == null) {
-    tracker = new PendingKeyValidationTracker('global');
-    tracker.total = BigInt.fromI32(0);
-    tracker.current = BigInt.fromI32(0);
-    tracker.save();
-  }
-  return tracker;
-}
 
 function _getOrCreateNexus(addr: Bytes, event: ethereum.Event): Nexus {
   let nexus = Nexus.load(addr);
@@ -202,6 +95,8 @@ export function handleSpawnedFactory(event: SpawnedFactory): void {
   factory.cub = event.params.factory;
   factory.treasury = Address.zero();
   factory.totalActivatedValidators = BigInt.zero();
+  factory.treeRoot = Bytes.fromHexString('0x');
+  factory.treeIPFSHash = '';
   factory.operatorName = '';
   factory.operatorUrl = '';
   factory.operatorIconUrl = '';
@@ -213,6 +108,7 @@ export function handleSpawnedFactory(event: SpawnedFactory): void {
   factory.save();
 
   vFactoryTemplate.create(event.params.factory);
+  vFactoryTemplate_2_2_0.create(event.params.factory);
 }
 export function handleSpawnedPool(event: SpawnedPool): void {
   {
@@ -257,6 +153,7 @@ export function handleSpawnedPool(event: SpawnedPool): void {
 
     pool.save();
     vPoolTemplate.create(event.params.pool);
+    vPoolTemplate_2_2_0.create(event.params.pool);
   }
   {
     const eq = new vExitQueue(event.params.exitQueue);
@@ -352,7 +249,27 @@ export function handleSpawnedPool(event: SpawnedPool): void {
 
     oa.save();
     vOracleAggregatorTemplate.create(event.params.oracleAggregator);
+    vOracleAggregatorTemplate_2_2_0.create(event.params.oracleAggregator);
   }
+}
+
+export function handleSetDriver(event: SetDriver): void {
+  const nexus = _getOrCreateNexus(event.address, event);
+
+  let driver = Driver.load(event.params.key);
+  if (driver == null) {
+    driver = new Driver(event.params.key);
+    driver.name = event.params.key;
+    driver.createdAt = event.block.timestamp;
+    driver.createdAtBlock = event.block.number;
+    driver.nexus = nexus.id;
+  }
+  driver.address = event.params.driver;
+
+  driver.editedAt = event.block.timestamp;
+  driver.editedAtBlock = event.block.number;
+
+  driver.save();
 }
 
 export function handleSetCoreHatchers(event: SetCoreHatchers): void {

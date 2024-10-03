@@ -1,25 +1,8 @@
-import { Bytes, store, BigInt, dataSource, Address } from '@graphprotocol/graph-ts';
+import { Bytes, store, BigInt, Address } from '@graphprotocol/graph-ts';
+import { WithdrawalChannel, ValidationKey, vFactory, FactoryDepositor, ExitRequest } from '../generated/schema';
 import {
-  WithdrawalChannel,
-  ValidationKey,
-  FundedValidationKey,
-  ExitRequest,
-  ValidatorRequest as ValidatorRequestEntity,
-  vFactory,
-  FactoryDepositor,
-  CommonValidationKeyEntry,
-  DepositEvent,
-  PendingKeyValidationRequest
-} from '../generated/schema';
-import {
-  AddedValidators,
-  RemovedValidator,
-  FundedValidator,
   SetValidatorOwner,
   SetValidatorFeeRecipient,
-  UpdatedLimit,
-  ExitValidator,
-  ValidatorRequest,
   SetMetadata,
   SetAdmin,
   ChangedOperator,
@@ -28,295 +11,69 @@ import {
   ApproveDepositor,
   SetExitTotal
 } from '../generated/templates/vFactory/vFactory';
+import {
+  ActivatedValidator,
+  SetRoot,
+  ExitValidator,
+  SetValidatorThreshold
+} from '../generated/templates/vFactory_2_2_0/vFactory_2_2_0';
 import { SetMinimalRecipientImplementation } from '../generated/Nexus/Nexus';
 import { SetValidatorExtraData } from '../generated/templates/vFactory/vFactory';
 import {
-  cancelSystemEvent,
-  createAddedValidationKeysSystemEvent,
   createChangedFactoryParameterSystemEvent,
-  createDuplicateKeySystemAlert,
-  createExternalFundingSystemAlert,
   createFundedValidationKeySystemEvent,
-  createRemovedValidationKeysSystemEvent,
-  createUpdatedLimitSystemEvent,
   createValidatorExtraDataChangedSystemEvent,
   createValidatorFeeRecipientChangedSystemEvent,
   createValidatorOwnerChangedSystemEvent,
+  createValidatorThresholdChangedSystemEvent,
   entityUUID,
-  eventUUID,
-  externalEntityUUID
+  eventUUID
 } from './utils/utils';
-import { verify } from './bls12_381_verify';
-import { getOrLoadVerificationTracker } from './Nexus.mapping';
-import {
-  FORK_VERSIONS,
-  generateDepositDomain,
-  hashTreeRootDepositMessage,
-  hashTreeRootSigningData
-} from './ssz_deposit_message/index';
 
-const PUBLIC_KEY_LENGTH = 48;
-const SIGNATURE_LENGTH = 96;
-const KEY_PACK_LENGTH = PUBLIC_KEY_LENGTH + SIGNATURE_LENGTH;
-
-export function handleAddedValidators(event: AddedValidators): void {
+export function handleActivatedValidator_2_2_0(event: ActivatedValidator): void {
   const channelId = entityUUID(event, [event.params.withdrawalChannel.toHexString()]);
-  let entity = WithdrawalChannel.load(channelId);
+  let channel = WithdrawalChannel.load(channelId);
 
-  if (entity == null) {
-    entity = new WithdrawalChannel(channelId);
-    entity.withdrawalChannel = event.params.withdrawalChannel;
-    entity.factory = event.address;
-    entity.total = BigInt.fromI32(0);
-    entity.funded = BigInt.fromI32(0);
-    entity.limit = BigInt.fromI32(0);
-    entity.lastExitTotal = BigInt.fromI32(0);
-    entity.createdAt = event.block.timestamp;
-    entity.createdAtBlock = event.block.number;
+  if (channel == null) {
+    channel = new WithdrawalChannel(channelId);
+    channel.withdrawalChannel = event.params.withdrawalChannel;
+    channel.factory = event.address;
+    channel.funded = BigInt.fromI32(0);
+    channel.lastExitTotal = BigInt.fromI32(0);
+    channel.createdAt = event.block.timestamp;
+    channel.createdAtBlock = event.block.number;
   }
 
-  entity.editedAt = event.block.timestamp;
-  entity.editedAtBlock = event.block.number;
-  const keyCount = entity.total.toI32();
+  const keyId = entityUUID(event, [event.params.id.toString()]);
 
-  const keys = event.params.keys;
+  const keyEntity = new ValidationKey(keyId);
 
-  const verificationTracker = getOrLoadVerificationTracker();
-
-  for (let idx = 0; idx < keys.length / KEY_PACK_LENGTH; ++idx) {
-    const signature = Bytes.fromUint8Array(keys.slice(idx * KEY_PACK_LENGTH, idx * KEY_PACK_LENGTH + SIGNATURE_LENGTH));
-    const publicKey = Bytes.fromUint8Array(
-      keys.slice(idx * KEY_PACK_LENGTH + SIGNATURE_LENGTH, (idx + 1) * KEY_PACK_LENGTH)
-    );
-    const keyId = entityUUID(event, [event.params.withdrawalChannel.toHexString(), (keyCount + idx).toString()]);
-    const keyEntity = new ValidationKey(keyId);
-    keyEntity.signature = signature;
-    keyEntity.publicKey = publicKey;
-    keyEntity.withdrawalChannel = channelId;
-    keyEntity.index = BigInt.fromI32(keyCount + idx);
-
-    keyEntity.validationStatus = 'pending';
-
-    const verificationRequest = new PendingKeyValidationRequest(
-      verificationTracker.total.plus(BigInt.fromI32(idx)).toString()
-    );
-    verificationRequest.key = keyId;
-    verificationRequest.save();
-
-    let commonValidationKeyEntry = CommonValidationKeyEntry.load(publicKey.toHexString());
-    if (commonValidationKeyEntry == null) {
-      commonValidationKeyEntry = new CommonValidationKeyEntry(publicKey.toHexString());
-      commonValidationKeyEntry.depositEventCount = BigInt.fromI32(0);
-      commonValidationKeyEntry.validationKeyCount = BigInt.fromI32(0);
-      commonValidationKeyEntry.publicKey = publicKey;
-      commonValidationKeyEntry.createdAt = event.block.timestamp;
-      commonValidationKeyEntry.createdAtBlock = event.block.number;
-    }
-    commonValidationKeyEntry.editedAt = event.block.timestamp;
-    commonValidationKeyEntry.editedAtBlock = event.block.number;
-    commonValidationKeyEntry.validationKeyCount = commonValidationKeyEntry.validationKeyCount.plus(BigInt.fromI32(1));
-    commonValidationKeyEntry.save();
-
-    if (commonValidationKeyEntry.validationKeyCount.gt(BigInt.fromI32(1))) {
-      const se = createDuplicateKeySystemAlert(event, event.address, publicKey);
-      se.key = publicKey.toHexString();
-      se.save();
-    }
-
-    let depositIndex = 0;
-    let depositEventId = `${publicKey.toHexString()}-${depositIndex.toString()}`;
-    let depositEvent = DepositEvent.load(depositEventId);
-    while (depositEvent != null) {
-      const depositMessageRoot = hashTreeRootDepositMessage({
-        pubkey: depositEvent.pubkey,
-        withdrawalCredentials: depositEvent.withdrawalCredentials,
-        amount: depositEvent.amount.toI64()
-      });
-
-      const forkVersion: Uint8Array = FORK_VERSIONS[dataSource.network() == 'mainnet' ? 0 : 1];
-      const depositDomain: Uint8Array = generateDepositDomain(forkVersion);
-
-      const signingRoot = hashTreeRootSigningData({
-        objectRoot: depositMessageRoot,
-        domain: depositDomain
-      });
-
-      const signature_verification = verify(depositEvent.signature, signingRoot, depositEvent.pubkey);
-
-      if (signature_verification.error != null || signature_verification.value == false) {
-        depositEvent.validSignature = false;
-        depositEvent.validationError = signature_verification.error;
-      } else {
-        depositEvent.validSignature = true;
-        const se = createExternalFundingSystemAlert(event, publicKey);
-        se.key = publicKey.toHexString();
-        se.save();
-      }
-      depositEvent.verified = true;
-      depositEvent.editedAt = event.block.timestamp;
-      depositEvent.editedAtBlock = event.block.number;
-      depositEvent.save();
-
-      depositIndex++;
-      depositEventId = `${publicKey.toHexString()}-${depositIndex.toString()}`;
-      depositEvent = DepositEvent.load(depositEventId);
-    }
-
-    keyEntity.commonValidationKeyEntry = publicKey.toHexString();
-    keyEntity.createdAt = event.block.timestamp;
-    keyEntity.createdAtBlock = event.block.number;
-    keyEntity.editedAt = event.block.timestamp;
-    keyEntity.editedAtBlock = event.block.number;
-    keyEntity.save();
-  }
-
-  verificationTracker.total = verificationTracker.total.plus(BigInt.fromI32(keys.length / KEY_PACK_LENGTH));
-  verificationTracker.save();
-
-  entity.total = BigInt.fromI32(entity.total.toI32() + keys.length / KEY_PACK_LENGTH);
-
-  entity.save();
-
-  const se = createAddedValidationKeysSystemEvent(event, event.address, event.params.withdrawalChannel);
-  se.count = se.count.plus(BigInt.fromI32(keys.length / KEY_PACK_LENGTH));
-  se.newTotal = entity.total;
-  se.save();
-
-  dataSource.create;
-}
-
-export function handleValidatorRequest(event: ValidatorRequest): void {
-  const channelId = entityUUID(event, [event.params.withdrawalChannel.toHexString()]);
-
-  let entity = WithdrawalChannel.load(channelId);
-
-  if (entity == null) {
-    entity = new WithdrawalChannel(channelId);
-    entity.withdrawalChannel = event.params.withdrawalChannel;
-    entity.factory = event.address;
-    entity.total = BigInt.fromI32(0);
-    entity.funded = BigInt.fromI32(0);
-    entity.limit = BigInt.fromI32(0);
-    entity.lastExitTotal = BigInt.fromI32(0);
-    entity.createdAt = event.block.timestamp;
-    entity.createdAtBlock = event.block.number;
-  }
-
-  const validatorRequestId = eventUUID(event, [event.params.withdrawalChannel.toHexString()]);
-
-  const validatorRequest = new ValidatorRequestEntity(validatorRequestId);
-
-  validatorRequest.withdrawalChannel = channelId;
-  validatorRequest.requestedTotal = event.params.total;
-  validatorRequest.totalOnRequest = entity.total;
-  validatorRequest.createdAt = event.block.timestamp;
-  validatorRequest.createdAtBlock = event.block.number;
-  validatorRequest.editedAt = event.block.timestamp;
-  validatorRequest.editedAtBlock = event.block.number;
-
-  entity.lastValidatorRequest = validatorRequestId;
-  entity.editedAt = event.block.timestamp;
-  entity.editedAtBlock = event.block.number;
-
-  entity.save();
-  validatorRequest.save();
-}
-
-export function handleRemovedValidator(event: RemovedValidator): void {
-  const channelId = entityUUID(event, [event.params.withdrawalChannel.toHexString()]);
-
-  const channel = WithdrawalChannel.load(channelId);
-
-  const keyId = entityUUID(event, [
-    event.params.withdrawalChannel.toHexString(),
-    event.params.validatorIndex.toString()
-  ]);
-  const keyIndex = event.params.validatorIndex.toI32();
-
-  const keyToDelete = ValidationKey.load(keyId);
-
-  if (keyIndex == channel!.total.toI32() - 1) {
-    store.remove('ValidationKey', keyId);
-  } else {
-    const lastKeyId = entityUUID(event, [
-      event.params.withdrawalChannel.toHexString(),
-      (channel!.total.toI32() - 1).toString()
-    ]);
-    const lastKey = ValidationKey.load(lastKeyId);
-    keyToDelete!.publicKey = lastKey!.publicKey;
-    keyToDelete!.signature = lastKey!.signature;
-    keyToDelete!.save();
-    store.remove('ValidationKey', lastKeyId);
-  }
-
-  let commonValidationKeyEntry = CommonValidationKeyEntry.load(keyToDelete!.publicKey.toHexString());
-  commonValidationKeyEntry!.validationKeyCount = commonValidationKeyEntry!.validationKeyCount.minus(BigInt.fromI32(1));
-  commonValidationKeyEntry!.editedAt = event.block.timestamp;
-  commonValidationKeyEntry!.editedAtBlock = event.block.number;
-  commonValidationKeyEntry!.save();
-
-  channel!.total = BigInt.fromI32(channel!.total.toI32() - 1);
-  channel!.editedAt = event.block.timestamp;
-  channel!.editedAtBlock = event.block.number;
-  channel!.save();
-
-  const se = createRemovedValidationKeysSystemEvent(event, event.address, event.params.withdrawalChannel);
-  se.count = se.count.plus(BigInt.fromI32(1));
-  se.newTotal = channel!.total;
-  se.save();
-}
-
-export function handleFundedValidator(event: FundedValidator): void {
-  const keyId = entityUUID(event, [
-    event.params.withdrawalChannel.toHexString(),
-    event.params.validatorIndex.toString()
-  ]);
-  const key = ValidationKey.load(keyId);
-  const channelId = entityUUID(event, [event.params.withdrawalChannel.toHexString()]);
-  const channel = WithdrawalChannel.load(channelId);
-  const fundedKeyId = entityUUID(event, [event.params.id.toString()]);
-  const fundedKey = new FundedValidationKey(fundedKeyId);
   const depositorId = entityUUID(event, [
     event.params.withdrawalChannel.toHexString(),
     event.params.depositor.toHexString()
   ]);
 
-  key!.funded = fundedKeyId;
-  key!.editedAt = event.block.timestamp;
-  key!.editedAtBlock = event.block.number;
+  keyEntity.signature = event.params.signature;
+  keyEntity.publicKey = event.params.publicKey;
+  keyEntity.withdrawalChannel = channelId;
+  keyEntity.index = channel.funded;
 
-  let depositIndex = 1;
-  let depositEventId = `${key!.publicKey.toHexString()}-${depositIndex.toString()}`;
-  let depositEvent = DepositEvent.load(depositEventId);
-  while (depositEvent != null) {
-    depositIndex++;
-    depositEventId = `${key!.publicKey.toHexString()}-${depositIndex.toString()}`;
-    depositEvent = DepositEvent.load(depositEventId);
-  }
-  depositEventId = `${key!.publicKey.toHexString()}-${(depositIndex - 1).toString()}`;
+  keyEntity.validationStatus = 'pending';
+  keyEntity.validatorId = event.params.id;
+  keyEntity.depositor = depositorId;
+  keyEntity.withdrawalAddress = event.params.withdrawalAddress;
+  keyEntity.createdAt = event.block.timestamp;
+  keyEntity.createdAtBlock = event.block.number;
+  keyEntity.editedAt = event.block.timestamp;
+  keyEntity.editedAtBlock = event.block.number;
 
-  fundedKey.depositEvent = depositEventId;
-  fundedKey.validationKey = keyId;
-  fundedKey.validatorId = event.params.id;
-  fundedKey.depositor = depositorId;
-  fundedKey.withdrawalAddress = event.params.withdrawalAddress;
-  fundedKey.createdAt = event.block.timestamp;
-  fundedKey.createdAtBlock = event.block.number;
-  fundedKey.editedAt = event.block.timestamp;
-  fundedKey.editedAtBlock = event.block.number;
+  keyEntity.save();
 
-  channel!.funded = BigInt.fromI32(channel!.funded.toI32() + 1);
-  channel!.editedAt = event.block.timestamp;
-  channel!.editedAtBlock = event.block.number;
+  channel.funded = BigInt.fromI32(channel.funded.toI32() + 1);
+  channel.editedAt = event.block.timestamp;
+  channel.editedAtBlock = event.block.number;
 
-  key!.save();
-  channel!.save();
-  fundedKey.save();
-
-  const se = createExternalFundingSystemAlert(event, key!.publicKey);
-  if (se.logIndex !== null && (se.logIndex as BigInt).equals(event.logIndex.minus(BigInt.fromI32(1)))) {
-    cancelSystemEvent(se.id, 'ExternalFundingSystemAlert');
-  }
+  channel.save();
 
   const systemEvent = createFundedValidationKeySystemEvent(
     event,
@@ -325,10 +82,10 @@ export function handleFundedValidator(event: FundedValidator): void {
     event.params.depositor
   );
   systemEvent.count = systemEvent.count.plus(BigInt.fromI32(1));
-  systemEvent.newTotal = channel!.funded;
-  const fundedKeys = systemEvent.fundedValidationKeys;
-  fundedKeys.push(fundedKeyId);
-  systemEvent.fundedValidationKeys = fundedKeys;
+  systemEvent.newTotal = channel.funded;
+  const activatedKeys = systemEvent.validationKeys;
+  activatedKeys.push(keyId);
+  systemEvent.validationKeys = activatedKeys;
   systemEvent.save();
 
   const factory = vFactory.load(event.address);
@@ -336,16 +93,86 @@ export function handleFundedValidator(event: FundedValidator): void {
   factory!.save();
 }
 
-export function handleExitValidator(event: ExitValidator): void {
-  const fundedKeyId = entityUUID(event, [event.params.id.toString()]);
-  const fundedKey = FundedValidationKey.load(fundedKeyId);
+// export function handleFundedValidator(event: FundedValidator): void {
+//   const keyId = entityUUID(event, [
+//     event.params.withdrawalChannel.toHexString(),
+//     event.params.validatorIndex.toString()
+//   ]);
+//   const key = ValidationKey.load(keyId);
+//   const channelId = entityUUID(event, [event.params.withdrawalChannel.toHexString()]);
+//   const channel = WithdrawalChannel.load(channelId);
+//   const fundedKeyId = entityUUID(event, [event.params.id.toString()]);
+//   const fundedKey = new FundedValidationKey(fundedKeyId);
+//   const depositorId = entityUUID(event, [
+//     event.params.withdrawalChannel.toHexString(),
+//     event.params.depositor.toHexString()
+//   ]);
+//
+//   key!.funded = fundedKeyId;
+//   key!.editedAt = event.block.timestamp;
+//   key!.editedAtBlock = event.block.number;
+//
+//   let depositIndex = 1;
+//   let depositEventId = `${key!.publicKey.toHexString()}-${depositIndex.toString()}`;
+//   let depositEvent = DepositEvent.load(depositEventId);
+//   while (depositEvent != null) {
+//     depositIndex++;
+//     depositEventId = `${key!.publicKey.toHexString()}-${depositIndex.toString()}`;
+//     depositEvent = DepositEvent.load(depositEventId);
+//   }
+//   depositEventId = `${key!.publicKey.toHexString()}-${(depositIndex - 1).toString()}`;
+//
+//   fundedKey.depositEvent = depositEventId;
+//   fundedKey.validationKey = keyId;
+//   fundedKey.validatorId = event.params.id;
+//   fundedKey.depositor = depositorId;
+//   fundedKey.withdrawalAddress = event.params.withdrawalAddress;
+//   fundedKey.createdAt = event.block.timestamp;
+//   fundedKey.createdAtBlock = event.block.number;
+//   fundedKey.editedAt = event.block.timestamp;
+//   fundedKey.editedAtBlock = event.block.number;
+//
+//   channel!.funded = BigInt.fromI32(channel!.funded.toI32() + 1);
+//   channel!.editedAt = event.block.timestamp;
+//   channel!.editedAtBlock = event.block.number;
+//
+//   key!.save();
+//   channel!.save();
+//   fundedKey.save();
+//
+//   const se = createExternalFundingSystemAlert(event, key!.publicKey);
+//   if (se.logIndex !== null && (se.logIndex as BigInt).equals(event.logIndex.minus(BigInt.fromI32(1)))) {
+//     cancelSystemEvent(se.id, 'ExternalFundingSystemAlert');
+//   }
+//
+//   const systemEvent = createFundedValidationKeySystemEvent(
+//     event,
+//     event.address,
+//     event.params.withdrawalChannel,
+//     event.params.depositor
+//   );
+//   systemEvent.count = systemEvent.count.plus(BigInt.fromI32(1));
+//   systemEvent.newTotal = channel!.funded;
+//   const fundedKeys = systemEvent.fundedValidationKeys;
+//   fundedKeys.push(fundedKeyId);
+//   systemEvent.fundedValidationKeys = fundedKeys;
+//   systemEvent.save();
+//
+//   const factory = vFactory.load(event.address);
+//   factory!.totalActivatedValidators = factory!.totalActivatedValidators.plus(BigInt.fromI32(1));
+//   factory!.save();
+// }
 
-  if (fundedKey != null) {
+export function handleExitValidator_2_2_0(event: ExitValidator): void {
+  const keyId = entityUUID(event, [event.params.id.toString()]);
+  const key = ValidationKey.load(keyId);
+
+  if (key != null) {
     const exitRequestId = eventUUID(event, [event.params.id.toString()]);
     const exitRequest = new ExitRequest(exitRequestId);
 
-    exitRequest.validator = fundedKeyId;
-    exitRequest.emitter = fundedKey.owner as Bytes;
+    exitRequest.validator = keyId;
+    exitRequest.emitter = key.owner as Bytes;
     exitRequest.createdAt = event.block.timestamp;
     exitRequest.createdAtBlock = event.block.number;
     exitRequest.editedAt = event.block.timestamp;
@@ -353,51 +180,66 @@ export function handleExitValidator(event: ExitValidator): void {
 
     exitRequest.save();
 
-    fundedKey.lastExitRequest = exitRequestId;
-    fundedKey.editedAt = event.block.timestamp;
-    fundedKey.editedAtBlock = event.block.number;
+    key.lastExitRequest = exitRequestId;
+    key.editedAt = event.block.timestamp;
+    key.editedAtBlock = event.block.number;
 
-    fundedKey.save();
+    key.save();
   }
 }
 
-export function handleUpdatedLimit(event: UpdatedLimit): void {
-  const channelId = entityUUID(event, [event.params.withdrawalChannel.toHexString()]);
-  const channel = WithdrawalChannel.load(channelId);
+export function handleSetRoot_2_2_0(event: SetRoot): void {
+  const factory = vFactory.load(event.address);
 
-  const oldLimit = channel!.limit;
+  factory!.treeRoot = event.params.newRoot.root;
+  factory!.treeIPFSHash = event.params.newRoot.ipfsHash;
 
-  channel!.limit = event.params.limit;
-  channel!.editedAt = event.block.timestamp;
-  channel!.editedAtBlock = event.block.number;
+  factory!.editedAt = event.block.timestamp;
+  factory!.editedAtBlock = event.block.number;
 
-  channel!.save();
+  factory!.save();
+}
 
-  if (oldLimit.notEqual(event.params.limit)) {
-    const se = createUpdatedLimitSystemEvent(event, event.address, event.params.withdrawalChannel);
-    if (se.oldLimit === null) {
-      se.oldLimit = oldLimit;
+export function handleSetValidatorThreshold_2_2_0(event: SetValidatorThreshold): void {
+  const keyId = entityUUID(event, [event.params.id.toString()]);
+  const key = ValidationKey.load(keyId);
+
+  if (key != null) {
+    let oldThreshold = key.threshold;
+    if (oldThreshold === null) {
+      oldThreshold = BigInt.zero();
     }
-    se.newLimit = event.params.limit;
-    se.save();
+    key.threshold = event.params.thresholdGwei;
+
+    key.editedAt = event.block.timestamp;
+    key.editedAtBlock = event.block.number;
+
+    key.save();
+
+    if (oldThreshold.notEqual(event.params.thresholdGwei)) {
+      const se = createValidatorThresholdChangedSystemEvent(event, event.address, event.params.id);
+      se.oldThreshold = oldThreshold;
+      se.newThreshold = event.params.thresholdGwei;
+      se.save();
+    }
   }
 }
 
 export function handleSetValidatorOwner(event: SetValidatorOwner): void {
-  const fundedKeyId = entityUUID(event, [event.params.id.toString()]);
-  const fundedKey = FundedValidationKey.load(fundedKeyId);
+  const keyId = entityUUID(event, [event.params.id.toString()]);
+  const key = ValidationKey.load(keyId);
 
-  if (fundedKey != null) {
-    let oldOwner = fundedKey.owner;
+  if (key != null) {
+    let oldOwner = key.owner;
     if (oldOwner === null) {
       oldOwner = Address.zero();
     }
-    fundedKey.owner = event.params.owner;
+    key.owner = event.params.owner;
 
-    fundedKey.editedAt = event.block.timestamp;
-    fundedKey.editedAtBlock = event.block.number;
+    key.editedAt = event.block.timestamp;
+    key.editedAtBlock = event.block.number;
 
-    fundedKey.save();
+    key.save();
 
     if (oldOwner != event.params.owner) {
       const se = createValidatorOwnerChangedSystemEvent(event, event.address, event.params.id);
@@ -409,20 +251,20 @@ export function handleSetValidatorOwner(event: SetValidatorOwner): void {
 }
 
 export function handleSetValidatorFeeRecipient(event: SetValidatorFeeRecipient): void {
-  const fundedKeyId = entityUUID(event, [event.params.id.toString()]);
-  const fundedKey = FundedValidationKey.load(fundedKeyId);
+  const keyId = entityUUID(event, [event.params.id.toString()]);
+  const key = ValidationKey.load(keyId);
 
-  if (fundedKey != null) {
-    let oldFeeRecipient = fundedKey.feeRecipient;
+  if (key != null) {
+    let oldFeeRecipient = key.feeRecipient;
     if (oldFeeRecipient === null) {
       oldFeeRecipient = Address.zero();
     }
-    fundedKey.feeRecipient = event.params.feeRecipient;
+    key.feeRecipient = event.params.feeRecipient;
 
-    fundedKey.editedAt = event.block.timestamp;
-    fundedKey.editedAtBlock = event.block.number;
+    key.editedAt = event.block.timestamp;
+    key.editedAtBlock = event.block.number;
 
-    fundedKey.save();
+    key.save();
 
     if (oldFeeRecipient != event.params.feeRecipient) {
       const se = createValidatorFeeRecipientChangedSystemEvent(event, event.address, event.params.id);
@@ -434,20 +276,20 @@ export function handleSetValidatorFeeRecipient(event: SetValidatorFeeRecipient):
 }
 
 export function handleSetValidatorExtraData(event: SetValidatorExtraData): void {
-  const fundedKeyId = entityUUID(event, [event.params.id.toString()]);
-  const fundedKey = FundedValidationKey.load(fundedKeyId);
+  const keyId = entityUUID(event, [event.params.id.toString()]);
+  const key = ValidationKey.load(keyId);
 
-  if (fundedKey != null) {
-    let oldExtraData = fundedKey.extraData;
+  if (key != null) {
+    let oldExtraData = key.extraData;
     if (oldExtraData === null) {
       oldExtraData = '';
     }
-    fundedKey.extraData = event.params.extraData;
+    key.extraData = event.params.extraData;
 
-    fundedKey.editedAt = event.block.timestamp;
-    fundedKey.editedAtBlock = event.block.number;
+    key.editedAt = event.block.timestamp;
+    key.editedAtBlock = event.block.number;
 
-    fundedKey.save();
+    key.save();
     if (oldExtraData != event.params.extraData) {
       const se = createValidatorExtraDataChangedSystemEvent(event, event.address, event.params.id);
       se.oldExtraData = oldExtraData;
@@ -639,9 +481,7 @@ export function handleSetExitTotal(event: SetExitTotal): void {
     channel = new WithdrawalChannel(channelId);
     channel.withdrawalChannel = event.params.withdrawalChannel;
     channel.factory = event.address;
-    channel.total = BigInt.fromI32(0);
     channel.funded = BigInt.fromI32(0);
-    channel.limit = BigInt.fromI32(0);
     channel.createdAt = event.block.timestamp;
     channel.createdAtBlock = event.block.number;
   }
@@ -662,9 +502,7 @@ export function handleApproveDepositor(event: ApproveDepositor): void {
     channel = new WithdrawalChannel(channelId);
     channel.withdrawalChannel = event.params.wc;
     channel.factory = event.address;
-    channel.total = BigInt.fromI32(0);
     channel.funded = BigInt.fromI32(0);
-    channel.limit = BigInt.fromI32(0);
     channel.lastExitTotal = BigInt.fromI32(0);
     channel.editedAt = event.block.timestamp;
     channel.editedAtBlock = event.block.number;

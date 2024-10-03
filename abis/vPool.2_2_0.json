@@ -1,0 +1,2298 @@
+[
+  {
+    "type": "function",
+    "name": "allowDepositor",
+    "inputs": [
+      {
+        "name": "depositorAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "allowed",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "allowance",
+    "inputs": [
+      {
+        "name": "owner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "spender",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "balanceOf",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "consensusLayerSpec",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "internalType": "struct ctypes.ConsensusLayerSpec",
+        "components": [
+          {
+            "name": "genesisTimestamp",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "epochsUntilFinal",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "slotsPerEpoch",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "secondsPerSlot",
+            "type": "uint64",
+            "internalType": "uint64"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "pure"
+  },
+  {
+    "type": "function",
+    "name": "coverInvalidActivations",
+    "inputs": [
+      {
+        "name": "countToCover",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "coverageRecipient",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "coveredInvalidActivations",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "decimals",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint8",
+        "internalType": "uint8"
+      }
+    ],
+    "stateMutability": "pure"
+  },
+  {
+    "type": "function",
+    "name": "decreaseAllowance",
+    "inputs": [
+      {
+        "name": "spender",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "deposit",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "depositors",
+    "inputs": [
+      {
+        "name": "depositorAddress",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "epochsPerFrame",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "ethers",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "internalType": "struct ctypes.Ethers",
+        "components": [
+          {
+            "name": "deposited",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "committed",
+            "type": "uint128",
+            "internalType": "uint128"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "pure"
+  },
+  {
+    "type": "function",
+    "name": "execLayerRecipient",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "exitQueue",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "factory",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "fix",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "increaseAllowance",
+    "inputs": [
+      {
+        "name": "spender",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "initialize",
+    "inputs": [
+      {
+        "name": "addrs",
+        "type": "address[7]",
+        "internalType": "address[7]"
+      },
+      {
+        "name": "epochsPerFrame_",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "consensusLayerSpec_",
+        "type": "tuple",
+        "internalType": "struct ctypes.ConsensusLayerSpec",
+        "components": [
+          {
+            "name": "genesisTimestamp",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "epochsUntilFinal",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "slotsPerEpoch",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "secondsPerSlot",
+            "type": "uint64",
+            "internalType": "uint64"
+          }
+        ]
+      },
+      {
+        "name": "bounds_",
+        "type": "uint64[3]",
+        "internalType": "uint64[3]"
+      },
+      {
+        "name": "operatorFeeBps_",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "extraData_",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "injectEther",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "isValidEpoch",
+    "inputs": [
+      {
+        "name": "epoch",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "lastEpoch",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "lastReport",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "internalType": "struct ctypes.ValidatorsReport",
+        "components": [
+          {
+            "name": "balanceSum",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "exitedSum",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "skimmedSum",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "slashedSum",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "exitingSum",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "maxExitable",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "maxCommittable",
+            "type": "int256",
+            "internalType": "int256"
+          },
+          {
+            "name": "epoch",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "activatedCount",
+            "type": "uint32",
+            "internalType": "uint32"
+          },
+          {
+            "name": "stoppedCount",
+            "type": "uint32",
+            "internalType": "uint32"
+          },
+          {
+            "name": "invalidActivationCount",
+            "type": "uint32",
+            "internalType": "uint32"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "name",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyValidEpoch",
+    "inputs": [
+      {
+        "name": "epoch",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "operatorFee",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "oracleAggregator",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "purchaseValidators",
+    "inputs": [
+      {
+        "name": "$$",
+        "type": "tuple",
+        "internalType": "struct IvPoolDefinitions.PoolPurchaseFromRootParameters",
+        "components": [
+          {
+            "name": "validationKeys",
+            "type": "tuple[]",
+            "internalType": "struct IvFactory.ValidationKey[]",
+            "components": [
+              {
+                "name": "publicKey",
+                "type": "bytes",
+                "internalType": "bytes"
+              },
+              {
+                "name": "signature",
+                "type": "bytes",
+                "internalType": "bytes"
+              }
+            ]
+          },
+          {
+            "name": "proof",
+            "type": "bytes32[]",
+            "internalType": "bytes32[]"
+          },
+          {
+            "name": "flagCount",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "flags",
+            "type": "uint256[]",
+            "internalType": "uint256[]"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "purchasedValidatorAtIndex",
+    "inputs": [
+      {
+        "name": "idx",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "purchasedValidatorCount",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "purchasedValidators",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      }
+    ],
+    "stateMutability": "pure"
+  },
+  {
+    "type": "function",
+    "name": "rate",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "report",
+    "inputs": [
+      {
+        "name": "rprt",
+        "type": "tuple",
+        "internalType": "struct ctypes.ValidatorsReport",
+        "components": [
+          {
+            "name": "balanceSum",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "exitedSum",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "skimmedSum",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "slashedSum",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "exitingSum",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "maxExitable",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "maxCommittable",
+            "type": "int256",
+            "internalType": "int256"
+          },
+          {
+            "name": "epoch",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "activatedCount",
+            "type": "uint32",
+            "internalType": "uint32"
+          },
+          {
+            "name": "stoppedCount",
+            "type": "uint32",
+            "internalType": "uint32"
+          },
+          {
+            "name": "invalidActivationCount",
+            "type": "uint32",
+            "internalType": "uint32"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "reportBounds",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "maxAPRUpperBound",
+        "type": "uint64",
+        "internalType": "uint64"
+      },
+      {
+        "name": "maxAPRUpperCoverageBoost",
+        "type": "uint64",
+        "internalType": "uint64"
+      },
+      {
+        "name": "maxRelativeLowerBound",
+        "type": "uint64",
+        "internalType": "uint64"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "requestedExits",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint32",
+        "internalType": "uint32"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "setConsensusLayerSpec",
+    "inputs": [
+      {
+        "name": "consensusLayerSpec_",
+        "type": "tuple",
+        "internalType": "struct ctypes.ConsensusLayerSpec",
+        "components": [
+          {
+            "name": "genesisTimestamp",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "epochsUntilFinal",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "slotsPerEpoch",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "secondsPerSlot",
+            "type": "uint64",
+            "internalType": "uint64"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setEpochsPerFrame",
+    "inputs": [
+      {
+        "name": "newEpochsPerFrame",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setOperatorFee",
+    "inputs": [
+      {
+        "name": "operatorFeeBps",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setReportBounds",
+    "inputs": [
+      {
+        "name": "maxAPRUpperBound",
+        "type": "uint64",
+        "internalType": "uint64"
+      },
+      {
+        "name": "maxAPRUpperCoverageBoost",
+        "type": "uint64",
+        "internalType": "uint64"
+      },
+      {
+        "name": "maxRelativeLowerBound",
+        "type": "uint64",
+        "internalType": "uint64"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setValidatorGlobalExtraData",
+    "inputs": [
+      {
+        "name": "extraData",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "symbol",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "totalCovered",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "totalSupplies",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "totalSupply",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "totalUnderlyingSupply",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "transferShares",
+    "inputs": [
+      {
+        "name": "to",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transferSharesFrom",
+    "inputs": [
+      {
+        "name": "from",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "to",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "uncoveredBalance",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "validatorGlobalExtraData",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "voidAllowance",
+    "inputs": [
+      {
+        "name": "spender",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "voidShares",
+    "inputs": [
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "withdrawalRecipient",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "event",
+    "name": "Approval",
+    "inputs": [
+      {
+        "name": "owner",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "spender",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "value",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "ApproveDepositor",
+    "inputs": [
+      {
+        "name": "depositor",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "allowed",
+        "type": "bool",
+        "indexed": false,
+        "internalType": "bool"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Burn",
+    "inputs": [
+      {
+        "name": "burner",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "totalSupply",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Deposit",
+    "inputs": [
+      {
+        "name": "sender",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "mintedShares",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "DistributedOperatorRewards",
+    "inputs": [
+      {
+        "name": "operatorTreasury",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "sharesCount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "sharesValue",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "totalSupply",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "totalUnderlyingSupply",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Initialized",
+    "inputs": [
+      {
+        "name": "version",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "cdata",
+        "type": "bytes",
+        "indexed": false,
+        "internalType": "bytes"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "InjectedEther",
+    "inputs": [
+      {
+        "name": "injecter",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "InvalidActivationCoveragePerformed",
+    "inputs": [
+      {
+        "name": "newCoveredCount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "msgValueSent",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "pulledFromCoverageRecipient",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Mint",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "totalSupply",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "ProcessedReport",
+    "inputs": [
+      {
+        "name": "epoch",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "report",
+        "type": "tuple",
+        "indexed": false,
+        "internalType": "struct ctypes.ValidatorsReport",
+        "components": [
+          {
+            "name": "balanceSum",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "exitedSum",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "skimmedSum",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "slashedSum",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "exitingSum",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "maxExitable",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "maxCommittable",
+            "type": "int256",
+            "internalType": "int256"
+          },
+          {
+            "name": "epoch",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "activatedCount",
+            "type": "uint32",
+            "internalType": "uint32"
+          },
+          {
+            "name": "stoppedCount",
+            "type": "uint32",
+            "internalType": "uint32"
+          },
+          {
+            "name": "invalidActivationCount",
+            "type": "uint32",
+            "internalType": "uint32"
+          }
+        ]
+      },
+      {
+        "name": "traces",
+        "type": "tuple",
+        "indexed": false,
+        "internalType": "struct IvPoolDefinitions.ReportTraces",
+        "components": [
+          {
+            "name": "preUnderlyingSupply",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "postUnderlyingSupply",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "preSupply",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "postSupply",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "newExitedEthers",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "newSkimmedEthers",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "exitBoostEthers",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "exitFedEthers",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "exitBurnedShares",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "exitingProjection",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "baseFulfillableDemand",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "extraFulfillableDemand",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "rewards",
+            "type": "int128",
+            "internalType": "int128"
+          },
+          {
+            "name": "delta",
+            "type": "int128",
+            "internalType": "int128"
+          },
+          {
+            "name": "increaseLimit",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "coverageIncreaseLimit",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "decreaseLimit",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "consensusLayerDelta",
+            "type": "int128",
+            "internalType": "int128"
+          },
+          {
+            "name": "pulledCoverageFunds",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "pulledExecutionLayerRewards",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "pulledExitQueueUnclaimedFunds",
+            "type": "uint128",
+            "internalType": "uint128"
+          }
+        ]
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "PurchasedValidators",
+    "inputs": [
+      {
+        "name": "validators",
+        "type": "uint256[]",
+        "indexed": false,
+        "internalType": "uint256[]"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "SetCommittedEthers",
+    "inputs": [
+      {
+        "name": "committedEthers",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "SetConsensusLayerSpec",
+    "inputs": [
+      {
+        "name": "consensusLayerSpec",
+        "type": "tuple",
+        "indexed": false,
+        "internalType": "struct ctypes.ConsensusLayerSpec",
+        "components": [
+          {
+            "name": "genesisTimestamp",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "epochsUntilFinal",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "slotsPerEpoch",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "secondsPerSlot",
+            "type": "uint64",
+            "internalType": "uint64"
+          }
+        ]
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "SetContractLinks",
+    "inputs": [
+      {
+        "name": "factory",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "withdrawalRecipient",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "execLayerRecipient",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "coverageRecipient",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "oracleAggregator",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "exitQueue",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "SetCoveredInvalidActivationCount",
+    "inputs": [
+      {
+        "name": "newCoveredInvalidActivationCount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "SetDepositedEthers",
+    "inputs": [
+      {
+        "name": "depositedEthers",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "SetEpochsPerFrame",
+    "inputs": [
+      {
+        "name": "epochsPerFrame",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "SetOperatorFee",
+    "inputs": [
+      {
+        "name": "operatorFeeBps",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "SetReportBounds",
+    "inputs": [
+      {
+        "name": "maxAPRUpperBound",
+        "type": "uint64",
+        "indexed": false,
+        "internalType": "uint64"
+      },
+      {
+        "name": "maxAPRUpperCoverageBoost",
+        "type": "uint64",
+        "indexed": false,
+        "internalType": "uint64"
+      },
+      {
+        "name": "maxRelativeLowerBound",
+        "type": "uint64",
+        "indexed": false,
+        "internalType": "uint64"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "SetReportingDriver",
+    "inputs": [
+      {
+        "name": "reportingDriver",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "SetRequestedExits",
+    "inputs": [
+      {
+        "name": "newRequestedExits",
+        "type": "uint32",
+        "indexed": false,
+        "internalType": "uint32"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "SetValidatorGlobalExtraData",
+    "inputs": [
+      {
+        "name": "extraData",
+        "type": "string",
+        "indexed": false,
+        "internalType": "string"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Transfer",
+    "inputs": [
+      {
+        "name": "from",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "to",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "value",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "VoidedShares",
+    "inputs": [
+      {
+        "name": "voider",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "AllowanceTooLow",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "operator",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "currentApproval",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "requiredAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "AlreadyInitialized",
+    "inputs": [
+      {
+        "name": "version",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "currentVersion",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ApprovalAlreadyZero",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "spender",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "BalanceTooLow",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "currentBalance",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "requiredAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "BoostedBoundCrossed",
+    "inputs": [
+      {
+        "name": "balanceIncrease",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "maximumAllowedBalanceIncrease",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "maximumAllowedCoverage",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "CoverageHigherThanLoss",
+    "inputs": [
+      {
+        "name": "coverage",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "loss",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "DecreasingExitedBalanceSum",
+    "inputs": [
+      {
+        "name": "reportedExitedBalanceSum",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "lastReportedExitedBalanceSum",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "DecreasingInvalidActivationCount",
+    "inputs": [
+      {
+        "name": "currentInvalidActivationCount",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "reportedInvalidActivationCount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "DecreasingSkimmedBalanceSum",
+    "inputs": [
+      {
+        "name": "reportedSkimmedBalanceSum",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "lastReportedSkimmedBalanceSum",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "DecreasingSlashedBalanceSum",
+    "inputs": [
+      {
+        "name": "reportedSlashedBalanceSum",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "lastReportedSlashedBalanceSum",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "DecreasingStoppedValidatorCount",
+    "inputs": [
+      {
+        "name": "previousStoppedValidatorCount",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "stoppedValidatorCount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "DecreasingValidatorCount",
+    "inputs": [
+      {
+        "name": "previousValidatorCount",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "validatorCount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "DepositTooLarge",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "deposited",
+        "type": "uint128",
+        "internalType": "uint128"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "EmptyValidationKeyArray",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "EpochNotFinal",
+    "inputs": [
+      {
+        "name": "epoch",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "currentTimestamp",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "finalTimestamp",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "EpochNotFrameFirst",
+    "inputs": [
+      {
+        "name": "epoch",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "EpochTooOld",
+    "inputs": [
+      {
+        "name": "epoch",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "expectEpoch",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ExitingBalanceTooHigh",
+    "inputs": [
+      {
+        "name": "exiting",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "balance",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InsufficientCoverageFunds",
+    "inputs": [
+      {
+        "name": "amountToCover",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "coverageCapabilities",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InvalidActivationCountTooHigh",
+    "inputs": [
+      {
+        "name": "invalidActivationCount",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "activatedCount",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "depositedValidatorCount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InvalidActivationCoverageRequestTooHigh",
+    "inputs": [
+      {
+        "name": "requested",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "available",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InvalidBPSValue",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "maximum",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InvalidCoveredAmount",
+    "inputs": [
+      {
+        "name": "covered",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InvalidGenesisTimestamp",
+    "inputs": [
+      {
+        "name": "genesisTimestamp",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "blockTimestamp",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InvalidMessageValue",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidNullMint",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidNullValue",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidZeroAddress",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "LowerBoundCrossed",
+    "inputs": [
+      {
+        "name": "balanceDecrease",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "maximumAllowedBalanceDecrease",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "MathOverflowedMulDiv",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NotEnoughEthersForPurchase",
+    "inputs": [
+      {
+        "name": "validatorCount",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "requiredEthers",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "availableEthers",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ReportingDriverNotContract",
+    "inputs": [
+      {
+        "name": "driver",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ReportingDriverNotSet",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "SafeCastOverflowedUintDowncast",
+    "inputs": [
+      {
+        "name": "bits",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "value",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ShareReceiverError",
+    "inputs": [
+      {
+        "name": "err",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "StoppedValidatorCountTooHigh",
+    "inputs": [
+      {
+        "name": "stoppedValidatorsCount",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "maxStoppedValidatorsCount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Unauthorized",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "expected",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "UpperBoundCrossed",
+    "inputs": [
+      {
+        "name": "balanceIncrease",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "maximumAllowedBalanceIncrease",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ValidatorCountTooHigh",
+    "inputs": [
+      {
+        "name": "reportedValidatorCount",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "depositedValidatorCount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ValidatorsNotPurchased",
+    "inputs": [
+      {
+        "name": "purchasedValidatorCount",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "requestedValidatorPurchaseCount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  }
+]
+

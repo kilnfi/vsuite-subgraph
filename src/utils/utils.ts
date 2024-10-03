@@ -8,10 +8,8 @@ import {
   ClaimedExitQueueTicketSystemEvent,
   CoverageRecipientUpdatedEthSystemEvent,
   CoverageRecipientUpdatedSharesSystemEvent,
-  DuplicateKeySystemAlert,
   ERC20DepositSystemEvent,
   ERC20ExitSystemEvent,
-  ExternalFundingSystemAlert,
   FundedValidationKeySystemEvent,
   G,
   NewExitQueueCaskSystemEvent,
@@ -25,7 +23,8 @@ import {
   UpdatedLimitSystemEvent,
   ValidatorExtraDataChangedSystemEvent,
   ValidatorFeeRecipientChangedSystemEvent,
-  ValidatorOwnerChangedSystemEvent
+  ValidatorOwnerChangedSystemEvent,
+  ValidatorThresholdChangedSystemEvent
 } from '../../generated/schema';
 
 // an event is not unique per transaction
@@ -183,6 +182,36 @@ export function createValidatorOwnerChangedSystemEvent(
   return systemEvent;
 }
 
+export function createValidatorThresholdChangedSystemEvent(
+  event: ethereum.Event,
+  factoryAddress: Address,
+  validatorId: BigInt
+): ValidatorThresholdChangedSystemEvent {
+  const g = getOrCreateG();
+
+  const id = `ValidatorThresholdChangedSystemEvent/${event.transaction.hash.toHexString()}/${factoryAddress.toHexString()}/${validatorId.toString()}`;
+  let systemEvent = ValidatorThresholdChangedSystemEvent.load(id);
+  if (systemEvent == null) {
+    systemEvent = new ValidatorThresholdChangedSystemEvent(id);
+    systemEvent.index = g.systemLogIndex;
+    systemEvent.type = 'ValidatorThresholdChangedSystemEvent';
+
+    systemEvent.tx = event.transaction.hash;
+    systemEvent.who = event.transaction.from;
+
+    systemEvent.factory = factoryAddress;
+    systemEvent.validator = externalEntityUUID(factoryAddress, [validatorId.toString()]);
+
+    systemEvent.createdAt = event.block.timestamp;
+    systemEvent.createdAtBlock = event.block.number;
+
+    g.systemLogIndex = g.systemLogIndex.plus(BigInt.fromI32(1));
+    g.save();
+  }
+
+  return systemEvent;
+}
+
 export function createValidatorFeeRecipientChangedSystemEvent(
   event: ethereum.Event,
   factoryAddress: Address,
@@ -243,58 +272,6 @@ export function createValidatorExtraDataChangedSystemEvent(
   return systemEvent;
 }
 
-export function createDuplicateKeySystemAlert(
-  event: ethereum.Event,
-  factoryAddress: Address,
-  publicKey: Bytes
-): DuplicateKeySystemAlert {
-  const g = getOrCreateG();
-
-  const id = `DuplicateKeySystemAlert/${event.transaction.hash.toHexString()}/${factoryAddress.toHexString()}/${publicKey.toHexString()}`;
-  let systemEvent = DuplicateKeySystemAlert.load(id);
-  if (systemEvent == null) {
-    systemEvent = new DuplicateKeySystemAlert(id);
-    systemEvent.index = g.systemLogIndex;
-    systemEvent.type = 'DuplicateKeySystemAlert';
-
-    systemEvent.tx = event.transaction.hash;
-    systemEvent.who = event.transaction.from;
-
-    systemEvent.factory = factoryAddress;
-
-    systemEvent.createdAt = event.block.timestamp;
-    systemEvent.createdAtBlock = event.block.number;
-
-    g.systemLogIndex = g.systemLogIndex.plus(BigInt.fromI32(1));
-    g.save();
-  }
-
-  return systemEvent;
-}
-
-export function createExternalFundingSystemAlert(event: ethereum.Event, publicKey: Bytes): ExternalFundingSystemAlert {
-  const g = getOrCreateG();
-
-  const id = `ExternalFundingSystemAlert/${event.transaction.hash.toHexString()}/${publicKey.toHexString()}`;
-  let systemEvent = ExternalFundingSystemAlert.load(id);
-  if (systemEvent == null) {
-    systemEvent = new ExternalFundingSystemAlert(id);
-    systemEvent.index = g.systemLogIndex;
-    systemEvent.type = 'ExternalFundingSystemAlert';
-
-    systemEvent.tx = event.transaction.hash;
-    systemEvent.who = event.transaction.from;
-
-    systemEvent.createdAt = event.block.timestamp;
-    systemEvent.createdAtBlock = event.block.number;
-
-    g.systemLogIndex = g.systemLogIndex.plus(BigInt.fromI32(1));
-    g.save();
-  }
-
-  return systemEvent;
-}
-
 export function createFundedValidationKeySystemEvent(
   event: ethereum.Event,
   factoryAddress: Address,
@@ -318,7 +295,7 @@ export function createFundedValidationKeySystemEvent(
     systemEvent.withdrawalChannel = externalEntityUUID(factoryAddress, [withdrawalChannel.toHexString()]);
     systemEvent.count = BigInt.fromI32(0);
     systemEvent.newTotal = BigInt.fromI32(0);
-    systemEvent.fundedValidationKeys = [];
+    systemEvent.validationKeys = [];
 
     systemEvent.createdAt = event.block.timestamp;
     systemEvent.createdAtBlock = event.block.number;
@@ -867,13 +844,14 @@ export function _computeEthAfterCommission(
 export function createERC20DepositSystemEvent(
   event: ethereum.Event,
   erc20Address: Address,
-  depositor: Address,
+  staker: Address,
+  recipient: Address,
   amount: BigInt,
   shares: BigInt
 ): void {
   const g = getOrCreateG();
 
-  const id = `ERC20DepositSystemEvent/${event.transaction.hash.toHexString()}/${event.logIndex.toString()}/${erc20Address.toHexString()}/${depositor.toHexString()}`;
+  const id = `ERC20DepositSystemEvent/${event.transaction.hash.toHexString()}/${event.logIndex.toString()}/${erc20Address.toHexString()}/${staker.toHexString()}/${recipient.toHexString()}`;
   let systemEvent = ERC20DepositSystemEvent.load(id);
   if (systemEvent == null) {
     systemEvent = new ERC20DepositSystemEvent(id);
@@ -884,7 +862,8 @@ export function createERC20DepositSystemEvent(
     systemEvent.who = event.transaction.from;
 
     systemEvent.integration = erc20Address;
-    systemEvent.staker = depositor;
+    systemEvent.staker = staker;
+    systemEvent.recipient = recipient;
     systemEvent.depositedAmount = amount;
     systemEvent.mintedShares = shares;
 

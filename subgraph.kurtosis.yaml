@@ -2,34 +2,13 @@ specVersion: 0.0.5
 schema:
   file: ./schema.graphql
 dataSources:
-  # - kind: ethereum
-  #   name: DepositContract
-  #   network: holesky
-  #   source:
-  #     address: "0x4242424242424242424242424242424242424242"
-  #     abi: DepositContract 
-  #     startBlock: 180000
-  #   mapping:
-  #     kind: ethereum/events
-  #     apiVersion: 0.0.7
-  #     language: wasm/assemblyscript
-  #     entities:
-  #       - vFactory
-  #       - vTreasury
-  #     abis:
-  #       - name: DepositContract
-  #         file: ./abis/DepositContract.json
-  #     eventHandlers:
-  #       - event: DepositEvent(bytes,bytes,bytes,bytes,bytes)
-  #         handler: handleDepositEvent
-  #     file: ./src/DepositContract.mapping.ts
   - kind: ethereum
     name: Nexus
-    network: holesky
+    network: ethereum
     source:
-      address: "0x68c249b5426cacc858390db3014bd6ef87041207"
+      address: "0x49974804239685b3cb5c8424ac3965d416de55c6"
       abi: Nexus
-      startBlock: 180000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -39,7 +18,7 @@ dataSources:
         - vTreasury
       abis:
         - name: Nexus
-          file: ./abis/Nexus.json
+          file: ./abis/Nexus.2_2_0.json
       eventHandlers:
         - event: SpawnedFactory(indexed address,address)
           handler: handleSpawnedFactory
@@ -61,17 +40,17 @@ dataSources:
           handler: handlerSetGlobalConsensusLayerSpec
         - event: SetAdmin(address)
           handler: handleSetAdmin
-      # blockHandlers:
-      #   - handler: handleBlock
+        - event: SetDriver(string,address)
+          handler: handleSetDriver
       file: ./src/Nexus.mapping.ts
 
   - kind: ethereum
     name: FactoryHatcher
-    network: holesky
+    network: ethereum
     source:
-      address: "0x34B94291a116d29F68DC05D1A0Df1274d0844c7a"
+      address: "0x4822e2D4bc6c001FC79D0020f73A8Ffff535E7A4"
       abi: PluggableHatcher
-      startBlock: 180000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -110,11 +89,11 @@ dataSources:
       file: ./src/PluggableHatcher.mapping.ts
   - kind: ethereum
     name: TreasuryHatcher
-    network: holesky
+    network: ethereum
     source:
-      address: "0x14aAad550Ae72a096cBf878626930436bF171475"
+      address: "0x08CF4ecfB623F8C4eDe4D01aDe77d517b64871B0"
       abi: PluggableHatcher
-      startBlock: 180000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -153,11 +132,11 @@ dataSources:
       file: ./src/PluggableHatcher.mapping.ts
   - kind: ethereum
     name: PoolHatcher
-    network: holesky
+    network: ethereum
     source:
-      address: "0x6703D266aAd4052b91941942B935C05724cE06d2"
+      address: "0x7293b38a3162e425136d96225ee8984468372D6A"
       abi: PluggableHatcher
-      startBlock: 180000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -196,11 +175,11 @@ dataSources:
       file: ./src/PluggableHatcher.mapping.ts
   - kind: ethereum
     name: WithdrawalRecipientHatcher
-    network: holesky
+    network: ethereum
     source:
-      address: "0x2dB69DEF1C2D7905503F697359F53c50A78228a6"
+      address: "0x2522c1cE45DB11821b4f65Ff06AEd8fdFa47B571"
       abi: PluggableHatcher
-      startBlock: 180000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -239,11 +218,11 @@ dataSources:
       file: ./src/PluggableHatcher.mapping.ts
   - kind: ethereum
     name: ExecLayerRecipientHatcher
-    network: holesky
+    network: ethereum
     source:
-      address: "0x5850eBdf9d5cFd7297d8eD7D4eA47ed8959eF6EE"
+      address: "0x7E3430E29602A27b93616a88f37574A020e0c580"
       abi: PluggableHatcher
-      startBlock: 180000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -282,11 +261,11 @@ dataSources:
       file: ./src/PluggableHatcher.mapping.ts
   - kind: ethereum
     name: CoverageRecipientHatcher
-    network: holesky
+    network: ethereum
     source:
-      address: "0x8D8Df85902F4E8E25a2E7E75233640DC524e099F"
+      address: "0x631087D1D49348A65b947E2CDf753F6F428Adf5e"
       abi: PluggableHatcher
-      startBlock: 180000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -325,11 +304,11 @@ dataSources:
       file: ./src/PluggableHatcher.mapping.ts
   - kind: ethereum
     name: OracleAggregatorHatcher
-    network: holesky
+    network: ethereum
     source:
-      address: "0xbCA08B6db787d78E97F7a89AC353D0B92C1E3B4A"
+      address: "0x06ef7366c7f897fAaed3DBFbb8bd2E229af8d098"
       abi: PluggableHatcher
-      startBlock: 180000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -368,11 +347,11 @@ dataSources:
       file: ./src/PluggableHatcher.mapping.ts
   - kind: ethereum
     name: ExitQueueHatcher
-    network: holesky
+    network: ethereum
     source:
-      address: "0x60448aAAF3F729c25bD7b11959E1A2f30E521Ab5"
+      address: "0xab67F8Bcc56b6a96CCe5e52A7b0A81f9E2317eB9"
       abi: PluggableHatcher
-      startBlock: 180000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -412,11 +391,11 @@ dataSources:
   
   - kind: ethereum
     name: IntegrationRouter
-    network: holesky
+    network: ethereum
     source:
-      address: "0x8f2789A79C0494981373ceF711406585dA93DF43"
+      address: "0xA927b32de5E2eDC55C7E5452c1d74106aE65d75C"
       abi: IntegrationRouter
-      startBlock: 180000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -436,7 +415,7 @@ dataSources:
 templates:
   - name: TUPProxy
     kind: ethereum/contract
-    network: holesky
+    network: ethereum
     source:
       abi: TUPProxy
     mapping:
@@ -462,7 +441,7 @@ templates:
           handler: handleUpgraded
   - name: Cub
     kind: ethereum/contract
-    network: holesky
+    network: ethereum
     source:
       abi: Cub
     mapping:
@@ -480,7 +459,7 @@ templates:
           handler: handleAppliedFixes
   - name: vFactory
     kind: ethereum/contract
-    network: holesky
+    network: ethereum
     source:
       abi: vFactory
     mapping:
@@ -494,18 +473,19 @@ templates:
         - name: vFactory
           file: ./abis/vFactory.json
       eventHandlers:
+        # - event: AddedValidators(indexed bytes32,bytes)
+        #   handler: handleAddedValidators
+        # - event: ExitValidator(indexed bytes32,bytes,uint256)
+        #   handler: handleExitValidator
+        # - event: ValidatorRequest(indexed bytes32,uint256)
+        #   handler: handleValidatorRequest
+        # - event: FundedValidator(indexed bytes32,indexed address,indexed address,bytes,uint256,uint256)
+        #   handler: handleFundedValidator
+        # - event: UpdatedLimit(indexed bytes32,uint256)
+        #   handler: handleUpdatedLimit
+        # removed with 2.2.0
         - event: SetExitTotal(indexed bytes32,uint32)
           handler: handleSetExitTotal
-        - event: AddedValidators(indexed bytes32,bytes)
-          handler: handleAddedValidators
-        - event: UpdatedLimit(indexed bytes32,uint256)
-          handler: handleUpdatedLimit
-        - event: FundedValidator(indexed bytes32,indexed address,indexed address,bytes,uint256,uint256)
-          handler: handleFundedValidator
-        - event: ExitValidator(indexed bytes32,bytes,uint256)
-          handler: handleExitValidator
-        - event: ValidatorRequest(indexed bytes32,uint256)
-          handler: handleValidatorRequest
         - event: SetValidatorOwner(indexed uint256,address)
           handler: handleSetValidatorOwner
         - event: SetValidatorFeeRecipient(indexed uint256,address)
@@ -526,9 +506,34 @@ templates:
           handler: handleSetHatcherRegistry
         - event: ApproveDepositor(indexed address,indexed bytes32,bool)
           handler: handleApproveDepositor
+  - name: vFactory_2_2_0
+    kind: ethereum/contract
+    network: ethereum
+    source:
+      abi: vFactory_2_2_0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/vFactory.mapping.ts
+      entities:
+        - vFactory
+      abis:
+        - name: vFactory_2_2_0
+          file: ./abis/vFactory.2_2_0.json
+      eventHandlers:
+        - event: ExitValidator(uint256)
+          handler: handleExitValidator_2_2_0
+        - event: ActivatedValidator(indexed bytes32,indexed address,indexed address,bytes,bytes,uint256)
+          handler: handleActivatedValidator_2_2_0
+        - event: SetRoot((bytes32,string))
+          handler: handleSetRoot_2_2_0
+        - event: SetValidatorThreshold(indexed uint256,uint96)
+          handler: handleSetValidatorThreshold_2_2_0
+
   - name: vTreasury
     kind: ethereum/contract
-    network: holesky
+    network: ethereum
     source:
       abi: vTreasury
     mapping:
@@ -555,7 +560,7 @@ templates:
 
   - name: vPool
     kind: ethereum/contract
-    network: holesky
+    network: ethereum
     source:
       abi: vPool
     mapping:
@@ -599,10 +604,28 @@ templates:
           handler: handleSetDepositedEthers
         - event: SetRequestedExits(uint32)
           handler: handleSetRequestedExits
+  - name: vPool_2_2_0
+    kind: ethereum/contract
+    network: ethereum
+    source:
+      abi: vPool_2_2_0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/vPool.mapping.ts
+      entities:
+        - vPool
+      abis:
+        - name: vPool_2_2_0
+          file: ./abis/vPool.2_2_0.json
+      eventHandlers:
+        - event: ProcessedReport(indexed uint256,(uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32,uint32),(uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,uint128,int128,int128,uint128,uint128,uint128,int128,uint128,uint128,uint128))
+          handler: handleProcessedReport_2_2_0
 
   - name: vExitQueue
     kind: ethereum/contract
-    network: holesky
+    network: ethereum
     source:
       abi: vExitQueue
     mapping:
@@ -635,7 +658,7 @@ templates:
 
   - name: vExecLayerRecipient
     kind: ethereum/contract
-    network: holesky
+    network: ethereum
     source:
       abi: vExecLayerRecipient
     mapping:
@@ -654,7 +677,7 @@ templates:
 
   - name: vCoverageRecipient
     kind: ethereum/contract
-    network: holesky
+    network: ethereum
     source:
       abi: vCoverageRecipient
     mapping:
@@ -681,7 +704,7 @@ templates:
 
   - name: vOracleAggregator
     kind: ethereum/contract
-    network: holesky
+    network: ethereum
     source:
       abi: vOracleAggregator
     mapping:
@@ -707,10 +730,33 @@ templates:
           handler: handleSubmittedReport
         - event: SetHighestReportedEpoch(uint256)
           handler: handleSetHighestReportedEpoch
+  - name: vOracleAggregator_2_2_0
+    kind: ethereum/contract
+    network: ethereum
+    source:
+      abi: vOracleAggregator_2_2_0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/vOracleAggregator.mapping.ts
+      entities:
+        - vOracleAggregator
+      abis:
+        - name: vOracleAggregator_2_2_0
+          file: ./abis/vOracleAggregator.2_2_0.json
+      eventHandlers:
+        - event: MemberVoted(indexed address,indexed bytes32,(uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32,uint32))
+          handler: handleMemberVoted_2_2_0
+        - event: GlobalMemberVoted(indexed address,indexed bytes32,(uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32,uint32))
+          handler: handlerGlobalMemberVoted_2_2_0
+        - event: SubmittedReport((uint128,uint128,uint128,uint128,uint128,uint128,int256,uint64,uint32,uint32,uint32),bytes32,uint256,uint256)
+          handler: handleSubmittedReport_2_2_0
+
 
   - name: ERC20_1_0_0_rc4
     kind: ethereum/contract
-    network: holesky
+    network: ethereum
     source:
       abi: Native20
     mapping:
@@ -728,9 +774,28 @@ templates:
         - event: Stake(indexed address,uint256,uint256,uint256)
           handler: handleStake_1_0_0_rc4
 
+  - name: ERC20_2_2_0
+    kind: ethereum/contract
+    network: ethereum
+    source:
+      abi: Native20
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/ERC20.mapping.ts
+      entities:
+        - ERC20
+      abis:
+        - name: Native20
+          file: ./abis/Liquid20A_2_2_0.json
+      eventHandlers:
+        - event: Stake(indexed address,indexed address,uint128,uint128,(uint128,uint128,uint128,uint128,uint128)[])
+          handler: handleStake_2_2_0
+
   - name: ERC20
     kind: ethereum/contract
-    network: holesky
+    network: ethereum
     source:
       abi: Native20
     mapping:
@@ -780,134 +845,9 @@ templates:
           handler: handleSetPoolPercentages
         - event: ExitedCommissionShares(indexed uint256,uint256,uint256[],address[])
           handler: handleExitedCommissionShares
-  - name: ERC1155_1_0_0_rc4
-    kind: ethereum/contract
-    network: holesky
-    source:
-      abi: Liquid1155
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      file: ./src/ERC1155.mapping.ts
-      entities:
-        - ERC1155
-      abis:
-        - name: Liquid1155
-          file: ./abis/Liquid1155_1_0_0_rc4.json
-      eventHandlers:
-        - event: Stake(indexed address,uint256,uint256,uint256)
-          handler: handleStake_1_0_0_rc4
-  - name: ERC1155
-    kind: ethereum/contract
-    network: holesky
-    source:
-      abi: Liquid1155
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      file: ./src/ERC1155.mapping.ts
-      entities:
-        - ERC1155
-      abis:
-        - name: Liquid1155
-          file: ./abis/Liquid1155.json
-      eventHandlers:
-        - event: Stake(indexed address,uint128,uint128,(uint128,uint128,uint128,uint128,uint128)[])
-          handler: handleStake
-        - event:  SetURIPrefix(string)
-          handler: handleSetURIPrefix
-        - event: SetName(string)
-          handler: handleSetName
-        - event: SetSymbol(string)
-          handler: handleSetSymbol
-        - event: SetDepositsPaused(bool)
-          handler: handleSetDepositsPaused
-        - event: PoolAdded(address,uint256)
-          handler: handlePoolAdded
-        - event: SetFee(uint256,uint256)
-          handler: handleSetFee
-        - event: PoolActivation(address,uint256,bool)
-          handler: handlePoolActivation
-        - event: VPoolSharesReceived(address,uint256,uint256)
-          handler: handleVPoolSharesReceived
-        - event: NewCommissionSplit(address[],uint256[])
-          handler: handleNewCommissionSplit
-        - event: CommissionSharesSold(uint256,uint256,uint256)
-          handler: handleCommissionSharesSold
-        - event: CommissionWithdrawn(indexed address,uint256)
-          handler: handleCommissionWithdrawn
-        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
-          handler: handleTransferSingle
-        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
-          handler: handleTransferBatch
-        - event: ApprovalForAll(indexed address,indexed address,bool)
-          handler: handleApprovalForAll
-        - event: SetAdmin(address)
-          handler: handleSetAdmin
-        - event: SetMaxCommission(uint256)
-          handler: handleSetMaxCommission
-  - kind: ethereum
-    name: vNFT
-    network: holesky
-    source:
-      abi: vNFT
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - vNFT
-        - vNFTIntegration
-        - vNFTTransfer
-        - vNFTUser
-      abis:
-        - name: vNFT
-          file: ./abis/vNFT.json
-      eventHandlers:
-        - event: TokenIdUpdated(indexed uint256,indexed uint256,uint256)
-          handler: handleTokenIdUpdated
-        - event: SetName(string)
-          handler: handleSetName
-        - event: SetSymbol(string)
-          handler: handleSetSymbol
-        - event: SetExtraData(string)
-          handler: handleSetExtraData
-        - event: SetURIPrefix(string)
-          handler: handleSetURIPrefix
-        - event: SetPurchasePause(bool)
-          handler: handleSetDepositsPaused
-        - event: SetFactory(address)
-          handler: handleSetFactory
-        - event: PurchasedValidator(indexed address,uint256,uint256)
-          handler: handlePurchasedValidator
-        - event: Transfer(indexed address,indexed address,indexed uint256)
-          handler: handleTransfer
-        - event: SetOperatorCommission(uint256)
-          handler: handleSetOperatorCommission
-        - event: SetIntegratorCommission(uint256)
-          handler: handleSetIntegratorCommission
-        - event: SetIntegrator(address)
-          handler: handleSetIntegrator
-        - event: UpdateUser(indexed uint256,indexed address,uint64)
-          handler: handleUpdateUser
-        - event: Approval(indexed address,indexed address,indexed uint256)
-          handler: handleApproval
-        - event: UsershipCleared(indexed uint256)
-          handler: handleUsershipCleared
-        - event: ApprovalForAll(indexed address,indexed address,bool)
-          handler: handleApprovalForAll
-        - event: SetExecLayerVault(address)
-          handler: handleSetExecLayerVault
-        - event: SetSoulboundMode(bool)
-          handler: handleSetSoulboundMode
-        - event: SetAdmin(address)
-          handler: handleSetAdmin
-      file: ./src/vNFT.mapping.ts
   - kind: ethereum
     name: ProxyFactory
-    network: holesky
+    network: ethereum
     source:
       abi: ProxyFactory
     mapping:
@@ -926,30 +866,8 @@ templates:
           handler: handleDeployedProxy
       file: ./src/ProxyFactory.mapping.ts
   - kind: ethereum
-    name: MerkleVault
-    network: holesky
-    source:
-      abi: MerkleVault
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - MerkleVault
-      abis:
-        - name: MerkleVault
-          file: ./abis/MerkleVault.json
-      eventHandlers:
-        - event: SetFrameSize(uint256)
-          handler: handleSetFrameSize
-        - event: SetRootAndIpfsHash(bytes32,string)
-          handler: handleSetRootAndIpfshash
-        - event: Claimed(address,uint256,uint256)
-          handler: handleClaimed
-      file: ./src/MerkleVault.mapping.ts
-  - kind: ethereum
     name: Native20_Fix_09_12_Oracle_Report
-    network: holesky
+    network: ethereum
     source:
       abi: Native20_Fix_09_12_Oracle_Report
     mapping:

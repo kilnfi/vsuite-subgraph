@@ -15,6 +15,7 @@ import {
   SetContractLinks,
   SetConsensusLayerSpec
 } from '../generated/templates/vPool/vPool';
+import { ProcessedReport as ProcessedReport_2_2_0 } from '../generated/templates/vPool_2_2_0/vPool_2_2_0';
 import {
   PoolBalance,
   PoolPurchasedValidator,
@@ -29,8 +30,7 @@ import {
   vExitQueue,
   vPoolRewardEntry,
   IntegrationRewardEntry,
-  DepositDataEntry,
-  ERC1155Integration
+  DepositDataEntry
 } from '../generated/schema';
 import { Bytes, BigInt, Address, store, dataSource } from '@graphprotocol/graph-ts';
 import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum';
@@ -198,13 +198,8 @@ export function handleTransfer(event: Transfer): void {
 
   const exitQueue = vExitQueue.load(event.params.to);
   const erc20Integration = ERC20.load(event.params.from);
-  const erc1155Integration = ERC1155Integration.load(event.params.from);
 
-  if (
-    exitQueue != null &&
-    exitQueue.id == pool!.exitQueue &&
-    (erc20Integration != null || erc1155Integration != null)
-  ) {
+  if (exitQueue != null && exitQueue.id == pool!.exitQueue && erc20Integration != null) {
     const stakedValueBefore = _computeStakedEthValue(
       fromBalance.amount,
       pool!.totalSupply,
@@ -266,13 +261,13 @@ export function handlePurchasedValidators(event: PurchasedValidators): void {
     ]);
     validators.push(poolPurchasedValidatorId);
     const poolPurchasedValidator = new PoolPurchasedValidator(poolPurchasedValidatorId);
-    const fundedKeyId = externalEntityUUID(Address.fromBytes(vFactory.load(pool!.factory)!.address), [
+    const keyId = externalEntityUUID(Address.fromBytes(vFactory.load(pool!.factory)!.address), [
       event.params.validators[idx].toString()
     ]);
 
     poolPurchasedValidator.pool = pool!.id;
     poolPurchasedValidator.index = BigInt.fromI32(validatorCount + idx);
-    poolPurchasedValidator.fundedValidationKey = fundedKeyId;
+    poolPurchasedValidator.validationKey = keyId;
     poolPurchasedValidator.createdAt = event.block.timestamp;
     poolPurchasedValidator.editedAt = event.block.timestamp;
     poolPurchasedValidator.createdAtBlock = event.block.number;
@@ -340,78 +335,206 @@ function _computeTotalUnderlyingSupply(pool: vPool, lastReport: Report | null): 
   return totalUnderlyingSupply;
 }
 
+class ReportStruct {
+  balanceSum: BigInt;
+  exitedSum: BigInt;
+  skimmedSum: BigInt;
+  slashedSum: BigInt;
+  exitingSum: BigInt;
+  maxExitable: BigInt;
+  maxCommittable: BigInt;
+  epoch: BigInt;
+  activatedCount: BigInt;
+  stoppedCount: BigInt;
+  invalidActivationCount: BigInt;
+}
+
+class TracesStruct {
+  preUnderlyingSupply: BigInt;
+  postUnderlyingSupply: BigInt;
+  preSupply: BigInt;
+  postSupply: BigInt;
+  newExitedEthers: BigInt;
+  newSkimmedEthers: BigInt;
+  exitBoostEthers: BigInt;
+  exitFedEthers: BigInt;
+  exitBurnedShares: BigInt;
+  exitingProjection: BigInt;
+  baseFulfillableDemand: BigInt;
+  extraFulfillableDemand: BigInt;
+  rewards: BigInt;
+  delta: BigInt;
+  increaseLimit: BigInt;
+  coverageIncreaseLimit: BigInt;
+  decreaseLimit: BigInt;
+  consensusLayerDelta: BigInt;
+  pulledCoverageFunds: BigInt;
+  pulledExecutionLayerRewards: BigInt;
+  pulledExitQueueUnclaimedFunds: BigInt;
+}
+
 export function handleProcessedReport(event: ProcessedReport): void {
+  const reportStruct: ReportStruct = {
+    balanceSum: event.params.report.balanceSum,
+    exitedSum: event.params.report.exitedSum,
+    skimmedSum: event.params.report.skimmedSum,
+    slashedSum: event.params.report.slashedSum,
+    exitingSum: event.params.report.exiting,
+    maxExitable: event.params.report.maxExitable,
+    maxCommittable: event.params.report.maxCommittable,
+    epoch: event.params.report.epoch,
+    activatedCount: event.params.report.activatedCount,
+    stoppedCount: event.params.report.stoppedCount,
+    invalidActivationCount: BigInt.zero()
+  };
+
+  const traces: TracesStruct = {
+    preUnderlyingSupply: event.params.traces.preUnderlyingSupply,
+    postUnderlyingSupply: event.params.traces.postUnderlyingSupply,
+    preSupply: event.params.traces.preSupply,
+    postSupply: event.params.traces.postSupply,
+    newExitedEthers: event.params.traces.newExitedEthers,
+    newSkimmedEthers: event.params.traces.newSkimmedEthers,
+    exitBoostEthers: event.params.traces.exitBoostEthers,
+    exitFedEthers: event.params.traces.exitFedEthers,
+    exitBurnedShares: event.params.traces.exitBurnedShares,
+    exitingProjection: event.params.traces.exitingProjection,
+    baseFulfillableDemand: event.params.traces.baseFulfillableDemand,
+    extraFulfillableDemand: event.params.traces.extraFulfillableDemand,
+    rewards: event.params.traces.rewards,
+    delta: event.params.traces.delta,
+    increaseLimit: event.params.traces.increaseLimit,
+    coverageIncreaseLimit: event.params.traces.coverageIncreaseLimit,
+    decreaseLimit: event.params.traces.decreaseLimit,
+    consensusLayerDelta: event.params.traces.consensusLayerDelta,
+    pulledCoverageFunds: event.params.traces.pulledCoverageFunds,
+    pulledExecutionLayerRewards: event.params.traces.pulledExecutionLayerRewards,
+    pulledExitQueueUnclaimedFunds: event.params.traces.pulledExitQueueUnclaimedFunds
+  };
+
+  processedReportLogic(event, event.params.epoch, reportStruct, traces);
+}
+
+export function handleProcessedReport_2_2_0(event: ProcessedReport_2_2_0): void {
+  const reportStruct: ReportStruct = {
+    balanceSum: event.params.report.balanceSum,
+    exitedSum: event.params.report.exitedSum,
+    skimmedSum: event.params.report.skimmedSum,
+    slashedSum: event.params.report.slashedSum,
+    exitingSum: event.params.report.exitingSum,
+    maxExitable: event.params.report.maxExitable,
+    maxCommittable: event.params.report.maxCommittable,
+    epoch: event.params.report.epoch,
+    activatedCount: event.params.report.activatedCount,
+    stoppedCount: event.params.report.stoppedCount,
+    invalidActivationCount: event.params.report.invalidActivationCount
+  };
+
+  const traces: TracesStruct = {
+    preUnderlyingSupply: event.params.traces.preUnderlyingSupply,
+    postUnderlyingSupply: event.params.traces.postUnderlyingSupply,
+    preSupply: event.params.traces.preSupply,
+    postSupply: event.params.traces.postSupply,
+    newExitedEthers: event.params.traces.newExitedEthers,
+    newSkimmedEthers: event.params.traces.newSkimmedEthers,
+    exitBoostEthers: event.params.traces.exitBoostEthers,
+    exitFedEthers: event.params.traces.exitFedEthers,
+    exitBurnedShares: event.params.traces.exitBurnedShares,
+    exitingProjection: event.params.traces.exitingProjection,
+    baseFulfillableDemand: event.params.traces.baseFulfillableDemand,
+    extraFulfillableDemand: event.params.traces.extraFulfillableDemand,
+    rewards: event.params.traces.rewards,
+    delta: event.params.traces.delta,
+    increaseLimit: event.params.traces.increaseLimit,
+    coverageIncreaseLimit: event.params.traces.coverageIncreaseLimit,
+    decreaseLimit: event.params.traces.decreaseLimit,
+    consensusLayerDelta: event.params.traces.consensusLayerDelta,
+    pulledCoverageFunds: event.params.traces.pulledCoverageFunds,
+    pulledExecutionLayerRewards: event.params.traces.pulledExecutionLayerRewards,
+    pulledExitQueueUnclaimedFunds: event.params.traces.pulledExitQueueUnclaimedFunds
+  };
+
+  processedReportLogic(event, event.params.epoch, reportStruct, traces);
+}
+
+export function processedReportLogic(
+  event: ethereum.Event,
+  epoch: BigInt,
+  report: ReportStruct,
+  traces: TracesStruct
+): void {
   if (shouldSkip(event)) {
     return;
   }
   const pool = vPool.load(event.address);
 
-  const reportId = entityUUID(event, [event.params.epoch.toString()]);
+  const reportId = entityUUID(event, [epoch.toString()]);
   if (Report.load(reportId) != null) {
     // if we have the same epoch twice, it's most probably due to a manual fix
     return;
   }
-  const report = new Report(reportId);
+  const reportEntity = new Report(reportId);
   const lastEpoch = pool!.lastEpoch;
 
-  report.pool = pool!.id;
-  report.epoch = event.params.epoch;
-  report.balanceSum = event.params.report.balanceSum;
-  report.exitedSum = event.params.report.exitedSum;
-  report.skimmedSum = event.params.report.skimmedSum;
-  report.slashedSum = event.params.report.slashedSum;
-  report.exiting = event.params.report.exiting;
-  report.maxExitable = event.params.report.maxExitable;
-  report.maxCommittable = event.params.report.maxCommittable;
-  report.activatedCount = event.params.report.activatedCount;
-  report.stoppedCount = event.params.report.stoppedCount;
+  reportEntity.pool = pool!.id;
+  reportEntity.epoch = epoch;
+  reportEntity.balanceSum = report.balanceSum;
+  reportEntity.exitedSum = report.exitedSum;
+  reportEntity.skimmedSum = report.skimmedSum;
+  reportEntity.slashedSum = report.slashedSum;
+  reportEntity.exitingSum = report.exitingSum;
+  reportEntity.maxExitable = report.maxExitable;
+  reportEntity.maxCommittable = report.maxCommittable;
+  reportEntity.activatedCount = report.activatedCount;
+  reportEntity.stoppedCount = report.stoppedCount;
+  reportEntity.invalidActivationCount = report.invalidActivationCount;
 
-  report.preUnderlyingSupply = event.params.traces.preUnderlyingSupply;
-  report.postUnderlyingSupply = event.params.traces.postUnderlyingSupply;
-  report.preSupply = event.params.traces.preSupply;
-  report.postSupply = event.params.traces.postSupply;
-  report.newExitedEthers = event.params.traces.newExitedEthers;
-  report.newSkimmedEthers = event.params.traces.newSkimmedEthers;
-  report.exitBoostEthers = event.params.traces.exitBoostEthers;
-  report.exitFedEthers = event.params.traces.exitFedEthers;
-  report.exitBurnedShares = event.params.traces.exitBurnedShares;
-  report.rewards = event.params.traces.rewards;
-  report.delta = event.params.traces.delta;
-  report.increaseLimit = event.params.traces.increaseLimit;
-  report.coverageIncreaseLimit = event.params.traces.coverageIncreaseLimit;
-  report.decreaseLimit = event.params.traces.decreaseLimit;
-  report.consensusLayerDelta = event.params.traces.consensusLayerDelta;
-  report.pulledCoverageFunds = event.params.traces.pulledCoverageFunds;
-  report.pulledExecutionLayerRewards = event.params.traces.pulledExecutionLayerRewards;
-  report.pulledExitQueueUnclaimedFunds = event.params.traces.pulledExitQueueUnclaimedFunds;
+  reportEntity.preUnderlyingSupply = traces.preUnderlyingSupply;
+  reportEntity.postUnderlyingSupply = traces.postUnderlyingSupply;
+  reportEntity.preSupply = traces.preSupply;
+  reportEntity.postSupply = traces.postSupply;
+  reportEntity.newExitedEthers = traces.newExitedEthers;
+  reportEntity.newSkimmedEthers = traces.newSkimmedEthers;
+  reportEntity.exitBoostEthers = traces.exitBoostEthers;
+  reportEntity.exitFedEthers = traces.exitFedEthers;
+  reportEntity.exitBurnedShares = traces.exitBurnedShares;
+  reportEntity.rewards = traces.rewards;
+  reportEntity.delta = traces.delta;
+  reportEntity.increaseLimit = traces.increaseLimit;
+  reportEntity.coverageIncreaseLimit = traces.coverageIncreaseLimit;
+  reportEntity.decreaseLimit = traces.decreaseLimit;
+  reportEntity.consensusLayerDelta = traces.consensusLayerDelta;
+  reportEntity.pulledCoverageFunds = traces.pulledCoverageFunds;
+  reportEntity.pulledExecutionLayerRewards = traces.pulledExecutionLayerRewards;
+  reportEntity.pulledExitQueueUnclaimedFunds = traces.pulledExitQueueUnclaimedFunds;
 
-  report.createdAt = event.block.timestamp;
-  report.editedAt = event.block.timestamp;
-  report.createdAtBlock = event.block.number;
-  report.editedAtBlock = event.block.number;
-  report.save();
+  reportEntity.createdAt = event.block.timestamp;
+  reportEntity.editedAt = event.block.timestamp;
+  reportEntity.createdAtBlock = event.block.number;
+  reportEntity.editedAtBlock = event.block.number;
+  reportEntity.save();
 
   if (dataSource.network() === 'mainnet') {
-    if (pool!.totalUnderlyingSupply != event.params.traces.preUnderlyingSupply) {
+    if (pool!.totalUnderlyingSupply != traces.preUnderlyingSupply) {
       throw new Error(
         'Invalid pool.totalUnderlyingSupply ' +
           pool!.totalUnderlyingSupply.toString() +
           ' ' +
-          event.params.traces.preUnderlyingSupply.toString()
+          traces.preUnderlyingSupply.toString()
       );
     }
-    if (pool!.totalSupply.plus(event.params.traces.exitBurnedShares) != event.params.traces.preSupply) {
+    if (pool!.totalSupply.plus(traces.exitBurnedShares) != traces.preSupply) {
       throw new Error(
         'Invalid pool.totalSupply + traces.exitBurnedShares ' +
-          pool!.totalSupply.plus(event.params.traces.exitBurnedShares).toString() +
+          pool!.totalSupply.plus(traces.exitBurnedShares).toString() +
           ' ' +
-          event.params.traces.preSupply.toString()
+          traces.preSupply.toString()
       );
     }
   }
 
-  const pool_pre_supply = event.params.traces.preSupply;
-  const pool_pre_underlying_supply = event.params.traces.preUnderlyingSupply;
+  const pool_pre_supply = traces.preSupply;
+  const pool_pre_underlying_supply = traces.preUnderlyingSupply;
   let pool_post_supply: BigInt;
   if (
     event.block.number.lt(BigInt.fromI64(9305795)) &&
@@ -419,63 +542,65 @@ export function handleProcessedReport(event: ProcessedReport): void {
       event.address.equals(Address.fromString('0x182e3d45efc4436edb183f4278838505a1847e21')))
   ) {
     // edge case for testnet pools before the traces fix was introduces
-    pool_post_supply = event.params.traces.postSupply.minus(report.exitBurnedShares);
+    pool_post_supply = traces.postSupply.minus(reportEntity.exitBurnedShares);
   } else {
-    pool_post_supply = event.params.traces.postSupply;
+    pool_post_supply = traces.postSupply;
   }
-  const pool_post_underlying_supply = _computeTotalUnderlyingSupply(pool!, report);
+  const pool_post_underlying_supply = _computeTotalUnderlyingSupply(pool!, reportEntity);
   if (dataSource.network() === 'mainnet') {
-    if (pool_post_underlying_supply != event.params.traces.postUnderlyingSupply) {
+    if (pool_post_underlying_supply != traces.postUnderlyingSupply) {
       throw new Error(
         'Invalid pool_post_underlying_supply ' +
           pool_post_underlying_supply.toString() +
           ' ' +
-          event.params.traces.postUnderlyingSupply.toString()
+          traces.postUnderlyingSupply.toString()
       );
     }
   }
 
   pool!.totalSupply = pool_post_supply;
   pool!.totalUnderlyingSupply = pool_post_underlying_supply;
-  pool!.lastEpoch = event.params.epoch;
-  pool!.expectedEpoch = event.params.epoch.plus(pool!.epochsPerFrame);
+  pool!.lastEpoch = epoch;
+  pool!.expectedEpoch = epoch.plus(pool!.epochsPerFrame);
 
   pool!.editedAt = event.block.timestamp;
   pool!.editedAtBlock = event.block.number;
   pool!.save();
 
-  const period = event.params.epoch.minus(lastEpoch).times(pool!.slotsPerEpoch).times(pool!.secondsPerSlot);
+  const period = epoch.minus(lastEpoch).times(pool!.slotsPerEpoch).times(pool!.secondsPerSlot);
 
   const vpoolRewardEntry = new vPoolRewardEntry(eventUUID(event, ['vPoolRewardEntry']));
   vpoolRewardEntry.type = 'vPoolRewardEntry';
-  vpoolRewardEntry.grossReward = report.delta.gt(BigInt.fromI32(0)) ? report.delta : BigInt.fromI32(0);
-  vpoolRewardEntry.netReward = (report.delta.gt(BigInt.fromI32(0)) ? report.delta : BigInt.fromI32(0)).minus(
-    report.rewards.times(pool!.operatorFee).div(BigInt.fromI32(10000))
+  vpoolRewardEntry.grossReward = reportEntity.delta.gt(BigInt.fromI32(0)) ? reportEntity.delta : BigInt.fromI32(0);
+  vpoolRewardEntry.netReward = (
+    reportEntity.delta.gt(BigInt.fromI32(0)) ? reportEntity.delta : BigInt.fromI32(0)
+  ).minus(reportEntity.rewards.times(pool!.operatorFee).div(BigInt.fromI32(10000)));
+  vpoolRewardEntry.coverage = reportEntity.pulledCoverageFunds;
+  vpoolRewardEntry.grossELRewards = reportEntity.pulledExecutionLayerRewards;
+  vpoolRewardEntry.grossCLRewards = reportEntity.consensusLayerDelta;
+  vpoolRewardEntry.netELRewards = reportEntity.pulledExecutionLayerRewards.minus(
+    reportEntity.pulledExecutionLayerRewards.times(pool!.operatorFee).div(BigInt.fromI32(10000))
   );
-  vpoolRewardEntry.coverage = report.pulledCoverageFunds;
-  vpoolRewardEntry.grossELRewards = report.pulledExecutionLayerRewards;
-  vpoolRewardEntry.grossCLRewards = report.consensusLayerDelta;
-  vpoolRewardEntry.netELRewards = report.pulledExecutionLayerRewards.minus(
-    report.pulledExecutionLayerRewards.times(pool!.operatorFee).div(BigInt.fromI32(10000))
-  );
-  vpoolRewardEntry.netCLRewards = report.consensusLayerDelta.gt(BigInt.fromI32(0))
-    ? report.consensusLayerDelta.minus(report.consensusLayerDelta.times(pool!.operatorFee).div(BigInt.fromI32(10000)))
-    : report.consensusLayerDelta;
+  vpoolRewardEntry.netCLRewards = reportEntity.consensusLayerDelta.gt(BigInt.fromI32(0))
+    ? reportEntity.consensusLayerDelta.minus(
+        reportEntity.consensusLayerDelta.times(pool!.operatorFee).div(BigInt.fromI32(10000))
+      )
+    : reportEntity.consensusLayerDelta;
 
-  if (report.preUnderlyingSupply.gt(BigInt.fromI32(0))) {
+  if (reportEntity.preUnderlyingSupply.gt(BigInt.fromI32(0))) {
     vpoolRewardEntry.netRewardRate = vpoolRewardEntry.netReward
       .times(BigInt.fromString('1000000000000000000'))
       .times(BigInt.fromI64(YEAR))
-      .div(report.preUnderlyingSupply.times(period));
+      .div(reportEntity.preUnderlyingSupply.times(period));
     vpoolRewardEntry.grossRewardRate = vpoolRewardEntry.grossReward
       .times(BigInt.fromString('1000000000000000000'))
       .times(BigInt.fromI64(YEAR))
-      .div(report.preUnderlyingSupply.times(period));
+      .div(reportEntity.preUnderlyingSupply.times(period));
   } else {
     vpoolRewardEntry.netRewardRate = BigInt.fromI32(0);
     vpoolRewardEntry.grossRewardRate = BigInt.fromI32(0);
   }
-  vpoolRewardEntry.report = report.id;
+  vpoolRewardEntry.report = reportEntity.id;
   vpoolRewardEntry.createdAt = event.block.timestamp;
   vpoolRewardEntry.editedAt = event.block.timestamp;
   vpoolRewardEntry.createdAtBlock = event.block.number;
@@ -505,9 +630,9 @@ export function handleProcessedReport(event: ProcessedReport): void {
       commission = rewards.times(multipool!.fees).div(BigInt.fromI32(10000));
       rewards = rewards.minus(commission);
 
-      grossElRewards = report.pulledExecutionLayerRewards.times(multiPoolBalance!.amount).div(pool_pre_supply);
-      grossClRewards = report.consensusLayerDelta.times(multiPoolBalance!.amount).div(pool_pre_supply);
-      coverage = report.pulledCoverageFunds.times(multiPoolBalance!.amount).div(pool_pre_supply);
+      grossElRewards = reportEntity.pulledExecutionLayerRewards.times(multiPoolBalance!.amount).div(pool_pre_supply);
+      grossClRewards = reportEntity.consensusLayerDelta.times(multiPoolBalance!.amount).div(pool_pre_supply);
+      coverage = reportEntity.pulledCoverageFunds.times(multiPoolBalance!.amount).div(pool_pre_supply);
 
       netElRewards = grossElRewards.minus(grossElRewards.times(multipool!.fees).div(BigInt.fromI32(10000)));
       netClRewards = grossClRewards.minus(grossClRewards.times(multipool!.fees).div(BigInt.fromI32(10000)));
@@ -555,7 +680,7 @@ export function handleProcessedReport(event: ProcessedReport): void {
           integrationRewardEntry.netCLRewards = netClRewards;
           integrationRewardEntry.netRewardRate = netAPY;
           integrationRewardEntry.grossRewardRate = grossAPY;
-          integrationRewardEntry.report = report.id;
+          integrationRewardEntry.report = reportEntity.id;
           integrationRewardEntry.createdAt = event.block.timestamp;
           integrationRewardEntry.editedAt = event.block.timestamp;
           integrationRewardEntry.createdAtBlock = event.block.number;
@@ -578,7 +703,7 @@ export function handleProcessedReport(event: ProcessedReport): void {
           integrationRewardEntry.netCLRewards = BigInt.zero();
           integrationRewardEntry.netRewardRate = BigInt.zero();
           integrationRewardEntry.grossRewardRate = BigInt.zero();
-          integrationRewardEntry.report = report.id;
+          integrationRewardEntry.report = reportEntity.id;
           integrationRewardEntry.createdAt = event.block.timestamp;
           integrationRewardEntry.editedAt = event.block.timestamp;
           integrationRewardEntry.createdAtBlock = event.block.number;
@@ -588,7 +713,7 @@ export function handleProcessedReport(event: ProcessedReport): void {
         }
 
         const multiPoolRewardsSnapshot = new MultiPoolRewardsSnapshot(
-          eventUUID(event, [multipool!.id, report.epoch.toString()])
+          eventUUID(event, [multipool!.id, reportEntity.epoch.toString()])
         );
         multiPoolRewardsSnapshot.multiPool = multipool!.id;
         multiPoolRewardsSnapshot.report = reportId;
@@ -612,7 +737,7 @@ export function handleProcessedReport(event: ProcessedReport): void {
     event,
     Address.fromBytes(vFactory.load(pool!.factory)!.address),
     event.address,
-    report.epoch
+    reportEntity.epoch
   );
   systemEvent.report = reportId;
   systemEvent.save();
