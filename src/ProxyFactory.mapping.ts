@@ -2,6 +2,7 @@ import { ERC20 } from '../generated/schema';
 import {
   ERC20 as ERC20Template,
   ERC20_1_0_0_rc4 as ERC20_1_0_0_rc4Template,
+  ERC20_2_2_0 as ERC20_2_2_0Template,
   Native20_Fix_09_12_Oracle_Report
 } from '../generated/templates';
 import { DeployedProxy } from '../generated/templates/ProxyFactory/ProxyFactory';
@@ -37,6 +38,7 @@ export function handleDeployedProxy(event: DeployedProxy): void {
     }
     ERC20Template.create(event.params.proxy);
     ERC20_1_0_0_rc4Template.create(event.params.proxy);
+    ERC20_2_2_0Template.create(event.params.proxy);
     Native20_Fix_09_12_Oracle_Report.create(event.params.proxy);
 
     const integration = new ERC20(event.params.proxy);

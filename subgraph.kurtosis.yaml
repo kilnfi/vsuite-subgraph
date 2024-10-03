@@ -774,6 +774,25 @@ templates:
         - event: Stake(indexed address,uint256,uint256,uint256)
           handler: handleStake_1_0_0_rc4
 
+  - name: ERC20_2_2_0
+    kind: ethereum/contract
+    network: ethereum
+    source:
+      abi: Native20
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/ERC20.mapping.ts
+      entities:
+        - ERC20
+      abis:
+        - name: Native20
+          file: ./abis/Liquid20A_2_2_0.json
+      eventHandlers:
+        - event: Stake(indexed address,indexed address,uint128,uint128,(uint128,uint128,uint128,uint128,uint128)[])
+          handler: handleStake_2_2_0
+
   - name: ERC20
     kind: ethereum/contract
     network: ethereum

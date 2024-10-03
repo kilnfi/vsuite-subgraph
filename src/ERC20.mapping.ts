@@ -17,6 +17,7 @@ import {
   Ticket
 } from '../generated/schema';
 import { Stake as Stake_1_0_0_rc4 } from '../generated/templates/ERC20_1_0_0_rc4/Native20';
+import { Stake as Stake_2_2_0 } from '../generated/templates/ERC20_2_2_0/Native20';
 import {
   Approval,
   CommissionWithdrawn,
@@ -46,7 +47,7 @@ import {
   createERC20DepositSystemEvent,
   createERC20ExitSystemEvent
 } from './utils/utils';
-import { CommissionSharesSold, ExitedCommissionShares } from '../generated/templates/ERC1155/Liquid1155';
+import { CommissionSharesSold, ExitedCommissionShares } from '../generated/templates/ERC20/Native20';
 import { getOrCreateBalance } from './vPool.mapping';
 import { pushEntryToSummaries } from './utils/rewards';
 
@@ -399,6 +400,7 @@ export function handleStake_1_0_0_rc4(event: Stake_1_0_0_rc4): void {
   deposit.mintedShares = event.params.sharesBought;
   deposit.hash = event.transaction.hash;
   deposit.staker = staker;
+  deposit.recipient = staker;
   deposit.createdAt = ts;
   deposit.createdAtBlock = blockId;
 
@@ -475,6 +477,75 @@ export function handleStake(event: Stake): void {
   deposit.mintedShares = event.params.mintedTokens;
   deposit.hash = event.transaction.hash;
   deposit.staker = staker;
+  deposit.recipient = staker;
+  deposit.createdAt = ts;
+  deposit.createdAtBlock = blockId;
+  deposit.depositAmount = event.params.depositedEth;
+  erc20!.totalUnderlyingSupply = erc20!.totalUnderlyingSupply.plus(event.params.depositedEth);
+
+  deposit.editedAt = ts;
+  deposit.editedAtBlock = blockId;
+
+  deposit.save();
+  erc20!.save();
+
+  let balance = ERC20Balance.load(entityUUID(event, [staker.toHexString()]));
+  if (balance == null) {
+    balance = new ERC20Balance(entityUUID(event, [staker.toHexString()]));
+    balance.integration = event.address;
+    balance.staker = staker;
+    balance.sharesBalance = BigInt.zero();
+    balance.totalDeposited = BigInt.zero();
+    balance.adjustedTotalDeposited = BigInt.zero();
+    balance.createdAt = ts;
+    balance.createdAtBlock = blockId;
+    balance.editedAt = ts;
+    balance.editedAtBlock = blockId;
+  }
+  balance.totalDeposited = balance.totalDeposited.plus(event.params.depositedEth);
+  balance.adjustedTotalDeposited = balance.adjustedTotalDeposited.plus(event.params.depositedEth);
+
+  for (let i = 0; i < event.params.stakeDetails.length; i++) {
+    const stakeDetail = event.params.stakeDetails[i];
+    const poolId = stakeDetail.poolId;
+    const multiPool = MultiPool.load(entityUUID(event, [poolId.toString()]));
+    multiPool!.injectedEth = multiPool!.injectedEth.plus(stakeDetail.ethToPool);
+    multiPool!.editedAt = ts;
+    multiPool!.editedAtBlock = blockId;
+    multiPool!.save();
+  }
+
+  balance.save();
+
+  erc20!.totalUnderlyingSupply = _recomputeERC20TotalUnderlyingSupply(Address.fromBytes(erc20!.address));
+  erc20!.save();
+
+  const depositDataEntry = new DepositDataEntry(eventUUID(event, ['DepositDataEntry']));
+  depositDataEntry.type = 'DepositDataEntry';
+  depositDataEntry.depositedEth = event.params.depositedEth;
+  depositDataEntry.createdAt = event.block.timestamp;
+  depositDataEntry.editedAt = event.block.timestamp;
+  depositDataEntry.createdAtBlock = event.block.number;
+  depositDataEntry.editedAtBlock = event.block.number;
+  depositDataEntry.save();
+  pushEntryToSummaries(event, Address.fromBytes(event.address), depositDataEntry);
+}
+
+export function handleStake_2_2_0(event: Stake_2_2_0): void {
+  const erc20 = ERC20.load(event.address);
+
+  const ts = event.block.timestamp;
+  const blockId = event.block.number;
+  const staker = event.params.recipient;
+
+  createERC20DepositSystemEvent(event, event.address, staker, event.params.depositedEth, event.params.mintedTokens);
+
+  const deposit = new ERC20Deposit(eventUUID(event, [event.address.toHexString(), staker.toHexString()]));
+  deposit.integration = event.address;
+  deposit.mintedShares = event.params.mintedTokens;
+  deposit.hash = event.transaction.hash;
+  deposit.staker = event.params.staker;
+  deposit.recipient = event.params.recipient;
   deposit.createdAt = ts;
   deposit.createdAtBlock = blockId;
   deposit.depositAmount = event.params.depositedEth;

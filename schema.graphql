@@ -1152,6 +1152,7 @@ type ERC20Deposit @entity {
   hash: Bytes!
   
   staker: Bytes!
+  recipient: Bytes!
   depositAmount: BigInt!
   mintedShares: BigInt!
 
