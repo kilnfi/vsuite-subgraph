@@ -21,12 +21,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: 'asdf:install'
-        uses: asdf-vm/actions/install@v1.1.0
+      - uses: sigstore/cosign-installer@v3
+
+      - uses: slsa-framework/slsa-verifier/actions/installer@v2.7.0
+
+      - name: mise:install
+        uses: Wandalen/wretry.action@v3.8.0
+        with:
+          action: jdx/mise-action@v2
 
       - name: 'yarn:init'
         run: yarn
@@ -36,4 +42,3 @@ jobs:
 
       - name: "graph:build for ${{matrix.manifest}}"
         run: $(yarn bin)/graph build ${{matrix.manifest}}
-
