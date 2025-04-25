@@ -8,7 +8,7 @@ dataSources:
   #   source:
   #     address: "0x4242424242424242424242424242424242424242"
   #     abi: DepositContract 
-  #     startBlock: 230000
+  #     startBlock: 0
   #   mapping:
   #     kind: ethereum/events
   #     apiVersion: 0.0.7
@@ -29,7 +29,7 @@ dataSources:
     source:
       address: "0x4f571b9efCbaabb9A3F392ac46616EAe3B14008a"
       abi: Nexus
-      startBlock: 230000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -71,7 +71,7 @@ dataSources:
     source:
       address: "0xaD40Dd41c59a1dd14F6b7afFF54f6E4AC3B0bA98"
       abi: PluggableHatcher
-      startBlock: 230000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -114,7 +114,7 @@ dataSources:
     source:
       address: "0x5E0268D93b5bd56e9422De7C19383614FACf2C7f"
       abi: PluggableHatcher
-      startBlock: 230000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -157,7 +157,7 @@ dataSources:
     source:
       address: "0x7B7416F9281cA40b3C6B3994C41BC1CDd8335257"
       abi: PluggableHatcher
-      startBlock: 230000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -200,7 +200,7 @@ dataSources:
     source:
       address: "0x03F033D06c1123956D39dC0B3c3D4580E2599Ab5"
       abi: PluggableHatcher
-      startBlock: 230000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -243,7 +243,7 @@ dataSources:
     source:
       address: "0xCD160ebd644A6b916FF054C7D5A9bCD8568860C9"
       abi: PluggableHatcher
-      startBlock: 230000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -286,7 +286,7 @@ dataSources:
     source:
       address: "0x04940DBe4B5f4A7F75bA03168116Abc00f90bc2a"
       abi: PluggableHatcher
-      startBlock: 230000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -329,7 +329,7 @@ dataSources:
     source:
       address: "0xA6001a09560DEB5EBc5c9Db1E4aED7D5C0B7c6f9"
       abi: PluggableHatcher
-      startBlock: 230000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -372,7 +372,7 @@ dataSources:
     source:
       address: "0xd562D01bf4B9f842873Bb50d23e762aC5F47718E"
       abi: PluggableHatcher
-      startBlock: 230000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -416,7 +416,7 @@ dataSources:
     source:
       address: "0xaFFCE4ea5781261BCd3bBcb1d9EBf9fB7e5A36b0"
       abi: IntegrationRouter
-      startBlock: 230000
+      startBlock: 0
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
