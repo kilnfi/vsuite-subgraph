@@ -1,4 +1,4 @@
-specVersion: 0.0.5
+specVersion: 0.0.9
 schema:
   file: ./schema.graphql
 dataSources:
@@ -11,7 +11,7 @@ dataSources:
   #     startBlock: 11052983
   #   mapping:
   #     kind: ethereum/events
-  #     apiVersion: 0.0.7
+  #     apiVersion: 0.0.9
   #     language: wasm/assemblyscript
   #     entities:
   #       - vFactory
@@ -30,9 +30,10 @@ dataSources:
       address: "0x8a113da63f02811e63c1e38ef615df94df5d9e70"
       abi: Nexus
       startBlock: 17785573
+      endBlock: 22431867
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
         - vFactory
@@ -72,9 +73,10 @@ dataSources:
       address: "0xa748AE65Ba11606492a9C57efFa0d4B7Be551ec2"
       abi: PluggableHatcher
       startBlock: 17780000
+      endBlock: 22431867
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
         - vFactory
@@ -115,9 +117,10 @@ dataSources:
       address: "0x48005e62373277FBbE5584b351830B1b2eC1E3FD"
       abi: PluggableHatcher
       startBlock: 17780000
+      endBlock: 22431867
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
         - vFactory
@@ -158,9 +161,10 @@ dataSources:
       address: "0x1D6103243d0507a9d1314bAC09379Bf57a5CF155"
       abi: PluggableHatcher
       startBlock: 17780000
+      endBlock: 22431867
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
         - vFactory
@@ -201,9 +205,10 @@ dataSources:
       address: "0x066B6c3fCa9034395068eb9d442Ee5041EAc33DC"
       abi: PluggableHatcher
       startBlock: 17780000
+      endBlock: 22431867
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
         - vFactory
@@ -244,9 +249,10 @@ dataSources:
       address: "0xdac8cF86ca42185eBCE7ED2dbEC9bc2bE1734ffC"
       abi: PluggableHatcher
       startBlock: 17780000
+      endBlock: 22431867
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
         - vFactory
@@ -287,9 +293,10 @@ dataSources:
       address: "0x24d6E12FA25B7F8fc6B4BbA0ea77fc643d7210d3"
       abi: PluggableHatcher
       startBlock: 17780000
+      endBlock: 22431867
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
         - vFactory
@@ -330,9 +337,10 @@ dataSources:
       address: "0xC2c48FbfeC0E61683133aAfF32C9c2E98fd17788"
       abi: PluggableHatcher
       startBlock: 17780000
+      endBlock: 22431867
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
         - vFactory
@@ -373,9 +381,10 @@ dataSources:
       address: "0x24a1DFEbAEc4e501c2152a5E4A434B236FCE3D3B"
       abi: PluggableHatcher
       startBlock: 17780000
+      endBlock: 22431867
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
         - vFactory
@@ -417,9 +426,10 @@ dataSources:
       address: "0x4F13231eB0F3Ddf6aF9729491Fc7229BD6A32d70"
       abi: IntegrationRouter
       startBlock: 17813720
+      endBlock: 22431867
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
         - IntegrationChannel
@@ -441,7 +451,7 @@ templates:
       abi: TUPProxy
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       file: ./src/TUPProxy.mapping.ts
       entities:
@@ -467,7 +477,7 @@ templates:
       abi: Cub
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       file: ./src/Cub.mapping.ts
       entities:
@@ -485,7 +495,7 @@ templates:
       abi: vFactory
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       file: ./src/vFactory.mapping.ts
       entities:
@@ -533,7 +543,7 @@ templates:
       abi: vTreasury
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       file: ./src/vTreasury.mapping.ts
       entities:
@@ -560,7 +570,7 @@ templates:
       abi: vPool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       file: ./src/vPool.mapping.ts
       entities:
@@ -607,7 +617,7 @@ templates:
       abi: vExitQueue
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       file: ./src/vExitQueue.mapping.ts
       entities:
@@ -640,7 +650,7 @@ templates:
       abi: vExecLayerRecipient
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       file: ./src/vExecLayerRecipient.mapping.ts
       entities:
@@ -659,7 +669,7 @@ templates:
       abi: vCoverageRecipient
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       file: ./src/vCoverageRecipient.mapping.ts
       entities:
@@ -686,7 +696,7 @@ templates:
       abi: vOracleAggregator
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       file: ./src/vOracleAggregator.mapping.ts
       entities:
@@ -715,7 +725,7 @@ templates:
       abi: Native20
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       file: ./src/ERC20.mapping.ts
       entities:
@@ -735,7 +745,7 @@ templates:
       abi: Native20
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       file: ./src/ERC20.mapping.ts
       entities:
@@ -787,7 +797,7 @@ templates:
       abi: Liquid1155
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       file: ./src/ERC1155.mapping.ts
       entities:
@@ -805,7 +815,7 @@ templates:
       abi: Liquid1155
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       file: ./src/ERC1155.mapping.ts
       entities:
@@ -855,7 +865,7 @@ templates:
       abi: vNFT
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
         - vNFT
@@ -912,7 +922,7 @@ templates:
       abi: ProxyFactory
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
         - ERC20
@@ -932,7 +942,7 @@ templates:
       abi: MerkleVault
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
         - MerkleVault
@@ -954,7 +964,7 @@ templates:
       abi: Native20_Fix_09_12_Oracle_Report
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.7
+      apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
         - ERC20
