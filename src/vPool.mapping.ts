@@ -29,7 +29,6 @@ import {
   vExitQueue,
   vPoolRewardEntry,
   IntegrationRewardEntry,
-  DepositDataEntry,
   ERC1155Integration
 } from '../generated/schema';
 import { Bytes, BigInt, Address, store, dataSource } from '@graphprotocol/graph-ts';
@@ -156,16 +155,6 @@ export function handleDeposit(event: Deposit): void {
   se.amountShares = se.amountShares.plus(poolDeposit.mintedShares);
   se.depositor = entityUUID(event, [event.params.sender.toHexString()]);
   se.save();
-
-  const depositDataEntry = new DepositDataEntry(eventUUID(event, ['DepositDataEntry']));
-  depositDataEntry.type = 'DepositDataEntry';
-  depositDataEntry.depositedEth = event.params.amount;
-  depositDataEntry.createdAt = event.block.timestamp;
-  depositDataEntry.editedAt = event.block.timestamp;
-  depositDataEntry.createdAtBlock = event.block.number;
-  depositDataEntry.editedAtBlock = event.block.number;
-  depositDataEntry.save();
-  pushEntryToSummaries(event, Address.fromBytes(event.address), depositDataEntry);
 }
 
 export function handleMint(event: Mint): void {

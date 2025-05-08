@@ -1,12 +1,5 @@
 import { ethereum, BigInt, Address, Entity } from '@graphprotocol/graph-ts';
-import {
-  PeriodRewardSummary,
-  RewardSummary,
-  vPoolRewardEntry,
-  IntegrationRewardEntry,
-  DepositDataEntry,
-  ExitDataEntry
-} from '../../generated/schema';
+import { PeriodRewardSummary, RewardSummary, vPoolRewardEntry, IntegrationRewardEntry } from '../../generated/schema';
 import { externalEntityUUID } from './utils';
 
 export function getOrCreateRewardSummary(
@@ -31,8 +24,6 @@ export function getOrCreateRewardSummary(
     rs.totalCoverage = BigInt.zero();
     rs.grossRewardRate = BigInt.zero();
     rs.grossRewardRateCumulator = BigInt.zero();
-    rs.depositedEth = BigInt.zero();
-    rs.exitedEth = BigInt.zero();
     rs.entryCount = BigInt.zero();
     rs.entries = [];
     rs.entryCounts = [];
@@ -142,36 +133,6 @@ function cleanOutOfRangeEntries(event: ethereum.Event, rs: PeriodRewardSummary):
         entriesToDelete++;
       } else {
         oldestEntryId = integrationEntry.id;
-        break;
-      }
-    } else if (entry.indexOf('DepositDataEntry') != -1) {
-      const depositDataEntry = DepositDataEntry.load(entry) as DepositDataEntry;
-      if (depositDataEntry.createdAt.lt(event.block.timestamp.minus(period))) {
-        rs.depositedEth = rs.depositedEth.minus(depositDataEntry.depositedEth);
-
-        const addRes = unregisterEntryFromCounts('DepositDataEntry', rs.entryTypes, rs.entryCounts);
-        rs.entryTypes = addRes.types;
-        rs.entryCounts = addRes.counts;
-        rs.entryCount = rs.entryCount.minus(BigInt.fromI32(1));
-
-        entriesToDelete++;
-      } else {
-        oldestEntryId = depositDataEntry.id;
-        break;
-      }
-    } else if (entry.indexOf('ExitDataEntry') != -1) {
-      const exitDataEntry = ExitDataEntry.load(entry) as ExitDataEntry;
-      if (exitDataEntry.createdAt.lt(event.block.timestamp.minus(period))) {
-        rs.exitedEth = rs.exitedEth.minus(exitDataEntry.exitedEth);
-
-        const addRes = unregisterEntryFromCounts('ExitDataEntry', rs.entryTypes, rs.entryCounts);
-        rs.entryTypes = addRes.types;
-        rs.entryCounts = addRes.counts;
-        rs.entryCount = rs.entryCount.minus(BigInt.fromI32(1));
-
-        entriesToDelete++;
-      } else {
-        oldestEntryId = exitDataEntry.id;
         break;
       }
     }
@@ -291,36 +252,6 @@ function pushEntryToSummary(event: ethereum.Event, addr: Address, name: string, 
     const rewardEntryCount = getTypeCount(['IntegrationRewardEntry'], rs.entryTypes, rs.entryCounts);
     rs.netRewardRate = rs.netRewardRateCumulator.div(rewardEntryCount);
     rs.grossRewardRate = rs.grossRewardRateCumulator.div(rewardEntryCount);
-
-    const entries = rs.entries;
-    entries.push(entry.id);
-    rs.entries = entries;
-
-    rs.save();
-  } else if (entryId.includes('DepositDataEntry')) {
-    const entry = _entry as DepositDataEntry;
-    rs = cleanOutOfRangeEntries(event, rs);
-    rs.depositedEth = rs.depositedEth.plus(entry.depositedEth);
-
-    const addRes = registerEntryToCounts('DepositDataEntry', rs.entryTypes, rs.entryCounts);
-    rs.entryTypes = addRes.types;
-    rs.entryCounts = addRes.counts;
-    rs.entryCount = rs.entryCount.plus(BigInt.fromI32(1));
-
-    const entries = rs.entries;
-    entries.push(entry.id);
-    rs.entries = entries;
-
-    rs.save();
-  } else if (entryId.includes('ExitDataEntry')) {
-    const entry = _entry as ExitDataEntry;
-    rs = cleanOutOfRangeEntries(event, rs);
-    rs.exitedEth = rs.exitedEth.plus(entry.exitedEth);
-
-    const addRes = registerEntryToCounts('ExitDataEntry', rs.entryTypes, rs.entryCounts);
-    rs.entryTypes = addRes.types;
-    rs.entryCounts = addRes.counts;
-    rs.entryCount = rs.entryCount.plus(BigInt.fromI32(1));
 
     const entries = rs.entries;
     entries.push(entry.id);

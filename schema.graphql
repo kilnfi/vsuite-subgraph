@@ -492,30 +492,6 @@ type IntegrationRewardEntry implements DataEntry @entity {
   editedAtBlock: BigInt!
 }
 
-type DepositDataEntry implements DataEntry @entity {
-  id: String!
-  type: String!
-
-  depositedEth: BigInt!
-
-  createdAt: BigInt!
-  editedAt: BigInt!
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
-
-type ExitDataEntry implements DataEntry @entity {
-  id: String!
-  type: String!
-
-  exitedEth: BigInt!
-
-  createdAt: BigInt!
-  editedAt: BigInt!
-  createdAtBlock: BigInt!
-  editedAtBlock: BigInt!
-}
-
 type PeriodRewardSummary @entity {
   id: String!
 
@@ -536,10 +512,6 @@ type PeriodRewardSummary @entity {
   netRewardRateCumulator: BigInt!
   grossRewardRate: BigInt!
   grossRewardRateCumulator: BigInt!
-
-  # volumes
-  depositedEth: BigInt!
-  exitedEth: BigInt!
 
   entries: [DataEntry!]!
   entryCount: BigInt!
