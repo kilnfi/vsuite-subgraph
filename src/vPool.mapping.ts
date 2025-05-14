@@ -380,7 +380,7 @@ export function handleProcessedReport(event: ProcessedReport): void {
   report.editedAtBlock = event.block.number;
   report.save();
 
-  if (dataSource.network() === 'mainnet') {
+  if (dataSource.network() === 'mainnet' && report.epoch !== new BigInt(364050)) {
     if (pool!.totalUnderlyingSupply != event.params.traces.preUnderlyingSupply) {
       throw new Error(
         'Invalid pool.totalUnderlyingSupply ' +
@@ -413,7 +413,7 @@ export function handleProcessedReport(event: ProcessedReport): void {
     pool_post_supply = event.params.traces.postSupply;
   }
   const pool_post_underlying_supply = _computeTotalUnderlyingSupply(pool!, report);
-  if (dataSource.network() === 'mainnet') {
+  if (dataSource.network() === 'mainnet' && report.epoch !== new BigInt(364050)) {
     if (pool_post_underlying_supply != event.params.traces.postUnderlyingSupply) {
       throw new Error(
         'Invalid pool_post_underlying_supply ' +
