@@ -11,8 +11,6 @@ import {
   ERC20BalanceSnapshot,
   ERC20Snapshot,
   PoolBalance,
-  DepositDataEntry,
-  ExitDataEntry,
   vExitQueue,
   Ticket
 } from '../generated/schema';
@@ -446,19 +444,6 @@ export function handleStake_1_0_0_rc4(event: Stake_1_0_0_rc4): void {
 
   erc20!.totalUnderlyingSupply = _recomputeERC20TotalUnderlyingSupply(Address.fromBytes(erc20!.address));
   erc20!.save();
-
-  const depositDataEntry = new DepositDataEntry(eventUUID(event, ['DepositDataEntry']));
-  depositDataEntry.type = 'DepositDataEntry';
-  depositDataEntry.depositedEth = event.params.ethValue;
-  if (ucs.active && ucs.tx.equals(event.transaction.hash)) {
-    depositDataEntry.depositedEth = depositDataEntry.depositedEth.plus(ucs.amount);
-  }
-  depositDataEntry.createdAt = event.block.timestamp;
-  depositDataEntry.editedAt = event.block.timestamp;
-  depositDataEntry.createdAtBlock = event.block.number;
-  depositDataEntry.editedAtBlock = event.block.number;
-  depositDataEntry.save();
-  pushEntryToSummaries(event, Address.fromBytes(event.address), depositDataEntry);
 }
 
 export function handleStake(event: Stake): void {
@@ -516,24 +501,12 @@ export function handleStake(event: Stake): void {
 
   erc20!.totalUnderlyingSupply = _recomputeERC20TotalUnderlyingSupply(Address.fromBytes(erc20!.address));
   erc20!.save();
-
-  const depositDataEntry = new DepositDataEntry(eventUUID(event, ['DepositDataEntry']));
-  depositDataEntry.type = 'DepositDataEntry';
-  depositDataEntry.depositedEth = event.params.depositedEth;
-  depositDataEntry.createdAt = event.block.timestamp;
-  depositDataEntry.editedAt = event.block.timestamp;
-  depositDataEntry.createdAtBlock = event.block.number;
-  depositDataEntry.editedAtBlock = event.block.number;
-  depositDataEntry.save();
-  pushEntryToSummaries(event, Address.fromBytes(event.address), depositDataEntry);
 }
 
 export function handleExit(event: Exit): void {
   const erc20 = ERC20.load(event.address);
   const tickets = erc20!.tickets;
   const details = event.params.exitDetails;
-  const depositDataEntry = new ExitDataEntry(eventUUID(event, ['ExitDataEntry']));
-  depositDataEntry.exitedEth = BigInt.zero();
 
   let totalETH = BigInt.zero();
   for (let idx = 0; idx < details.length; ++idx) {
@@ -543,7 +516,6 @@ export function handleExit(event: Exit): void {
     const pool = vPool.load(multiPool!.pool);
     const ethValue = exitedShares.times(pool!.totalUnderlyingSupply).div(pool!.totalSupply);
     totalETH = totalETH.plus(ethValue);
-    depositDataEntry.exitedEth = depositDataEntry.exitedEth.plus(ethValue);
     const exitQueue = vExitQueue.load(pool!.exitQueue);
     const nextTicketIdx = exitQueue!.ticketCount.minus(BigInt.fromI32(details.length - idx));
     const linkedTicketId = externalEntityUUID(Address.fromBytes(exitQueue!.address), [nextTicketIdx.toString()]);
@@ -558,13 +530,6 @@ export function handleExit(event: Exit): void {
 
   createERC20ExitSystemEvent(event, event.address, event.params.staker, totalETH, event.params.exitedTokens);
 
-  depositDataEntry.type = 'ExitDataEntry';
-  depositDataEntry.createdAt = event.block.timestamp;
-  depositDataEntry.editedAt = event.block.timestamp;
-  depositDataEntry.createdAtBlock = event.block.number;
-  depositDataEntry.editedAtBlock = event.block.number;
-  depositDataEntry.save();
-  pushEntryToSummaries(event, Address.fromBytes(event.address), depositDataEntry);
   erc20!.tickets = tickets;
   erc20!.editedAt = event.block.timestamp;
   erc20!.save();

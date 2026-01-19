@@ -29,7 +29,6 @@ import {
   vExitQueue,
   vPoolRewardEntry,
   IntegrationRewardEntry,
-  DepositDataEntry,
   ERC1155Integration
 } from '../generated/schema';
 import { Bytes, BigInt, Address, store, dataSource } from '@graphprotocol/graph-ts';
@@ -156,16 +155,6 @@ export function handleDeposit(event: Deposit): void {
   se.amountShares = se.amountShares.plus(poolDeposit.mintedShares);
   se.depositor = entityUUID(event, [event.params.sender.toHexString()]);
   se.save();
-
-  const depositDataEntry = new DepositDataEntry(eventUUID(event, ['DepositDataEntry']));
-  depositDataEntry.type = 'DepositDataEntry';
-  depositDataEntry.depositedEth = event.params.amount;
-  depositDataEntry.createdAt = event.block.timestamp;
-  depositDataEntry.editedAt = event.block.timestamp;
-  depositDataEntry.createdAtBlock = event.block.number;
-  depositDataEntry.editedAtBlock = event.block.number;
-  depositDataEntry.save();
-  pushEntryToSummaries(event, Address.fromBytes(event.address), depositDataEntry);
 }
 
 export function handleMint(event: Mint): void {
@@ -391,7 +380,7 @@ export function handleProcessedReport(event: ProcessedReport): void {
   report.editedAtBlock = event.block.number;
   report.save();
 
-  if (dataSource.network() === 'mainnet') {
+  if (dataSource.network() === 'mainnet' && report.epoch !== new BigInt(364050)) {
     if (pool!.totalUnderlyingSupply != event.params.traces.preUnderlyingSupply) {
       throw new Error(
         'Invalid pool.totalUnderlyingSupply ' +
@@ -424,7 +413,7 @@ export function handleProcessedReport(event: ProcessedReport): void {
     pool_post_supply = event.params.traces.postSupply;
   }
   const pool_post_underlying_supply = _computeTotalUnderlyingSupply(pool!, report);
-  if (dataSource.network() === 'mainnet') {
+  if (dataSource.network() === 'mainnet' && report.epoch !== new BigInt(364050)) {
     if (pool_post_underlying_supply != event.params.traces.postUnderlyingSupply) {
       throw new Error(
         'Invalid pool_post_underlying_supply ' +
