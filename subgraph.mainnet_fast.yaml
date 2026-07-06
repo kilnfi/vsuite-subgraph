@@ -746,6 +746,9 @@ templates:
       eventHandlers:
         - event: Stake(indexed address,uint128,uint128,(uint128,uint128,uint128,uint128,uint128)[])
           handler: handleStake
+        # 2.1.0 Stake event: added indexed `recipient` param (stakeFor); different topic0
+        - event: Stake(indexed address,indexed address,uint128,uint128,(uint128,uint128,uint128,uint128,uint128)[])
+          handler: handleStakeV2
         - event: Exit(indexed address,uint128,(uint128,uint128)[])
           handler: handleExit
         - event: SetName(string)

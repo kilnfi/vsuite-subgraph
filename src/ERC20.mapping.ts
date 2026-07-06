@@ -30,6 +30,9 @@ import {
   SetPoolPercentages,
   SetSymbol,
   Stake,
+  // Second `Stake` event in the ABI: the 2.1.0 variant with an added indexed `recipient` (stakeFor).
+  // graph-codegen suffixes overloaded event names by ABI order, so this must stay the 2nd Stake entry.
+  Stake1 as StakeV2,
   Transfer,
   VPoolSharesReceived
 } from '../generated/templates/ERC20/Native20';
@@ -476,6 +479,73 @@ export function handleStake(event: Stake): void {
     balance = new ERC20Balance(entityUUID(event, [staker.toHexString()]));
     balance.integration = event.address;
     balance.staker = staker;
+    balance.sharesBalance = BigInt.zero();
+    balance.totalDeposited = BigInt.zero();
+    balance.adjustedTotalDeposited = BigInt.zero();
+    balance.createdAt = ts;
+    balance.createdAtBlock = blockId;
+    balance.editedAt = ts;
+    balance.editedAtBlock = blockId;
+  }
+  balance.totalDeposited = balance.totalDeposited.plus(event.params.depositedEth);
+  balance.adjustedTotalDeposited = balance.adjustedTotalDeposited.plus(event.params.depositedEth);
+
+  for (let i = 0; i < event.params.stakeDetails.length; i++) {
+    const stakeDetail = event.params.stakeDetails[i];
+    const poolId = stakeDetail.poolId;
+    const multiPool = MultiPool.load(entityUUID(event, [poolId.toString()]));
+    multiPool!.injectedEth = multiPool!.injectedEth.plus(stakeDetail.ethToPool);
+    multiPool!.editedAt = ts;
+    multiPool!.editedAtBlock = blockId;
+    multiPool!.save();
+  }
+
+  balance.save();
+
+  erc20!.totalUnderlyingSupply = _recomputeERC20TotalUnderlyingSupply(Address.fromBytes(erc20!.address));
+  erc20!.save();
+}
+
+// Handles the 2.1.0 `Stake` event, which added an indexed `recipient` param (to support `stakeFor`).
+// This is emitted with a different topic0 (0xb5181261...) than the pre-2.1.0 `Stake` event handled by
+// `handleStake` (0x22064e3b...). Both are registered on the same ERC20 template, so a given integration
+// emits the old topic before its 2.1.0 upgrade and the new one after; each routes to its own handler.
+//
+// The cost basis (totalDeposited / adjustedTotalDeposited) is credited to `recipient`, not `staker`.
+// The tokens are minted to `recipient` (see handleTransfer, which credits sharesBalance to the mint's
+// `to`), so the balance we adjust here must be the recipient's to keep sharesBalance and the deposited
+// amounts on the same entity. For a plain `stake()` call staker == recipient, so this matches the
+// pre-2.1.0 behaviour; for `stakeFor()` it correctly attributes the deposit to the token holder.
+export function handleStakeV2(event: StakeV2): void {
+  const erc20 = ERC20.load(event.address);
+
+  const ts = event.block.timestamp;
+  const blockId = event.block.number;
+  const recipient = event.params.recipient;
+
+  createERC20DepositSystemEvent(event, event.address, recipient, event.params.depositedEth, event.params.mintedTokens);
+
+  const deposit = new ERC20Deposit(eventUUID(event, [event.address.toHexString(), recipient.toHexString()]));
+  deposit.integration = event.address;
+  deposit.mintedShares = event.params.mintedTokens;
+  deposit.hash = event.transaction.hash;
+  deposit.staker = recipient;
+  deposit.createdAt = ts;
+  deposit.createdAtBlock = blockId;
+  deposit.depositAmount = event.params.depositedEth;
+  erc20!.totalUnderlyingSupply = erc20!.totalUnderlyingSupply.plus(event.params.depositedEth);
+
+  deposit.editedAt = ts;
+  deposit.editedAtBlock = blockId;
+
+  deposit.save();
+  erc20!.save();
+
+  let balance = ERC20Balance.load(entityUUID(event, [recipient.toHexString()]));
+  if (balance == null) {
+    balance = new ERC20Balance(entityUUID(event, [recipient.toHexString()]));
+    balance.integration = event.address;
+    balance.staker = recipient;
     balance.sharesBalance = BigInt.zero();
     balance.totalDeposited = BigInt.zero();
     balance.adjustedTotalDeposited = BigInt.zero();
