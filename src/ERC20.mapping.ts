@@ -587,14 +587,34 @@ export function handleExit(event: Exit): void {
     const ethValue = exitedShares.times(pool!.totalUnderlyingSupply).div(pool!.totalSupply);
     totalETH = totalETH.plus(ethValue);
     const exitQueue = vExitQueue.load(pool!.exitQueue);
-    const nextTicketIdx = exitQueue!.ticketCount.minus(BigInt.fromI32(details.length - idx));
-    const linkedTicketId = externalEntityUUID(Address.fromBytes(exitQueue!.address), [nextTicketIdx.toString()]);
-    tickets.push(linkedTicketId);
 
-    const ticket = Ticket.load(linkedTicketId);
-    if (ticket != null) {
-      ticket.origin = event.address;
-      ticket.save();
+    // Verify that the last ticket is owned by the staker, if not commissionShares were exited
+    // and we need to set the origin of the last tickets to the event emitter address
+    const staker = event.params.staker;
+    const lastTicketIdx = exitQueue!.ticketCount.minus(BigInt.fromI32(1));
+    const lastTicketId = externalEntityUUID(Address.fromBytes(exitQueue!.address), [lastTicketIdx.toString()]);
+    tickets.push(lastTicketId);
+    
+    const lastTicket = Ticket.load(lastTicketId);
+    // I acknowledge that there is an edge case if a the last commission recipient is also the staker
+    // Fee recipients are generally not used to stake so it's unlikely we hit both edge cases at the same time
+    if (lastTicket != null && lastTicket!.owner.equals(staker)) {
+      lastTicket.origin = event.address;
+      lastTicket.save();
+    } else if (lastTicket != null) {
+      // We go back through the last tickets until we find one that has an origin set
+      // on the way we set the origin to the event address
+      let previousTicketIdx = lastTicketIdx.minus(BigInt.fromI32(1));
+      let previousTicketId = externalEntityUUID(Address.fromBytes(exitQueue!.address), [previousTicketIdx.toString()]);
+      let ticket = Ticket.load(previousTicketId);
+      while (ticket != null && ticket.origin == null) {
+        ticket.origin = event.address;
+        ticket.save();
+        tickets.push(previousTicketId);
+        previousTicketIdx = previousTicketIdx.minus(BigInt.fromI32(1));
+        previousTicketId = externalEntityUUID(Address.fromBytes(exitQueue!.address), [previousTicketIdx.toString()]);
+        ticket = Ticket.load(previousTicketId);
+      }
     }
   }
 
