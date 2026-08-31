@@ -120,6 +120,38 @@ const abi = `
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "reportedExitedBalanceSum",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lastReportedExitedBalanceSum",
+        "type": "uint256"
+      }
+    ],
+    "name": "DecreasingExitedBalanceSum",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "reportedSkimmedBalanceSum",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lastReportedSkimmedBalanceSum",
+        "type": "uint256"
+      }
+    ],
+    "name": "DecreasingSkimmedBalanceSum",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "reportedSlashedBalanceSum",
         "type": "uint256"
       },
@@ -130,6 +162,22 @@ const abi = `
       }
     ],
     "name": "DecreasingSlashedBalanceSum",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "previousStoppedValidatorCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "stoppedValidatorCount",
+        "type": "uint256"
+      }
+    ],
+    "name": "DecreasingStoppedValidatorCount",
     "type": "error"
   },
   {
@@ -197,8 +245,29 @@ const abi = `
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "exiting",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "balance",
+        "type": "uint256"
+      }
+    ],
+    "name": "ExitingBalanceTooHigh",
+    "type": "error"
+  },
+  {
     "inputs": [],
     "name": "InvalidBPSValue",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidNullMint",
     "type": "error"
   },
   {
@@ -257,6 +326,22 @@ const abi = `
       }
     ],
     "name": "ShareReceiverError",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "stoppedValidatorsCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maxStoppedValidatorsCount",
+        "type": "uint256"
+      }
+    ],
+    "name": "StoppedValidatorCountTooHigh",
     "type": "error"
   },
   {
@@ -390,6 +475,12 @@ const abi = `
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "mintedShares",
+        "type": "uint256"
       }
     ],
     "name": "Deposit",
@@ -499,6 +590,190 @@ const abi = `
     "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "epoch",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint128",
+            "name": "balanceSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exitedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "skimmedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "slashedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exiting",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "maxExitable",
+            "type": "uint128"
+          },
+          {
+            "internalType": "int256",
+            "name": "maxCommittable",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint64",
+            "name": "epoch",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint32",
+            "name": "activatedCount",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "stoppedCount",
+            "type": "uint32"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct ctypes.ValidatorsReport",
+        "name": "report",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint128",
+            "name": "preUnderlyingSupply",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "postUnderlyingSupply",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "preSupply",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "postSupply",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "newExitedEthers",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "newSkimmedEthers",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exitBoostEthers",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exitFedEthers",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exitBurnedShares",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exitingProjection",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "baseFulfillableDemand",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "extraFulfillableDemand",
+            "type": "uint128"
+          },
+          {
+            "internalType": "int128",
+            "name": "rewards",
+            "type": "int128"
+          },
+          {
+            "internalType": "int128",
+            "name": "delta",
+            "type": "int128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "increaseLimit",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "coverageIncreaseLimit",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "decreaseLimit",
+            "type": "uint128"
+          },
+          {
+            "internalType": "int128",
+            "name": "consensusLayerDelta",
+            "type": "int128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "pulledCoverageFunds",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "pulledExecutionLayerRewards",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "pulledExitQueueUnclaimedFunds",
+            "type": "uint128"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct IvPool.ReportTraces",
+        "name": "traces",
+        "type": "tuple"
+      }
+    ],
+    "name": "ProcessedReport",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": false,
         "internalType": "uint256[]",
         "name": "validators",
@@ -514,35 +789,46 @@ const abi = `
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "epoch",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "int256",
-        "name": "delta",
-        "type": "int256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "covered",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newTotalSupply",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newTotalUnderlyingSupply",
+        "name": "committedEthers",
         "type": "uint256"
       }
     ],
-    "name": "RevenueUpdate",
+    "name": "SetCommittedEthers",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "genesisTimestamp",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "epochsUntilFinal",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "slotsPerEpoch",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "secondsPerSlot",
+            "type": "uint64"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct ctypes.ConsensusLayerSpec",
+        "name": "consensusLayerSpec",
+        "type": "tuple"
+      }
+    ],
+    "name": "SetConsensusLayerSpec",
     "type": "event"
   },
   {
@@ -551,11 +837,54 @@ const abi = `
       {
         "indexed": false,
         "internalType": "address",
+        "name": "factory",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "withdrawalRecipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "execLayerRecipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "coverageRecipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "oracleAggregator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "exitQueue",
         "type": "address"
       }
     ],
-    "name": "SetCoverageRecipient",
+    "name": "SetContractLinks",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "depositedEthers",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetDepositedEthers",
     "type": "event"
   },
   {
@@ -576,64 +905,12 @@ const abi = `
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "execLayerRecipient",
-        "type": "address"
-      }
-    ],
-    "name": "SetExecLayerRecipient",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "factory",
-        "type": "address"
-      }
-    ],
-    "name": "SetFactory",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "nexus",
-        "type": "address"
-      }
-    ],
-    "name": "SetNexus",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "uint256",
         "name": "operatorFeeBps",
         "type": "uint256"
       }
     ],
     "name": "SetOperatorFee",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "oracleAggregator",
-        "type": "address"
-      }
-    ],
-    "name": "SetOracleAggregator",
     "type": "event"
   },
   {
@@ -666,12 +943,12 @@ const abi = `
     "inputs": [
       {
         "indexed": false,
-        "internalType": "string",
-        "name": "extraData",
-        "type": "string"
+        "internalType": "uint32",
+        "name": "newRequestedExits",
+        "type": "uint32"
       }
     ],
-    "name": "SetValidatorGlobalExtraData",
+    "name": "SetRequestedExits",
     "type": "event"
   },
   {
@@ -679,12 +956,12 @@ const abi = `
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "withdrawalRecipient",
-        "type": "address"
+        "internalType": "string",
+        "name": "extraData",
+        "type": "string"
       }
     ],
-    "name": "SetWithdrawalRecipient",
+    "name": "SetValidatorGlobalExtraData",
     "type": "event"
   },
   {
@@ -794,6 +1071,41 @@ const abi = `
   },
   {
     "inputs": [],
+    "name": "consensusLayerSpec",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "genesisTimestamp",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "epochsUntilFinal",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "slotsPerEpoch",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "secondsPerSlot",
+            "type": "uint64"
+          }
+        ],
+        "internalType": "struct ctypes.ConsensusLayerSpec",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "coverageRecipient",
     "outputs": [
       {
@@ -803,6 +1115,19 @@ const abi = `
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "decimals",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -876,12 +1201,37 @@ const abi = `
   },
   {
     "inputs": [],
-    "name": "etherToDeposit",
+    "name": "ethers",
     "outputs": [
       {
-        "internalType": "uint256",
+        "components": [
+          {
+            "internalType": "uint128",
+            "name": "deposited",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "committed",
+            "type": "uint128"
+          }
+        ],
+        "internalType": "struct ctypes.Ethers",
         "name": "",
-        "type": "uint256"
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "execLayerRecipient",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -889,7 +1239,7 @@ const abi = `
   },
   {
     "inputs": [],
-    "name": "execLayerRecipient",
+    "name": "exitQueue",
     "outputs": [
       {
         "internalType": "address",
@@ -947,39 +1297,41 @@ const abi = `
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "factory_",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "nexus_",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "withdrawalRecipient_",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "execLayerRecipient_",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "coverageRecipient_",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "oracleAggregator_",
-        "type": "address"
+        "internalType": "address[6]",
+        "name": "addrs",
+        "type": "address[6]"
       },
       {
         "internalType": "uint256",
         "name": "epochsPerFrame_",
         "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "genesisTimestamp",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "epochsUntilFinal",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "slotsPerEpoch",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "secondsPerSlot",
+            "type": "uint64"
+          }
+        ],
+        "internalType": "struct ctypes.ConsensusLayerSpec",
+        "name": "consensusLayerSpec_",
+        "type": "tuple"
       },
       {
         "internalType": "uint64[3]",
@@ -997,7 +1349,7 @@ const abi = `
         "type": "string"
       }
     ],
-    "name": "initializeV1",
+    "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1043,12 +1395,77 @@ const abi = `
   },
   {
     "inputs": [],
-    "name": "nexus",
+    "name": "lastReport",
     "outputs": [
       {
-        "internalType": "address",
+        "components": [
+          {
+            "internalType": "uint128",
+            "name": "balanceSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exitedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "skimmedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "slashedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exiting",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "maxExitable",
+            "type": "uint128"
+          },
+          {
+            "internalType": "int256",
+            "name": "maxCommittable",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint64",
+            "name": "epoch",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint32",
+            "name": "activatedCount",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "stoppedCount",
+            "type": "uint32"
+          }
+        ],
+        "internalType": "struct ctypes.ValidatorsReport",
         "name": "",
-        "type": "address"
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "name",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -1148,7 +1565,7 @@ const abi = `
         "type": "uint256[]"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -1167,24 +1584,61 @@ const abi = `
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "epoch",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "validatorCount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "validatorBalanceSum",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "slashedValidatorBalanceSum",
-        "type": "uint256"
+        "components": [
+          {
+            "internalType": "uint128",
+            "name": "balanceSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exitedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "skimmedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "slashedSum",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "exiting",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "maxExitable",
+            "type": "uint128"
+          },
+          {
+            "internalType": "int256",
+            "name": "maxCommittable",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint64",
+            "name": "epoch",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint32",
+            "name": "activatedCount",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "stoppedCount",
+            "type": "uint32"
+          }
+        ],
+        "internalType": "struct ctypes.ValidatorsReport",
+        "name": "rprt",
+        "type": "tuple"
       }
     ],
     "name": "report",
@@ -1217,25 +1671,50 @@ const abi = `
   },
   {
     "inputs": [],
-    "name": "reportedData",
+    "name": "requestedExits",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "validatorCount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "validatorBalanceSum",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "slashedValidatorBalanceSum",
-        "type": "uint256"
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "genesisTimestamp",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "epochsUntilFinal",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "slotsPerEpoch",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "secondsPerSlot",
+            "type": "uint64"
+          }
+        ],
+        "internalType": "struct ctypes.ConsensusLayerSpec",
+        "name": "consensusLayerSpec_",
+        "type": "tuple"
+      }
+    ],
+    "name": "setConsensusLayerSpec",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1298,6 +1777,19 @@ const abi = `
     "name": "setValidatorGlobalExtraData",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "symbol",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -1444,7 +1936,7 @@ const abi = `
     ],
     "name": "voidShares",
     "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

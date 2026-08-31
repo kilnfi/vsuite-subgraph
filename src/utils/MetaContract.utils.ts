@@ -15,6 +15,7 @@ import Native20 from '../../abis_ts/Native20';
 import Native1155 from '../../abis_ts/Native1155';
 import Liquid1155 from '../../abis_ts/Liquid1155';
 import vNFT from '../../abis_ts/vNFT';
+import TUPProxy from '../../abis_ts/TUPProxy';
 
 const m = new Map<string, string>();
 
@@ -33,6 +34,7 @@ m.set('Liquid20C', Liquid20C);
 m.set('Native1155', Native1155);
 m.set('Liquid1155', Liquid1155);
 m.set('vNFT', vNFT);
+m.set('TUPProxy', TUPProxy);
 
 export const getOrCreateMetaContract = (name: string): string => {
   let metaContract = MetaContract.load(name);

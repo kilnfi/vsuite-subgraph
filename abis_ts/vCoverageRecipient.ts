@@ -296,7 +296,7 @@ const abi = `
         "type": "address"
       }
     ],
-    "name": "initializeV1",
+    "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
